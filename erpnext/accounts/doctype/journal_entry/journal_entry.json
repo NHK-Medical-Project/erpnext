@@ -22,6 +22,11 @@
   "company",
   "posting_date",
   "apply_tds",
+  "sales_order_id",
+  "journal_entry_type",
+  "security_deposite_type",
+  "master_order_id",
+  "created_by",
   "2_add_edit_gl_entries",
   "accounts",
   "section_break99",
@@ -553,6 +558,38 @@
    "label": "Repost Required",
    "print_hide": 1,
    "read_only": 1
+  },
+  {
+   "fieldname": "sales_order_id",
+   "fieldtype": "Link",
+   "label": "Sales Order ID",
+   "options": "Sales Order"
+  },
+  {
+   "fieldname": "journal_entry_type",
+   "fieldtype": "Select",
+   "label": "Journal Entry Type",
+   "options": "\nSecurity Deposit"
+  },
+  {
+   "fieldname": "security_deposite_type",
+   "fieldtype": "Select",
+   "label": "Security Deposit Type",
+   "options": "\nBooking as Advance From Client\nCash Received From Client\nReturn to Client"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "master_order_id",
+   "fieldtype": "Link",
+   "label": "Master Order Id",
+   "options": "Sales Order"
+  },
+  {
+   "default": "__user",
+   "fieldname": "created_by",
+   "fieldtype": "Link",
+   "label": "Created By",
+   "options": "User"
   }
  ],
  "icon": "fa fa-file-text",
@@ -567,8 +604,7 @@
    "table_fieldname": "payment_entries"
   }
  ],
- "modified": "2023-11-23 12:11:04.128015",
-
+ "modified": "2024-04-02 17:41:35.609248",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Journal Entry",

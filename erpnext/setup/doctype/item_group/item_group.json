@@ -15,6 +15,9 @@
   "is_group",
   "image",
   "column_break_5",
+  "device_type",
+  "product_category",
+  "product_type",
   "defaults",
   "item_group_defaults",
   "sec_break_taxes",
@@ -127,6 +130,25 @@
    "options": "Item Group",
    "print_hide": 1,
    "report_hide": 1
+  },
+  {
+   "default": "Rental",
+   "fieldname": "device_type",
+   "fieldtype": "Select",
+   "label": "Device Type",
+   "options": "\nSales\nRental"
+  },
+  {
+   "default": "GOODS",
+   "fieldname": "product_category",
+   "fieldtype": "Select",
+   "label": "PRODUCT CATEGORY",
+   "options": "GOODS\nSERVICE"
+  },
+  {
+   "fieldname": "product_type",
+   "fieldtype": "Data",
+   "label": "PRODUCT TYPE"
   }
  ],
  "icon": "fa fa-sitemap",
@@ -135,7 +157,7 @@
  "is_tree": 1,
  "links": [],
  "max_attachments": 3,
- "modified": "2024-01-30 14:08:38.485616",
+ "modified": "2024-03-19 14:20:38.059184",
  "modified_by": "Administrator",
  "module": "Setup",
  "name": "Item Group",

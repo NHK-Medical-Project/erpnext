@@ -415,6 +415,7 @@ scheduler_events = {
 		"erpnext.utilities.bulk_transaction.retry",
 	],
 	"daily": [
+		"erpnext.selling.doctype.sales_order.sales_order.mark_overdue_sales_orders",
 		"erpnext.support.doctype.issue.issue.auto_close_tickets",
 		"erpnext.crm.doctype.opportunity.opportunity.auto_close_opportunity",
 		"erpnext.controllers.accounts_controller.update_invoice_status",

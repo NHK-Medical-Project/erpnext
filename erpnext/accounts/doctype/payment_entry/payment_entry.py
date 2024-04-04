@@ -57,17 +57,10 @@ class PaymentEntry(AccountsController):
 	from typing import TYPE_CHECKING
 
 	if TYPE_CHECKING:
+		from erpnext.accounts.doctype.advance_taxes_and_charges.advance_taxes_and_charges import AdvanceTaxesandCharges
+		from erpnext.accounts.doctype.payment_entry_deduction.payment_entry_deduction import PaymentEntryDeduction
+		from erpnext.accounts.doctype.payment_entry_reference.payment_entry_reference import PaymentEntryReference
 		from frappe.types import DF
-
-		from erpnext.accounts.doctype.advance_taxes_and_charges.advance_taxes_and_charges import (
-			AdvanceTaxesandCharges,
-		)
-		from erpnext.accounts.doctype.payment_entry_deduction.payment_entry_deduction import (
-			PaymentEntryDeduction,
-		)
-		from erpnext.accounts.doctype.payment_entry_reference.payment_entry_reference import (
-			PaymentEntryReference,
-		)
 
 		amended_from: DF.Link | None
 		apply_tax_withholding_amount: DF.Check
@@ -75,6 +68,7 @@ class PaymentEntry(AccountsController):
 		bank: DF.ReadOnly | None
 		bank_account: DF.Link | None
 		bank_account_no: DF.ReadOnly | None
+		base_in_words: DF.SmallText | None
 		base_paid_amount: DF.Currency
 		base_paid_amount_after_tax: DF.Currency
 		base_received_amount: DF.Currency
@@ -90,7 +84,9 @@ class PaymentEntry(AccountsController):
 		custom_remarks: DF.Check
 		deductions: DF.Table[PaymentEntryDeduction]
 		difference_amount: DF.Currency
+		in_words: DF.SmallText | None
 		letter_head: DF.Link | None
+		master_order_id: DF.Link | None
 		mode_of_payment: DF.Link | None
 		naming_series: DF.Literal["ACC-PAY-.YYYY.-"]
 		paid_amount: DF.Currency
@@ -101,7 +97,7 @@ class PaymentEntry(AccountsController):
 		paid_from_account_type: DF.Data | None
 		paid_to: DF.Link
 		paid_to_account_balance: DF.Currency
-		paid_to_account_currency: DF.Link
+		paid_to_account_currency: DF.Link | None
 		paid_to_account_type: DF.Data | None
 		party: DF.DynamicLink | None
 		party_balance: DF.Currency
@@ -110,6 +106,7 @@ class PaymentEntry(AccountsController):
 		party_type: DF.Link | None
 		payment_order: DF.Link | None
 		payment_order_status: DF.Literal["Initiated", "Payment Ordered"]
+		payment_remark: DF.SmallText | None
 		payment_type: DF.Literal["Receive", "Pay", "Internal Transfer"]
 		posting_date: DF.Date
 		print_heading: DF.Link | None
@@ -1466,6 +1463,7 @@ class PaymentEntry(AccountsController):
 				"advance_payment_receivable_doctypes"
 			) + frappe.get_hooks("advance_payment_payable_doctypes")
 			for d in self.get("references"):
+				print(d)
 				if d.allocated_amount and d.reference_doctype in advance_payment_doctypes:
 					frappe.get_doc(
 						d.reference_doctype, d.reference_name, for_update=True

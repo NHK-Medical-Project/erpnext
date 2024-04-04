@@ -45,11 +45,8 @@ class JournalEntry(AccountsController):
 	from typing import TYPE_CHECKING
 
 	if TYPE_CHECKING:
+		from erpnext.accounts.doctype.journal_entry_account.journal_entry_account import JournalEntryAccount
 		from frappe.types import DF
-
-		from erpnext.accounts.doctype.journal_entry_account.journal_entry_account import (
-			JournalEntryAccount,
-		)
 
 		accounts: DF.Table[JournalEntryAccount]
 		amended_from: DF.Link | None
@@ -61,6 +58,7 @@ class JournalEntry(AccountsController):
 		cheque_no: DF.Data | None
 		clearance_date: DF.Date | None
 		company: DF.Link
+		created_by: DF.Link | None
 		difference: DF.Currency
 		due_date: DF.Date | None
 		finance_book: DF.Link | None
@@ -68,7 +66,9 @@ class JournalEntry(AccountsController):
 		inter_company_journal_entry_reference: DF.Link | None
 		is_opening: DF.Literal["No", "Yes"]
 		is_system_generated: DF.Check
+		journal_entry_type: DF.Literal["", "Security Deposit"]
 		letter_head: DF.Link | None
+		master_order_id: DF.Link | None
 		mode_of_payment: DF.Link | None
 		multi_currency: DF.Check
 		naming_series: DF.Literal["ACC-JV-.YYYY.-"]
@@ -78,7 +78,10 @@ class JournalEntry(AccountsController):
 		posting_date: DF.Date
 		process_deferred_accounting: DF.Link | None
 		remark: DF.SmallText | None
+		repost_required: DF.Check
 		reversal_of: DF.Link | None
+		sales_order_id: DF.Link | None
+		security_deposite_type: DF.Literal["", "Booking as Advance From Client", "Cash Received From Client", "Return to Client"]
 		select_print_heading: DF.Link | None
 		stock_entry: DF.Link | None
 		tax_withholding_category: DF.Link | None
@@ -89,24 +92,7 @@ class JournalEntry(AccountsController):
 		total_credit: DF.Currency
 		total_debit: DF.Currency
 		user_remark: DF.SmallText | None
-		voucher_type: DF.Literal[
-			"Journal Entry",
-			"Inter Company Journal Entry",
-			"Bank Entry",
-			"Cash Entry",
-			"Credit Card Entry",
-			"Debit Note",
-			"Credit Note",
-			"Contra Entry",
-			"Excise Entry",
-			"Write Off Entry",
-			"Opening Entry",
-			"Depreciation Entry",
-			"Exchange Rate Revaluation",
-			"Exchange Gain Or Loss",
-			"Deferred Revenue",
-			"Deferred Expense",
-		]
+		voucher_type: DF.Literal["Journal Entry", "Inter Company Journal Entry", "Bank Entry", "Cash Entry", "Credit Card Entry", "Debit Note", "Credit Note", "Contra Entry", "Excise Entry", "Write Off Entry", "Opening Entry", "Depreciation Entry", "Exchange Rate Revaluation", "Exchange Gain Or Loss", "Deferred Revenue", "Deferred Expense"]
 		write_off_amount: DF.Currency
 		write_off_based_on: DF.Literal["Accounts Receivable", "Accounts Payable"]
 	# end: auto-generated types

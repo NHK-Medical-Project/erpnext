@@ -97,6 +97,12 @@ class SalesInvoiceItem(Document):
 		weight_per_unit: DF.Float
 		weight_uom: DF.Link | None
 	# end: auto-generated types
+	# def before_submit(self):
+		# if self.item_code:
+		# 	asset_id = frappe.db.get_value('Asset', {'item_code': self.item_code}, 'name')
+		# 	if asset_id:
+		# 		self.asset = asset_id
+
 
 	def validate_cost_center(self, company: str):
 		cost_center_company = frappe.get_cached_value("Cost Center", self.cost_center, "company")

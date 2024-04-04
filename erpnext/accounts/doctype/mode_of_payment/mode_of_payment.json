@@ -11,6 +11,9 @@
   "mode_of_payment",
   "enabled",
   "type",
+  "column_break_kbcy",
+  "journal_entry_default_account",
+  "section_break_mwlt",
   "accounts"
  ],
  "fields": [
@@ -42,16 +45,31 @@
    "fieldname": "enabled",
    "fieldtype": "Check",
    "label": "Enabled"
+  },
+  {
+   "fieldname": "journal_entry_default_account",
+   "fieldtype": "Link",
+   "label": "Journal Entry Default Account",
+   "options": "Account"
+  },
+  {
+   "fieldname": "column_break_kbcy",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_mwlt",
+   "fieldtype": "Section Break"
   }
  ],
  "icon": "fa fa-credit-card",
  "idx": 1,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2020-09-18 17:57:23.835236",
+ "modified": "2024-04-03 14:11:12.833933",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Mode of Payment",
+ "naming_rule": "By fieldname",
  "owner": "Administrator",
  "permissions": [
   {
@@ -73,5 +91,6 @@
  "quick_entry": 1,
  "show_name_in_global_search": 1,
  "sort_field": "modified",
- "sort_order": "ASC"
+ "sort_order": "ASC",
+ "states": []
 }

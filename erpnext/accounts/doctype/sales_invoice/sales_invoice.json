@@ -698,6 +698,7 @@
    "default": "0",
    "fieldname": "update_stock",
    "fieldtype": "Check",
+   "hidden": 1,
    "hide_days": 1,
    "hide_seconds": 1,
    "label": "Update Stock",
@@ -2193,7 +2194,7 @@
    "link_fieldname": "consolidated_invoice"
   }
  ],
- "modified": "2024-03-15 16:44:17.778370",
+ "modified": "2024-03-28 12:15:53.396046",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Sales Invoice",

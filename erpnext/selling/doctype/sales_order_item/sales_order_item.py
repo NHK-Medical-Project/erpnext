@@ -30,6 +30,7 @@ class SalesOrderItem(Document):
 		blanket_order_rate: DF.Currency
 		bom_no: DF.Link | None
 		brand: DF.Link | None
+		child_status: DF.Literal["Pending", "Approved", "Rental Device Assigned", "Ready for Delivery", "DISPATCHED", "DELIVERED", "Active", "Ready for Pickup", "Picked Up", "Submitted to Office", "On Hold", "Overdue", "Renewed", "Cancelled", "Closed", "Partially Closed", "Item Replaced"]
 		conversion_factor: DF.Float
 		customer_item_code: DF.Data | None
 		delivered_by_supplier: DF.Check
@@ -38,6 +39,7 @@ class SalesOrderItem(Document):
 		description: DF.TextEditor | None
 		discount_amount: DF.Currency
 		discount_percentage: DF.Percent
+		dispatch_date: DF.Date | None
 		ensure_delivery_based_on_produced_serial_no: DF.Check
 		grant_commission: DF.Check
 		gross_profit: DF.Currency
@@ -49,18 +51,24 @@ class SalesOrderItem(Document):
 		item_name: DF.Data
 		item_tax_rate: DF.Code | None
 		item_tax_template: DF.Link | None
+		line_total: DF.Currency
 		margin_rate_or_amount: DF.Float
 		margin_type: DF.Literal["", "Percentage", "Amount"]
 		material_request: DF.Link | None
 		material_request_item: DF.Data | None
 		net_amount: DF.Currency
 		net_rate: DF.Currency
+		old_item_code: DF.Link | None
 		ordered_qty: DF.Float
 		page_break: DF.Check
 		parent: DF.Data
 		parentfield: DF.Data
 		parenttype: DF.Data
 		picked_qty: DF.Float
+		picked_up: DF.Datetime | None
+		pickup_date: DF.Datetime | None
+		pickup_reason: DF.Literal["", "Patient recovered", "Patient Expired", "Purchased Device from Us", "Purchased Device from Others", "Other Reason"]
+		pickup_remark: DF.SmallText | None
 		planned_qty: DF.Float
 		prevdoc_docname: DF.Link | None
 		price_list_rate: DF.Currency
@@ -74,14 +82,23 @@ class SalesOrderItem(Document):
 		quotation_item: DF.Data | None
 		rate: DF.Currency
 		rate_with_margin: DF.Currency
+		rental_delivery_date: DF.Datetime | None
+		rental_tax_rate: DF.Currency
+		replaced_datetime: DF.Datetime | None
 		reserve_stock: DF.Check
 		returned_qty: DF.Float
 		stock_qty: DF.Float
 		stock_reserved_qty: DF.Float
 		stock_uom: DF.Link | None
 		stock_uom_rate: DF.Currency
+		submitted_date: DF.Datetime | None
 		supplier: DF.Link | None
 		target_warehouse: DF.Link | None
+		tax_amount: DF.Currency
+		technician_mobile_after_delivered: DF.Data | None
+		technician_mobile_before_delivered: DF.Data | None
+		technician_name_after_delivered: DF.Link | None
+		technician_name_before_delivered: DF.Link | None
 		total_weight: DF.Float
 		transaction_date: DF.Date | None
 		uom: DF.Link
