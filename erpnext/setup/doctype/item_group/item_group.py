@@ -15,11 +15,11 @@ class ItemGroup(NestedSet):
 	from typing import TYPE_CHECKING
 
 	if TYPE_CHECKING:
-		from frappe.types import DF
-
 		from erpnext.stock.doctype.item_default.item_default import ItemDefault
 		from erpnext.stock.doctype.item_tax.item_tax import ItemTax
+		from frappe.types import DF
 
+		device_type: DF.Literal["", "Sales", "Rental"]
 		image: DF.AttachImage | None
 		is_group: DF.Check
 		item_group_defaults: DF.Table[ItemDefault]
@@ -27,6 +27,8 @@ class ItemGroup(NestedSet):
 		lft: DF.Int
 		old_parent: DF.Link | None
 		parent_item_group: DF.Link | None
+		product_category: DF.Literal["GOODS", "SERVICE"]
+		product_type: DF.Data | None
 		rgt: DF.Int
 		taxes: DF.Table[ItemTax]
 	# end: auto-generated types

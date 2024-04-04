@@ -11,21 +11,30 @@
  "field_order": [
   "customer_section",
   "column_break0",
+  "order_type",
+  "customer_name",
   "title",
   "naming_series",
   "customer",
-  "customer_name",
   "tax_id",
-  "order_type",
+  "payment_status",
+  "overdue_status",
   "column_break_7",
   "transaction_date",
   "delivery_date",
+  "master_order_id",
+  "previous_order_id",
+  "security_deposit",
   "column_break1",
   "po_no",
   "po_date",
   "company",
+  "created_by",
   "skip_delivery_note",
   "amended_from",
+  "start_date",
+  "end_date",
+  "total_no_of_dates",
   "accounting_dimensions_section",
   "cost_center",
   "dimension_col_break",
@@ -39,7 +48,7 @@
   "plc_conversion_rate",
   "ignore_pricing_rule",
   "sec_warehouse",
-  "scan_barcode",
+  "column_break_oybh",
   "column_break_28",
   "set_warehouse",
   "reserve_stock",
@@ -80,6 +89,7 @@
   "in_words",
   "advance_paid",
   "disable_rounded_total",
+  "balance_amount",
   "section_break_48",
   "apply_discount_on",
   "base_discount_amount",
@@ -93,6 +103,44 @@
   "packed_items",
   "pricing_rule_details",
   "pricing_rules",
+  "security_deposit_tab",
+  "outstanding_security_deposit_amount",
+  "security_deposit_status",
+  "column_break_xnrd",
+  "paid_security_deposite_amount",
+  "refundable_security_deposit",
+  "security_deposit_amount_return_to_client",
+  "journal_entry_details_section",
+  "journal_entry_details",
+  "payment_entry_details_section",
+  "payment_entry_details",
+  "device_details_tab",
+  "dispatched_section",
+  "rental_delivery_date",
+  "dispatch_date",
+  "pick_up_details_section",
+  "pickup_date",
+  "pickup_reason",
+  "column_break_ttvl",
+  "pickup_remark",
+  "technician_details_section",
+  "technician_name_before_delivered",
+  "technician_mobile_before_delivered",
+  "column_break_fugc",
+  "technician_name_after_delivered",
+  "technician_mobile_after_delivered",
+  "submitted_to_office_section",
+  "submitted_date",
+  "picke_up_from_client_place_section",
+  "picked_up",
+  "device_management_tab",
+  "device_details_section",
+  "device",
+  "item_replaced_details_section",
+  "item_replaced_details",
+  "renewal_details_tab",
+  "renewal_details_section",
+  "renewal_details",
   "contact_info",
   "billing_address_column",
   "customer_address",
@@ -236,7 +284,7 @@
    "read_only": 1
   },
   {
-   "default": "Sales",
+   "default": "Rental",
    "fieldname": "order_type",
    "fieldtype": "Select",
    "hide_days": 1,
@@ -244,7 +292,7 @@
    "label": "Order Type",
    "oldfieldname": "order_type",
    "oldfieldtype": "Select",
-   "options": "\nSales\nMaintenance\nShopping Cart",
+   "options": "\nSales\nMaintenance\nShopping Cart\nRental",
    "print_hide": 1,
    "reqd": 1
   },
@@ -277,7 +325,6 @@
    "fieldtype": "Link",
    "hide_days": 1,
    "hide_seconds": 1,
-   "in_standard_filter": 1,
    "label": "Company",
    "oldfieldname": "company",
    "oldfieldtype": "Link",
@@ -304,9 +351,11 @@
   },
   {
    "allow_on_submit": 1,
+   "default": "Today",
    "depends_on": "eval:!doc.skip_delivery_note",
    "fieldname": "delivery_date",
    "fieldtype": "Date",
+   "hidden": 1,
    "hide_days": 1,
    "hide_seconds": 1,
    "in_list_view": 1,
@@ -317,6 +366,7 @@
    "allow_on_submit": 1,
    "fieldname": "po_no",
    "fieldtype": "Data",
+   "hidden": 1,
    "hide_days": 1,
    "hide_seconds": 1,
    "label": "Customer's Purchase Order",
@@ -329,6 +379,7 @@
    "depends_on": "eval:doc.po_no",
    "fieldname": "po_date",
    "fieldtype": "Date",
+   "hidden": 1,
    "hide_days": 1,
    "hide_seconds": 1,
    "label": "Customer's Purchase Order Date",
@@ -480,6 +531,7 @@
    "collapsible": 1,
    "fieldname": "currency_and_price_list",
    "fieldtype": "Section Break",
+   "hidden": 1,
    "hide_days": 1,
    "hide_seconds": 1,
    "label": "Currency and Price List",
@@ -576,6 +628,7 @@
   {
    "fieldname": "set_warehouse",
    "fieldtype": "Link",
+   "hidden": 1,
    "hide_days": 1,
    "hide_seconds": 1,
    "label": "Set Source Warehouse",
@@ -590,14 +643,6 @@
    "hide_seconds": 1,
    "oldfieldtype": "Section Break",
    "options": "fa fa-shopping-cart"
-  },
-  {
-   "fieldname": "scan_barcode",
-   "fieldtype": "Data",
-   "hide_days": 1,
-   "hide_seconds": 1,
-   "label": "Scan Barcode",
-   "options": "Barcode"
   },
   {
    "allow_bulk_edit": 1,
@@ -732,6 +777,7 @@
   {
    "fieldname": "shipping_rule",
    "fieldtype": "Link",
+   "hidden": 1,
    "hide_days": 1,
    "hide_seconds": 1,
    "label": "Shipping Rule",
@@ -1260,17 +1306,19 @@
    "width": "50%"
   },
   {
-   "default": "Draft",
+   "allow_on_submit": 1,
+   "default": "Pending",
    "fieldname": "status",
    "fieldtype": "Select",
    "hide_days": 1,
    "hide_seconds": 1,
    "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "Status",
    "no_copy": 1,
    "oldfieldname": "status",
    "oldfieldtype": "Select",
-   "options": "\nDraft\nOn Hold\nTo Pay\nTo Deliver and Bill\nTo Bill\nTo Deliver\nCompleted\nCancelled\nClosed",
+   "options": "Draft\nPending\nApproved\nRental Device Assigned\nReady for Delivery\nDISPATCHED\nDELIVERED\nActive\nReady for Pickup\nPicked Up\nSubmitted to Office\nOn Hold\nOverdue\nRENEWED\nTo Pay\nTo Deliver and Bill\nTo Bill\nTo Deliver\nCompleted\nCancelled\nClosed\nPartially Closed",
    "print_hide": 1,
    "read_only": 1,
    "reqd": 1,
@@ -1283,7 +1331,6 @@
    "hidden": 1,
    "hide_days": 1,
    "hide_seconds": 1,
-   "in_standard_filter": 1,
    "label": "Delivery Status",
    "no_copy": 1,
    "options": "Not Delivered\nFully Delivered\nPartly Delivered\nClosed\nNot Applicable",
@@ -1333,7 +1380,6 @@
    "hidden": 1,
    "hide_days": 1,
    "hide_seconds": 1,
-   "in_standard_filter": 1,
    "label": "Billing Status",
    "no_copy": 1,
    "options": "Not Billed\nFully Billed\nPartly Billed\nClosed",
@@ -1547,6 +1593,7 @@
    "collapsible": 1,
    "fieldname": "accounting_dimensions_section",
    "fieldtype": "Section Break",
+   "hidden": 1,
    "label": "Accounting Dimensions"
   },
   {
@@ -1574,6 +1621,7 @@
   {
    "fieldname": "connections_tab",
    "fieldtype": "Tab Break",
+   "hidden": 1,
    "label": "Connections",
    "show_dashboard": 1
   },
@@ -1621,6 +1669,7 @@
   {
    "fieldname": "incoterm",
    "fieldtype": "Link",
+   "hidden": 1,
    "label": "Incoterm",
    "options": "Incoterm"
   },
@@ -1636,6 +1685,7 @@
    "description": "If checked, Stock will be reserved on <b>Submit</b>",
    "fieldname": "reserve_stock",
    "fieldtype": "Check",
+   "hidden": 1,
    "label": "Reserve Stock",
    "no_copy": 1,
    "print_hide": 1,
@@ -1647,18 +1697,317 @@
    "hidden": 1,
    "hide_days": 1,
    "hide_seconds": 1,
-   "in_standard_filter": 1,
    "label": "Advance Payment Status",
    "no_copy": 1,
    "options": "Not Requested\nRequested\nPartially Paid\nFully Paid",
    "print_hide": 1
+  },
+  {
+   "default": "__user",
+   "fieldname": "created_by",
+   "fieldtype": "Link",
+   "label": "Created By",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "default": "Today",
+   "depends_on": "eval:doc.order_type == 'Rental'",
+   "fieldname": "start_date",
+   "fieldtype": "Date",
+   "label": "Start Date",
+   "mandatory_depends_on": "eval:doc.order_type == 'Rental'"
+  },
+  {
+   "depends_on": "eval:doc.order_type == 'Rental'",
+   "fieldname": "end_date",
+   "fieldtype": "Date",
+   "label": "End Date",
+   "mandatory_depends_on": "eval:doc.order_type == 'Rental'"
+  },
+  {
+   "depends_on": "eval:doc.order_type == 'Rental'",
+   "fieldname": "total_no_of_dates",
+   "fieldtype": "Data",
+   "label": "Total No. Of Days",
+   "mandatory_depends_on": "eval:doc.order_type == 'Rental'"
+  },
+  {
+   "fieldname": "column_break_oybh",
+   "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "eval:doc.order_type == 'Rental'",
+   "fieldname": "device_details_tab",
+   "fieldtype": "Tab Break",
+   "label": "Device Details"
+  },
+  {
+   "fieldname": "dispatched_section",
+   "fieldtype": "Section Break",
+   "label": "DISPATCHED"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "rental_delivery_date",
+   "fieldtype": "Datetime",
+   "label": "Rental Delivery Date",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "dispatch_date",
+   "fieldtype": "Date",
+   "label": "Dispatch Date",
+   "read_only": 1
+  },
+  {
+   "fieldname": "pick_up_details_section",
+   "fieldtype": "Section Break",
+   "label": "Pick Up Details"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "pickup_date",
+   "fieldtype": "Datetime",
+   "label": "Pickup Date",
+   "read_only": 1
+  },
+  {
+   "fieldname": "technician_details_section",
+   "fieldtype": "Section Break",
+   "label": "Technician Details"
+  },
+  {
+   "fieldname": "submitted_to_office_section",
+   "fieldtype": "Section Break",
+   "label": "Submitted To Office"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "submitted_date",
+   "fieldtype": "Datetime",
+   "label": "Submitted Date",
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval:doc.order_type == 'Rental'",
+   "fieldname": "device_management_tab",
+   "fieldtype": "Tab Break",
+   "label": "Device Management"
+  },
+  {
+   "fieldname": "device",
+   "fieldtype": "HTML",
+   "label": "Device"
+  },
+  {
+   "depends_on": "eval:doc.order_type == 'Rental'",
+   "fieldname": "renewal_details_tab",
+   "fieldtype": "Tab Break",
+   "label": "Renewal Details"
+  },
+  {
+   "fieldname": "renewal_details_section",
+   "fieldtype": "Section Break",
+   "label": "Renewal Details"
+  },
+  {
+   "fieldname": "renewal_details",
+   "fieldtype": "HTML",
+   "label": "Renewal Details",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "UnPaid",
+   "fieldname": "payment_status",
+   "fieldtype": "Select",
+   "in_standard_filter": 1,
+   "label": "Payment Status",
+   "options": "Paid\nUnPaid\nPartially Paid",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "Active",
+   "depends_on": "eval:doc.order_type == 'Rental'",
+   "fieldname": "overdue_status",
+   "fieldtype": "Select",
+   "in_standard_filter": 1,
+   "label": "Due Status",
+   "options": "Active\nOverdue\nRenewed",
+   "read_only": 1
+  },
+  {
+   "fieldname": "previous_order_id",
+   "fieldtype": "Link",
+   "label": "Previous Order Id",
+   "options": "Sales Order",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "master_order_id",
+   "fieldtype": "Link",
+   "label": "Master Order Id",
+   "options": "Sales Order",
+   "read_only": 1
+  },
+  {
+   "fieldname": "device_details_section",
+   "fieldtype": "Section Break",
+   "label": "Device Details"
+  },
+  {
+   "fieldname": "item_replaced_details_section",
+   "fieldtype": "Section Break",
+   "label": "Item Replaced Details"
+  },
+  {
+   "fieldname": "item_replaced_details",
+   "fieldtype": "HTML",
+   "label": "Item Replaced Details"
+  },
+  {
+   "default": "0",
+   "fieldname": "security_deposit",
+   "fieldtype": "Data",
+   "label": "Security Deposit"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "pickup_reason",
+   "fieldtype": "Select",
+   "label": "PickUp Reason",
+   "options": "\nPatient recovered\nPatient Expired\nPurchased Device from Us\nPurchased Device from Others\nOther Reason"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "pickup_remark",
+   "fieldtype": "Small Text",
+   "label": "Pickup Remark "
+  },
+  {
+   "fieldname": "column_break_ttvl",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "picke_up_from_client_place_section",
+   "fieldtype": "Section Break",
+   "label": "Picke Up From Client Place"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "picked_up",
+   "fieldtype": "Datetime",
+   "label": "Picked Up"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "technician_name_before_delivered",
+   "fieldtype": "Data",
+   "label": "Technician Name Before Delivered",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "technician_mobile_before_delivered",
+   "fieldtype": "Data",
+   "label": "Technician Mobile Before Delivered",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "technician_name_after_delivered",
+   "fieldtype": "Data",
+   "label": "Technician Name After Delivered",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "technician_mobile_after_delivered",
+   "fieldtype": "Data",
+   "label": "Technician Mobile After Delivered",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_fugc",
+   "fieldtype": "Column Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "balance_amount",
+   "fieldtype": "Currency",
+   "label": "Balance Amount",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "security_deposit_status",
+   "fieldtype": "Select",
+   "label": "Security Deposit Status",
+   "options": "Unpaid\nPaid\nPartially Paid"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "outstanding_security_deposit_amount",
+   "fieldtype": "Currency",
+   "label": "Outstanding Security Deposit Amount"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "paid_security_deposite_amount",
+   "fieldtype": "Currency",
+   "label": "Paid Security Deposit Amount"
+  },
+  {
+   "depends_on": "eval:doc.order_type == 'Rental'",
+   "fieldname": "security_deposit_tab",
+   "fieldtype": "Tab Break",
+   "label": "Security Deposit"
+  },
+  {
+   "fieldname": "column_break_xnrd",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "journal_entry_details_section",
+   "fieldtype": "Section Break",
+   "label": "Journal Entry Details"
+  },
+  {
+   "fieldname": "journal_entry_details",
+   "fieldtype": "HTML",
+   "label": "Journal Entry Details"
+  },
+  {
+   "fieldname": "payment_entry_details_section",
+   "fieldtype": "Section Break",
+   "label": "Payment Entry Details"
+  },
+  {
+   "fieldname": "payment_entry_details",
+   "fieldtype": "HTML",
+   "label": "Payment Entry Details"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "refundable_security_deposit",
+   "fieldtype": "Currency",
+   "label": "Refundable Security Deposit"
+  },
+  {
+   "fieldname": "security_deposit_amount_return_to_client",
+   "fieldtype": "Currency",
+   "label": "Security Deposit Amount Return to Client"
   }
  ],
  "icon": "fa fa-file-text",
  "idx": 105,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-03-29 16:27:41.539613",
+ "modified": "2024-04-03 19:02:45.431281",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order",
@@ -1731,7 +2080,68 @@
  "show_name_in_global_search": 1,
  "sort_field": "creation",
  "sort_order": "DESC",
- "states": [],
+ "states": [
+  {
+   "color": "Blue",
+   "title": "Pending"
+  },
+  {
+   "color": "Green",
+   "title": "Active"
+  },
+  {
+   "color": "Purple",
+   "title": "Approved"
+  },
+  {
+   "color": "Blue",
+   "title": "Rental Device Assigned"
+  },
+  {
+   "color": "Orange",
+   "title": "Ready for Delivery"
+  },
+  {
+   "color": "Yellow",
+   "title": "DISPATCHED"
+  },
+  {
+   "color": "Yellow",
+   "title": "DELIVERED"
+  },
+  {
+   "color": "Blue",
+   "title": "Ready for Pickup"
+  },
+  {
+   "color": "Blue",
+   "title": "Picked Up"
+  },
+  {
+   "color": "Red",
+   "title": "Submitted to Office"
+  },
+  {
+   "color": "Blue",
+   "title": "Overdue"
+  },
+  {
+   "color": "Blue",
+   "title": "On Hold"
+  },
+  {
+   "color": "Blue",
+   "title": "Closed"
+  },
+  {
+   "color": "Blue",
+   "title": "Partially Closed"
+  },
+  {
+   "color": "Red",
+   "title": "RENEWED"
+  }
+ ],
  "timeline_field": "customer",
  "title_field": "customer_name",
  "track_changes": 1,

@@ -12,9 +12,27 @@
   "ensure_delivery_based_on_produced_serial_no",
   "is_stock_item",
   "reserve_stock",
+  "child_status",
+  "pickup_date",
+  "submitted_date",
+  "rental_delivery_date",
+  "dispatch_date",
+  "replaced_datetime",
+  "old_item_code",
+  "pickup_reason",
   "col_break1",
   "delivery_date",
   "item_name",
+  "tax_amount",
+  "rental_tax_rate",
+  "line_total",
+  "pickup_remark",
+  "technician_name_before_delivered",
+  "technician_name_after_delivered",
+  "technician_mobile_before_delivered",
+  "technician_mobile_after_delivered",
+  "picked_up_from_client_place_section",
+  "picked_up",
   "section_break_5",
   "description",
   "item_group",
@@ -107,8 +125,9 @@
  ],
  "fields": [
   {
+   "allow_on_submit": 1,
    "bold": 1,
-   "columns": 3,
+   "columns": 2,
    "fieldname": "item_code",
    "fieldtype": "Link",
    "in_global_search": 1,
@@ -168,10 +187,11 @@
   },
   {
    "allow_on_submit": 1,
-   "columns": 2,
+   "default": "Today",
    "depends_on": "eval: !parent.skip_delivery_note",
    "fieldname": "delivery_date",
    "fieldtype": "Date",
+   "hidden": 1,
    "in_list_view": 1,
    "label": "Delivery Date",
    "no_copy": 1,
@@ -346,7 +366,7 @@
    "precision": "2"
   },
   {
-   "columns": 2,
+   "columns": 1,
    "depends_on": "eval: doc.type != \"\"",
    "fieldname": "rate",
    "fieldtype": "Currency",
@@ -359,7 +379,7 @@
    "width": "100px"
   },
   {
-   "columns": 2,
+   "columns": 1,
    "fieldname": "amount",
    "fieldtype": "Currency",
    "in_list_view": 1,
@@ -559,15 +579,16 @@
    "read_only": 1
   },
   {
+   "columns": 2,
    "fieldname": "item_group",
    "fieldtype": "Link",
-   "hidden": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "Item Group",
    "oldfieldname": "item_group",
    "oldfieldtype": "Link",
    "options": "Item Group",
-   "print_hide": 1,
-   "read_only": 1
+   "print_hide": 1
   },
   {
    "fieldname": "billed_amt",
@@ -685,6 +706,7 @@
    "fieldtype": "Section Break"
   },
   {
+   "default": "GST 12% - INR",
    "fieldname": "item_tax_template",
    "fieldtype": "Link",
    "label": "Item Tax Template",
@@ -905,12 +927,133 @@
    "label": "Is Stock Item",
    "print_hide": 1,
    "report_hide": 1
+  },
+  {
+   "columns": 1,
+   "fieldname": "tax_amount",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Tax Amount"
+  },
+  {
+   "columns": 1,
+   "default": "12",
+   "fieldname": "rental_tax_rate",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Rental Tax Rate"
+  },
+  {
+   "columns": 1,
+   "fieldname": "line_total",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Line Total"
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "Pending",
+   "fieldname": "child_status",
+   "fieldtype": "Select",
+   "label": "Child Status",
+   "options": "Pending\nApproved\nRental Device Assigned\nReady for Delivery\nDISPATCHED\nDELIVERED\nActive\nReady for Pickup\nPicked Up\nSubmitted to Office\nOn Hold\nOverdue\nRenewed\nCancelled\nClosed\nPartially Closed\nItem Replaced"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "pickup_date",
+   "fieldtype": "Datetime",
+   "label": "Pickup Date"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "submitted_date",
+   "fieldtype": "Datetime",
+   "label": "Submitted Date"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "rental_delivery_date",
+   "fieldtype": "Datetime",
+   "label": "Rental Delivery Date"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "dispatch_date",
+   "fieldtype": "Date",
+   "label": "Dispatch Date"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "replaced_datetime",
+   "fieldtype": "Datetime",
+   "label": "Replaced Datetime"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "old_item_code",
+   "fieldtype": "Link",
+   "label": "Old Item Code",
+   "options": "Item"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "pickup_reason",
+   "fieldtype": "Select",
+   "label": "PickUp Reason",
+   "options": "\nPatient recovered\nPatient Expired\nPurchased Device from Us\nPurchased Device from Others\nOther Reason"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "pickup_remark",
+   "fieldtype": "Small Text",
+   "label": "Pickup Remark"
+  },
+  {
+   "fieldname": "picked_up_from_client_place_section",
+   "fieldtype": "Section Break",
+   "label": "Picked Up From Client Place"
+  },
+  {
+   "fieldname": "picked_up",
+   "fieldtype": "Datetime",
+   "label": "Picked Up"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "technician_mobile_before_delivered",
+   "fieldtype": "Data",
+   "label": "Technician Mobile Before Delivered"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "technician_name_before_delivered",
+   "fieldtype": "Link",
+   "label": "Technician Name Before Deliverd",
+   "options": "Technician Details"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "technician_mobile_after_delivered",
+   "fieldtype": "Data",
+   "label": "Technician Mobile After Delivered"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "technician_name_after_delivered",
+   "fieldtype": "Link",
+   "label": "Technician Name After Delivered",
+   "options": "Technician Details"
   }
  ],
  "idx": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-03-27 13:10:37.177978",
+
+ "modified": "2024-03-30 18:02:35.040194",
+
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order Item",

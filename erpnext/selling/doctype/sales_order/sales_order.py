@@ -14,6 +14,7 @@ from frappe.model.mapper import get_mapped_doc
 from frappe.model.utils import get_fetch_values
 from frappe.query_builder.functions import Sum
 from frappe.utils import add_days, cint, cstr, flt, get_link_to_form, getdate, nowdate, strip_html
+from datetime import datetime
 
 from erpnext.accounts.doctype.sales_invoice.sales_invoice import (
 	unlink_inter_company_doc,
@@ -52,16 +53,13 @@ class SalesOrder(SellingController):
 	from typing import TYPE_CHECKING
 
 	if TYPE_CHECKING:
-		from frappe.types import DF
-
 		from erpnext.accounts.doctype.payment_schedule.payment_schedule import PaymentSchedule
 		from erpnext.accounts.doctype.pricing_rule_detail.pricing_rule_detail import PricingRuleDetail
-		from erpnext.accounts.doctype.sales_taxes_and_charges.sales_taxes_and_charges import (
-			SalesTaxesandCharges,
-		)
+		from erpnext.accounts.doctype.sales_taxes_and_charges.sales_taxes_and_charges import SalesTaxesandCharges
 		from erpnext.selling.doctype.sales_order_item.sales_order_item import SalesOrderItem
 		from erpnext.selling.doctype.sales_team.sales_team import SalesTeam
 		from erpnext.stock.doctype.packed_item.packed_item import PackedItem
+		from frappe.types import DF
 
 		additional_discount_percentage: DF.Float
 		address_display: DF.TextEditor | None
@@ -71,6 +69,7 @@ class SalesOrder(SellingController):
 		amount_eligible_for_commission: DF.Currency
 		apply_discount_on: DF.Literal["", "Grand Total", "Net Total"]
 		auto_repeat: DF.Link | None
+		balance_amount: DF.Currency
 		base_discount_amount: DF.Currency
 		base_grand_total: DF.Currency
 		base_in_words: DF.Data | None
@@ -93,19 +92,20 @@ class SalesOrder(SellingController):
 		conversion_rate: DF.Float
 		cost_center: DF.Link | None
 		coupon_code: DF.Link | None
+		created_by: DF.Link | None
 		currency: DF.Link
 		customer: DF.Link
 		customer_address: DF.Link | None
 		customer_group: DF.Link | None
 		customer_name: DF.Data | None
 		delivery_date: DF.Date | None
-		delivery_status: DF.Literal[
-			"Not Delivered", "Fully Delivered", "Partly Delivered", "Closed", "Not Applicable"
-		]
+		delivery_status: DF.Literal["Not Delivered", "Fully Delivered", "Partly Delivered", "Closed", "Not Applicable"]
 		disable_rounded_total: DF.Check
 		discount_amount: DF.Currency
 		dispatch_address: DF.TextEditor | None
 		dispatch_address_name: DF.Link | None
+		dispatch_date: DF.Date | None
+		end_date: DF.Date | None
 		from_date: DF.Date | None
 		grand_total: DF.Currency
 		group_same_items: DF.Check
@@ -119,31 +119,47 @@ class SalesOrder(SellingController):
 		letter_head: DF.Link | None
 		loyalty_amount: DF.Currency
 		loyalty_points: DF.Int
+		master_order_id: DF.Link | None
 		named_place: DF.Data | None
 		naming_series: DF.Literal["SAL-ORD-.YYYY.-"]
 		net_total: DF.Currency
-		order_type: DF.Literal["", "Sales", "Maintenance", "Shopping Cart"]
-		other_charges_calculation: DF.TextEditor | None
+
+		order_type: DF.Literal["", "Sales", "Maintenance", "Shopping Cart", "Rental"]
+		other_charges_calculation: DF.LongText | None
+		outstanding_security_deposit_amount: DF.Currency
+		overdue_status: DF.Literal["Active", "Overdue", "Renewed"]
+
 		packed_items: DF.Table[PackedItem]
+		paid_security_deposite_amount: DF.Currency
 		party_account_currency: DF.Link | None
 		payment_schedule: DF.Table[PaymentSchedule]
+		payment_status: DF.Literal["Paid", "UnPaid", "Partially Paid"]
 		payment_terms_template: DF.Link | None
 		per_billed: DF.Percent
 		per_delivered: DF.Percent
 		per_picked: DF.Percent
+		picked_up: DF.Datetime | None
+		pickup_date: DF.Datetime | None
+		pickup_reason: DF.Literal["", "Patient recovered", "Patient Expired", "Purchased Device from Us", "Purchased Device from Others", "Other Reason"]
+		pickup_remark: DF.SmallText | None
 		plc_conversion_rate: DF.Float
 		po_date: DF.Date | None
 		po_no: DF.Data | None
+		previous_order_id: DF.Link | None
 		price_list_currency: DF.Link
 		pricing_rules: DF.Table[PricingRuleDetail]
 		project: DF.Link | None
+		refundable_security_deposit: DF.Currency
+		rental_delivery_date: DF.Datetime | None
 		represents_company: DF.Link | None
 		reserve_stock: DF.Check
 		rounded_total: DF.Currency
 		rounding_adjustment: DF.Currency
 		sales_partner: DF.Link | None
 		sales_team: DF.Table[SalesTeam]
-		scan_barcode: DF.Data | None
+		security_deposit: DF.Data | None
+		security_deposit_amount_return_to_client: DF.Currency
+		security_deposit_status: DF.Literal["Unpaid", "Paid", "Partially Paid"]
 		select_print_heading: DF.Link | None
 		selling_price_list: DF.Link
 		set_warehouse: DF.Link | None
@@ -152,23 +168,18 @@ class SalesOrder(SellingController):
 		shipping_rule: DF.Link | None
 		skip_delivery_note: DF.Check
 		source: DF.Link | None
-		status: DF.Literal[
-			"",
-			"Draft",
-			"On Hold",
-			"To Pay",
-			"To Deliver and Bill",
-			"To Bill",
-			"To Deliver",
-			"Completed",
-			"Cancelled",
-			"Closed",
-		]
+		start_date: DF.Date | None
+		status: DF.Literal["Draft", "Pending", "Approved", "Rental Device Assigned", "Ready for Delivery", "DISPATCHED", "DELIVERED", "Active", "Ready for Pickup", "Picked Up", "Submitted to Office", "On Hold", "Overdue", "RENEWED", "To Pay", "To Deliver and Bill", "To Bill", "To Deliver", "Completed", "Cancelled", "Closed", "Partially Closed"]
+		submitted_date: DF.Datetime | None
 		tax_category: DF.Link | None
 		tax_id: DF.Data | None
 		taxes: DF.Table[SalesTaxesandCharges]
 		taxes_and_charges: DF.Link | None
 		tc_name: DF.Link | None
+		technician_mobile_after_delivered: DF.Data | None
+		technician_mobile_before_delivered: DF.Data | None
+		technician_name_after_delivered: DF.Data | None
+		technician_name_before_delivered: DF.Data | None
 		terms: DF.TextEditor | None
 		territory: DF.Link | None
 		title: DF.Data | None
@@ -176,6 +187,7 @@ class SalesOrder(SellingController):
 		total: DF.Currency
 		total_commission: DF.Currency
 		total_net_weight: DF.Float
+		total_no_of_dates: DF.Data | None
 		total_qty: DF.Float
 		total_taxes_and_charges: DF.Currency
 		transaction_date: DF.Date
@@ -193,8 +205,13 @@ class SalesOrder(SellingController):
 			self.set_onload("has_reserved_stock", True)
 
 	def validate(self):
-		super().validate()
-		self.validate_delivery_date()
+
+		super(SalesOrder, self).validate()
+		# self.validate_delivery_date()
+		# self.validate_sales_order_payment_status(self)
+
+		# super().validate()
+		# self.validate_delivery_date()
 		self.validate_proj_cust()
 		self.validate_po()
 		self.validate_uom_is_integer("stock_uom", "stock_qty")
@@ -218,8 +235,8 @@ class SalesOrder(SellingController):
 
 		make_packing_list(self)
 
-		self.validate_with_previous_doc()
-		self.set_status()
+		# self.validate_with_previous_doc()
+		# self.set_status()	
 
 		if not self.billing_status:
 			self.billing_status = "Not Billed"
@@ -229,6 +246,29 @@ class SalesOrder(SellingController):
 			self.advance_payment_status = "Not Requested"
 
 		self.reset_default_field_value("set_warehouse", "items", "warehouse")
+
+
+	
+	# def validate_sales_order_payment_status(self):
+	# 	# Access the rounded_total and advance_paid fields from the document
+	# 	rounded_total = self.rounded_total
+	# 	advance_paid = self.advance_paid
+
+	# 	# Check if the rounded_total is equal to advance_paid
+	# 	if rounded_total == advance_paid:
+	# 		# If rounded_total equals advance_paid, set payment_status to 'Paid'
+	# 		self.payment_status = 'Paid'
+	# 	elif advance_paid == 0:
+	# 		# If advance_paid is zero, set payment_status to 'Unpaid'
+	# 		self.payment_status = 'Unpaid'
+	# 	else:
+	# 		# If rounded_total is not equal to advance_paid and advance_paid is not zero,
+	# 		# set payment_status to 'Partially Paid'
+	# 		self.payment_status = 'Partially Paid'
+
+	# 	# Save the changes to the selfument
+	# 	doc.save()
+
 
 	def validate_po(self):
 		# validate p.o date v/s delivery date
@@ -393,7 +433,7 @@ class SalesOrder(SellingController):
 				if doc.docstatus.is_cancelled():
 					frappe.throw(_("Quotation {0} is cancelled").format(quotation))
 
-				doc.set_status(update=True)
+				# doc.set_status(update=True)
 				doc.update_opportunity("Converted" if flag == "submit" else "Quotation")
 
 	def validate_drop_ship(self):
@@ -404,12 +444,13 @@ class SalesOrder(SellingController):
 	def on_submit(self):
 		self.check_credit_limit()
 		self.update_reserved_qty()
-
+		if self.order_type == 'Rental' and self.security_deposit and float(self.security_deposit) > 0:
+			self.create_security_deposit_journal_entry()
 		frappe.get_doc("Authorization Control").validate_approving_authority(
 			self.doctype, self.company, self.base_grand_total, self
 		)
 		self.update_project()
-		self.update_prevdoc_status("submit")
+		# self.update_prevdoc_status("submit")
 
 		self.update_blanket_order()
 
@@ -421,8 +462,82 @@ class SalesOrder(SellingController):
 
 		if self.get("reserve_stock"):
 			self.create_stock_reservation_entries()
+		self.update_sales_order_status()
+
+	def create_security_deposit_journal_entry(self):
+		try:
+			# sales_order = frappe.get_doc("Sales Order", self.name)
+
+			# Create a new Journal Entry document
+			journal_entry = frappe.new_doc("Journal Entry")
+			journal_entry.sales_order_id = self.name
+			journal_entry.master_order_id = self.master_order_id
+			journal_entry.journal_entry_type = "Security Deposit"
+			journal_entry.journal_entry = "Journal Entry"
+			journal_entry.posting_date = frappe.utils.nowdate()
+			journal_entry.security_deposite_type = "Booking as Advance From Client"
+
+
+			# Add accounts for debit and credit
+			journal_entry.append("accounts", {
+				"account": "Debtors - INR",
+				"party_type": "Customer",
+				"party": self.customer,
+				"debit_in_account_currency": self.security_deposit
+			})
+			journal_entry.append("accounts", {
+				"account": "Rental Order Security Deposit Receivable - INR",
+				"party_type": "Customer",
+				"party": self.customer,
+				"credit_in_account_currency": self.security_deposit
+			})
+
+			# Save the Journal Entry document
+			journal_entry.insert()
+			journal_entry.submit()
+
+			frappe.msgprint("Security Deposit Journal Entry created successfully")  # Debug message
+
+			return True
+		except Exception as e:
+			frappe.log_error(frappe.get_traceback(), _("Failed to create Security Deposit Journal Entry"))
+			frappe.throw(_("Failed to create Security Deposit Journal Entry. Please try again later."))
+
+
+
+	def before_submit(self):
+		if self.previous_order_id:
+			overlap = check_overlap(self)
+			if overlap:
+				frappe.throw("Current start and end dates overlap with the previous order.")	
+
+	def update_sales_order_status(self):
+		if self.previous_order_id:
+			# Update status in parent Sales Order
+			existing_orders = frappe.get_list("Sales Order", filters={"name": self.previous_order_id})
+			for order in existing_orders:
+				sales_order = frappe.get_doc("Sales Order", order.name)
+				sales_order.status = "RENEWED"
+				sales_order.save()
+
+			# Update status in child table (Sales Order Item)
+			child_table = frappe.get_all("Sales Order Item", filters={"parent": self.previous_order_id})
+			for order_item in child_table:
+				sales_order_item = frappe.get_doc("Sales Order Item", order_item.name)
+				sales_order_item.child_status = "Renewed"
+				sales_order_item.save()
+		# elif self.order_type == "Rental":
+		# 	# Update master_order_id with the current doc name
+		# 	self.master_order_id = self.name
+		# 	self.save()
+		# self.save()
+	
+
+
 
 	def on_cancel(self):
+		self.item_status_change_cancel()
+
 		self.ignore_linked_doctypes = ("GL Entry", "Stock Ledger Entry", "Payment Ledger Entry")
 		super().on_cancel()
 
@@ -430,7 +545,7 @@ class SalesOrder(SellingController):
 		if self.status == "Closed":
 			frappe.throw(_("Closed order cannot be cancelled. Unclose to cancel."))
 
-		self.check_nextdoc_docstatus()
+		# self.check_nextdoc_docstatus()
 		self.update_reserved_qty()
 		self.update_project()
 		self.update_prevdoc_status("cancel")
@@ -445,6 +560,21 @@ class SalesOrder(SellingController):
 			from erpnext.accounts.doctype.pricing_rule.utils import update_coupon_code_count
 
 			update_coupon_code_count(self.coupon_code, "cancelled")
+
+
+	def item_status_change_cancel(self):
+		for item in self.get("items"):
+			item_code = item.item_code
+			item_doc = frappe.get_doc("Item", item_code)
+			if item_doc.status == "Rented Out":
+				item_doc.status = "Available"
+				item_doc.save()
+
+		frappe.db.commit()
+
+	def on_trash(self):
+		# pass
+		self.item_status_change_cancel()
 
 	def update_project(self):
 		if frappe.db.get_single_value("Selling Settings", "sales_update_frequency") != "Each Transaction":
@@ -491,7 +621,7 @@ class SalesOrder(SellingController):
 
 	def update_status(self, status):
 		self.check_modified_date()
-		self.set_status(update=True, status=status)
+		# self.set_status(update=True, status=status)
 		self.update_reserved_qty()
 		self.notify_update()
 		clear_doctype_notifications(self)
@@ -525,15 +655,20 @@ class SalesOrder(SellingController):
 		pass
 
 	def on_update_after_submit(self):
-		self.calculate_commission()
-		self.calculate_contribution()
+
+		# self.validate_sales_order_payment_status()
+
+		# self.calculate_commission()
+		# self.calculate_contribution()
+
 		self.check_credit_limit()
 
 	def before_update_after_submit(self):
+		# self.validate_sales_order_payment_status()
 		self.validate_po()
 		self.validate_drop_ship()
 		self.validate_supplier_after_submit()
-		self.validate_delivery_date()
+		# self.validate_delivery_date()
 
 	def validate_supplier_after_submit(self):
 		"""Check that supplier is the same after submit if PO is already made"""
@@ -828,11 +963,11 @@ def make_material_request(source_name, target_doc=None):
 			}
 		)
 
-		target.rate = flt(
-			get_price_list_rate(args=args, item_doc=frappe.get_cached_doc("Item", target.item_code)).get(
-				"price_list_rate"
-			)
-		)
+		# target.rate = flt(
+		# 	get_price_list_rate(args=args, item_doc=frappe.get_cached_doc("Item", target.item_code)).get(
+		# 		"price_list_rate"
+		# 	)
+		# )
 		target.amount = target.qty * target.rate
 
 	doc = get_mapped_doc(
@@ -1512,7 +1647,7 @@ def make_work_orders(items, sales_order, company, project=None):
 @frappe.whitelist()
 def update_status(status, name):
 	so = frappe.get_doc("Sales Order", name)
-	so.update_status(status)
+	# so.update_status(status)
 
 
 @frappe.whitelist()
@@ -1724,3 +1859,1516 @@ def get_work_order_items(sales_order, for_raw_material_request=0):
 					)
 
 		return items
+
+
+# Custom Script
+
+# @frappe.whitelist()
+# def make_approved(docname):
+#     # Your logic here
+#     doc = frappe.get_doc('Sales Order', docname)
+    
+#     # Iterate through items in the child table
+#     # for item in doc.items:
+#     #     # Update item status before inserting and submitting Rental Order
+#     #     if update_item_status(item.item_code):
+#     #         # Create a new Rental Order document
+#     #         new_rental_order = frappe.new_doc('Rental Order')
+            
+#     #         # Set fields based on the original document
+#     #         new_rental_order.customer = doc.customer
+#     #         new_rental_order.start_date = doc.start_date
+#     #         new_rental_order.end_date = doc.end_date
+#     #         new_rental_order.sales_order_id = doc.name
+#     #         new_rental_order.order_type = doc.order_type
+#     #         new_rental_order.taxes_and_charges = doc.taxes_and_charges
+
+#     #         # Add other fields as needed
+            
+#     #         # Create a new items child table in the Rental Order document
+#     #         new_item = new_rental_order.append('items')
+            
+#     #         # Set fields based on the item in the original document's child table
+#     #         new_item.item_group = item.item_group
+#     #         new_item.item_code1 = item.item_code
+#     #         new_item.qty = item.qty
+#     #         new_item.rate = item.rate
+#     #         new_item.amount = item.amount
+#     #         new_item.rental_tax_rate = item.rental_tax_rate
+#     #         new_item.tax_amount = item.tax_amount
+#     #         new_item.line_total = item.line_total
+#     #         new_item.item_tax_template = item.item_tax_template
+#     #         # Add other fields as needed
+
+#     #         # Set new_rental_order.total based on the sum of item.amount and taxes
+#     #         new_rental_order.total = item.amount
+
+#     #         total_taxes_and_charges = 0  # Initialize the variable to store the sum of tax_amount
+            
+#     #         # Iterate through taxes in the original document
+#     #         for tax in doc.get('taxes', []):
+#     #             new_tax = new_rental_order.append('taxes')
+#     #             new_tax.charge_type = tax.charge_type
+#     #             new_tax.account_head = tax.account_head
+#     #             new_tax.description = tax.description
+#     #             new_tax.cost_center = tax.cost_center
+#     #             new_tax.rate = tax.rate
+#     #             new_tax.tax_amount = item.amount * tax.rate / 100
+#     #             total_taxes_and_charges += new_tax.tax_amount  # Add tax_amount to the total
+
+#     #         # Set new_rental_order.total_taxes_and_charges based on the sum of tax_amount
+#     #         new_rental_order.total_taxes_and_charges = total_taxes_and_charges
+
+#     #         # Set new_rental_order.grand_total and new_rental_order.rounded_total
+#     #         new_rental_order.grand_total = new_rental_order.total + new_rental_order.total_taxes_and_charges
+#     #         new_rental_order.rounded_total = new_rental_order.grand_total
+
+#     #         # Save the new Rental Order document
+#     #         new_rental_order.insert()
+#     #         new_rental_order.submit()
+    
+#     # Update the status of the original document
+#     doc.status = 'Approved'
+#     doc.save()
+
+#     return "Approved Success"
+
+
+@frappe.whitelist()
+def make_approved(docname):
+    try:
+        # Fetch Sales Order Item records with the given docname as parent
+        sales_order_items = frappe.get_all("Sales Order Item", filters={"parent": docname}, fields=["name", "item_code"])
+
+        # Iterate through the fetched Sales Order Items
+        for item in sales_order_items:
+            # Fetch the Item document
+            item_doc = frappe.get_doc('Item', item.item_code)
+
+            # Update the item status to "Reserved" if it's available
+            if item_doc.status == 'Available':
+                item_doc.status = 'Reserved'
+                item_doc.save()
+                frappe.msgprint(f'Item {item.item_code} status updated to Reserved')
+            else:
+                frappe.msgprint(f'Item {item.item_code} is already Booked')
+                # If an item is already booked, don't continue to the next steps
+                break
+
+            # Update child_status to "Approved" for items whose status was successfully updated
+            sales_order_item = frappe.get_doc("Sales Order Item", item.name)
+            sales_order_item.child_status = "Approved"
+            sales_order_item.save()
+
+        # Check if all items in the Sales Order have their status as "Reserved" in the Item master
+        # if all(frappe.get_value("Item", {"item_code": item.item_code}, "status") == "Reserved" for item in sales_order_items):
+            # Execute your additional code here
+            sales_order = frappe.get_doc("Sales Order", docname)
+            sales_order.status = "Approved"
+            sales_order.save()
+
+        return "Approved Success"
+
+    except Exception as e:
+        # Log the error details without the title parameter
+        frappe.log_error(f"Error in make_approved: {e}")
+        # Reraise the exception to propagate it
+        raise
+
+
+@frappe.whitelist()
+def make_rental_device_assign(docname, item_group, item_code):
+    try:
+        # Your logic here
+        doc = frappe.get_doc('Sales Order', docname)
+
+        # Check if the user has permission to update the Item doctype
+        frappe.only_for('Item', 'write')
+
+        item_status = frappe.get_value("Item", item_code, "status")
+
+        if item_status == "Available":
+            item_doc = frappe.get_doc("Item", item_code)
+            item_doc.status = "Reserved"
+            item_doc.save()
+            # Optionally, you may want to commit the changes to the database
+            frappe.db.commit()
+
+            # Set values for rental device and update status
+            doc.item_group = item_group
+            doc.item_code = item_code
+            doc.status = 'Rental Device Assigned'
+            doc.save()
+
+            return "Rental Device Assigned Success"
+        else:
+            frappe.msgprint("Item is not available for reservation.")
+
+    except Exception as e:
+        frappe.log_error(f"Error in make_rental_device_assign: {e}")
+        frappe.throw("An error occurred while processing the request. Please try again.")
+
+
+# @frappe.whitelist()
+# def get_item_groups():
+#     item_groups = frappe.get_all('Sales Order Item', filters={'docstatus': 1}, distinct=True, pluck='item_group')
+#     return item_groups
+
+
+
+
+# @frappe.whitelist()
+# def make_ready_for_delivery(docname):
+#     # Your logic here
+#     # Get the 'Sales Order' document
+#     rental_group_order = frappe.get_doc('Sales Order', docname)
+    
+#     # Update the status of the 'Sales Order'
+#     rental_group_order.status = 'Ready for Delivery'
+#     rental_group_order.save()
+
+# 	sales_order_items = frappe.get_all("Sales Order Item", filters={"parent": docname}, fields=["name"])
+
+#     # Iterate through the fetched Sales Order Items and update their child_status to "Approved"
+#     for item in sales_order_items:
+#         sales_order_item = frappe.get_doc("Sales Order Item", item.name)
+#         sales_order_item.child_status = "Ready for Delivery"
+#         sales_order_item.save()
+
+#     # Iterate through related 'Rental Order' documents and update their status
+#     # for rental_order in frappe.get_all('Rental Order', filters={'sales_order_id': docname}):
+#     #     rental_order_doc = frappe.get_doc('Rental Order', rental_order.name)
+#     #     rental_order_doc.status = 'Ready for Delivery'
+#     #     rental_order_doc.save()
+
+#     return "Ready for Delivery Success"
+
+
+@frappe.whitelist()
+def make_ready_for_delivery(docname,technician_name,technician_mobile):
+    # Get the 'Sales Order' document
+    rental_group_order = frappe.get_doc('Sales Order', docname)
+    
+    # Update the status of the 'Sales Order'
+    rental_group_order.status = 'Ready for Delivery'
+    rental_group_order.technician_name_before_delivered = technician_name
+    rental_group_order.technician_mobile_before_delivered = technician_mobile
+    rental_group_order.save()
+
+    # Fetch Sales Order Item records with the given docname as parent
+    sales_order_items = frappe.get_all("Sales Order Item", filters={"parent": docname}, fields=["name"])
+
+    # Iterate through the fetched Sales Order Items and update their child_status to "Ready for Delivery"
+    for item in sales_order_items:
+        sales_order_item = frappe.get_doc("Sales Order Item", item.name)
+        sales_order_item.child_status = "Ready for Delivery"
+        sales_order_item.technician_name_before_delivered = technician_name
+        sales_order_item.technician_mobile_before_delivered = technician_mobile
+        sales_order_item.save()
+
+    return "Ready for Delivery Success"
+
+
+
+
+def apply_item_filter(doc, method):
+    for item in doc.items:
+        # Check if the item group is 'Rental'
+        if frappe.get_value('Item', item.item_code, 'item_group') != 'Rental':
+            frappe.throw(f"Item {item.item_code} is not in the 'Rental' item group. Remove it from the Sales Order.")
+
+@frappe.whitelist()
+def make_dispatch(docname, dispatch_date):
+    try:
+        # Get the 'Sales Order' document
+        rental_sales_order = frappe.get_doc('Sales Order', docname)
+
+        # Update Sales Order with the entered dispatch_date
+        rental_sales_order.dispatch_date = dispatch_date
+        rental_sales_order.status = "DISPATCHED"
+        rental_sales_order.save()
+
+        # Fetch Sales Order Item records with the given docname as parent
+        sales_order_items = frappe.get_all("Sales Order Item", filters={"parent": docname}, fields=["name"])
+
+        # Iterate through the fetched Sales Order Items and update their child_status to "DISPATCHED"
+        for item in sales_order_items:
+            sales_order_item = frappe.get_doc("Sales Order Item", item.name)
+            sales_order_item.child_status = "DISPATCHED"
+            sales_order_item.dispatch_date = dispatch_date
+            sales_order_item.save()
+
+        # Optionally, you may want to commit the changes to the database
+        # frappe.db.commit()
+
+        return "Rental Device DISPATCHED Success"
+
+    except Exception as e:
+        # Log any errors that occur
+        frappe.log_error(f"Error in make_dispatch: {e}")
+        frappe.throw("An error occurred while processing the request. Please try again.")
+
+
+@frappe.whitelist()
+def make_rental_device_assign(docname, item_group, item_code):
+    try:
+        doc = frappe.get_doc('Sales Order', docname)
+
+        # Check if the user has permission to update or cancel the Item doctype
+        frappe.only_for('Item', ['write', 'cancel'])
+
+        item_status = frappe.get_value("Item", item_code, "status")
+
+        if item_status == "Available":
+            # Update Item status to Reserved
+            item_doc = frappe.get_doc("Item", item_code)
+            item_doc.status = "Reserved"
+            item_doc.save()
+            frappe.db.commit()
+
+            # Set values for rental device and update status
+            doc.item_group = item_group
+            doc.item_code = item_code
+            doc.status = 'Rental Device Assigned'
+            doc.save()
+
+            return "Rental Device Assigned Success"
+        else:
+            frappe.msgprint("Item is not available for reservation.")
+
+    except frappe.DoesNotExistError:
+        # Handle the case where the sale order is canceled
+        # Update Item status to Available
+        item_doc = frappe.get_doc("Item", item_code)
+        item_doc.status = "Available"
+        item_doc.save()
+        frappe.db.commit()
+
+        # Set values for rental device and update status
+        doc.item_group = None
+        doc.item_code = None
+        doc.status = 'Cancelled'
+        doc.save()
+
+        return "Rental Device Assignment Cancelled"
+
+    except Exception as e:
+        frappe.log_error(f"Error in make_rental_device_assign: {e}")
+        frappe.throw("An error occurred while processing the request. Please try again.")
+
+
+import frappe
+
+@frappe.whitelist()
+def make_delivered(docname, delivered_date):
+    try:
+        # Get the 'Sales Order' document
+        rental_group_order = frappe.get_doc('Sales Order', docname)
+
+        # Update each child item and its status
+        for item in rental_group_order.items:
+            # Get the item code from the child table
+            item_code = item.item_code
+            # Update the item status to "Rented Out"
+            item_doc = frappe.get_doc("Item", item_code)
+            item_doc.status = "Rented Out"
+            item_doc.save()
+
+        # Update values for rental device and update status in Sales Order
+        rental_group_order.rental_delivery_date = delivered_date
+        rental_group_order.status = 'Active'
+        rental_group_order.save()
+
+        # Update status in related Sales Order Items
+        sales_order_items = frappe.get_all("Sales Order Item", filters={"parent": docname}, fields=["name"])
+        for item in sales_order_items:
+            sales_order_item = frappe.get_doc("Sales Order Item", item.name)
+            sales_order_item.child_status = "Active"
+            sales_order_item.rental_delivery_date = delivered_date
+            sales_order_item.save()
+
+        return "Rental Device DELIVERED Success"
+
+    except Exception as e:
+        # Log any errors that occur
+        frappe.log_error(f"Error in make_delivered: {e}")
+        frappe.throw("An error occurred while processing the request. Please try again.")
+
+@frappe.whitelist()
+def make_ready_for_pickup(docname, pickup_date, pickup_reason,pickup_remark,technician_name,technician_mobile ):
+    try:
+        # Get the 'Sales Order' document
+        doc = frappe.get_doc('Sales Order', docname)
+
+        # Set values for pickup date and update status
+        doc.pickup_date = pickup_date
+        doc.status = 'Ready for Pickup'
+        doc.pickup_reason = pickup_reason
+        doc.pickup_remark = pickup_remark
+        doc.technician_name_after_delivered = technician_name
+        doc.technician_mobile_after_delivered = technician_mobile
+        doc.save()
+
+        # Update status and pickup date in related Sales Order Items
+        sales_order_items = frappe.get_all("Sales Order Item", filters={"parent": docname}, fields=["name"])
+        for item in sales_order_items:
+            sales_order_item = frappe.get_doc("Sales Order Item", item.name)
+            sales_order_item.child_status = "Ready for Pickup"
+            sales_order_item.pickup_date = pickup_date
+            sales_order_item.pickup_reason = pickup_reason
+            sales_order_item.pickup_remark = pickup_remark
+            sales_order_item.technician_name_after_delivered = technician_name
+            sales_order_item.technician_mobile_after_delivered = technician_mobile
+            sales_order_item.save()
+
+        return "Sales Order is Ready for Pickup"
+
+    except Exception as e:
+        # Log any errors that occur
+        frappe.log_error(f"Error in make_ready_for_pickup: {e}")
+        frappe.throw("An error occurred while processing the request. Please try again.")
+
+@frappe.whitelist()
+def make_pickedup(docname, pickup_date):
+    try:
+        # Get the 'Sales Order' document
+        doc = frappe.get_doc('Sales Order', docname)
+
+        # Set values for technician name and mobile
+        doc.picked_up = pickup_date
+        # doc.technician_mobile = technician_mobile
+
+        # Update status to 'Picked Up'
+        doc.status = 'Picked Up'
+        doc.save()
+
+        # Update status in related Sales Order Items
+        sales_order_items = frappe.get_all("Sales Order Item", filters={"parent": docname}, fields=["name"])
+        for item in sales_order_items:
+            sales_order_item = frappe.get_doc("Sales Order Item", item.name)
+            sales_order_item.child_status = "Picked Up"
+            sales_order_item.pickup_date = pickup_date
+            # sales_order_item.technician_mobile = technician_mobile
+            sales_order_item.save()
+
+        return "Sales Order is marked as Picked Up."
+
+    except Exception as e:
+        # Log any errors that occur
+        frappe.log_error(f"Error in make_pickedup: {e}")
+        frappe.throw("An error occurred while processing the request. Please try again.")
+
+import ast
+
+@frappe.whitelist()
+def make_submitted_to_office(docname, item_code, submitted_date):
+    try:
+        # Convert the string representation of the list to an actual list
+        item_codes = ast.literal_eval(item_code)
+
+        # Get the 'Sales Order' document
+        doc = frappe.get_doc('Sales Order', docname)
+
+        # Update status of items to "Available"
+        for item_code in item_codes:
+            item_doc = frappe.get_doc("Item", item_code)
+            item_doc.status = "Available"
+            item_doc.save()
+
+        # Set values for submission to office and update status
+        doc.submitted_date = submitted_date
+        doc.status = 'Submitted to Office'
+        doc.save()
+
+        # Update status in related Sales Order Items
+        sales_order_items = frappe.get_all("Sales Order Item", filters={"parent": docname}, fields=["name"])
+        for item in sales_order_items:
+            sales_order_item = frappe.get_doc("Sales Order Item", item.name)
+            sales_order_item.child_status = "Submitted to Office"
+            sales_order_item.submitted_date = submitted_date
+            sales_order_item.save()
+
+        return "Submitted to Office Success"
+
+    except Exception as e:
+        # Log any errors that occur
+        frappe.log_error(f"Error in make_submitted_to_office: {e}")
+        frappe.throw("An error occurred while processing the request. Please try again.")
+
+@frappe.whitelist()
+def on_hold(docname):
+    doc = frappe.get_doc('Sales Order', docname)
+    
+    # Perform any server-side logic here, e.g., update some fields, perform calculations, etc.
+    
+    # Update the status to 'On Hold'
+    doc.set('status', 'On Hold')
+    doc.save()
+
+    frappe.msgprint(_('Document Hold successfully.'))
+
+    return True
+
+
+# your_module/doctype/rental_group_order/rental_group_order.py
+from frappe import _
+
+@frappe.whitelist()
+def update_status(docname, new_status):
+    doc = frappe.get_doc('Sales Order', docname)
+    
+    # Perform any server-side logic here, e.g., update some fields, perform calculations, etc.
+    
+    # Update the status to the new status
+    doc.set('status', new_status)
+    doc.save()
+
+    # frappe.msgprint(_('Document status updated successfully.'))
+    return True
+
+
+
+@frappe.whitelist()
+def close_rental_order(docname):
+    doc = frappe.get_doc('Sales Order', docname)
+
+    # Perform any necessary validation or logic before closing the order
+
+    # Update the status to 'Closed'
+    doc.set('status', 'Closed')
+    doc.save()
+
+    frappe.msgprint(_('Rental Order Closed successfully.'))
+    return True
+
+
+# custom_script_path/nhk/nhk/doctype/rental_group_order/rental_group_order.py
+
+# import frappe
+
+# @frappe.whitelist()
+# def update_item_status_code(itemCode1, docname):
+#     item = frappe.get_doc("Item", {"item_code": itemCode1})
+#     if item:
+#         item.status = "Available"
+#         item.save(ignore_permissions=True)
+#         update_rental_order_status(itemCode1)
+
+#         # Check if all related Rental Orders are closed
+#         rental_orders = frappe.get_all("Rental Order", filters={"rental_group_id": docname}, fields=["status"])
+#         all_orders_closed = all(order.get("status") == "Closed" for order in rental_orders)
+
+#         doc = frappe.get_doc("Sales Order", docname)
+#         doc.status = "Closed" if all_orders_closed else "Partially Closed"
+#         doc.save(ignore_permissions=True)
+
+#         return True
+#     else:
+#         return False
+
+
+
+# import frappe
+
+# @frappe.whitelist()
+# def update_rental_order_status(itemCode1):
+#     # Retrieve Rental Orders based on the item_code field in the items child table
+#     rental_orders = frappe.get_all("Rental Order", filters={"item_code": itemCode1}, fields=["name"])
+
+#     if rental_orders:
+#         for rental_order in rental_orders:
+#             # Retrieve each rental order document
+#             rental_order_doc = frappe.get_doc("Rental Order", rental_order.name)
+
+#             # Set status to "Closed" for each rental order
+#             rental_order_doc.status = "Closed"
+#             rental_order_doc.save(ignore_permissions=True)
+
+#         return True
+#     else:
+#         return False
+
+import frappe
+
+@frappe.whitelist()
+def sales_order_for_html(sales_order_id):
+    sales_order_items = frappe.get_all("Sales Order Item",
+                                       filters={"parent": sales_order_id},
+                                       fields=["name", "child_status", "item_code", "item_group", "rate", "amount", "tax_amount", "line_total","replaced_item_code"])
+
+    items_data = []
+    for item in sales_order_items:
+        item_doc = frappe.get_doc("Item", item.item_code)
+        item_status = item_doc.status if item_doc else None
+        item_data = {
+            "name": item.name,
+            "child_status": item.child_status,
+            "item_code": item.item_code,
+            "item_group": item.item_group,
+            "rate": item.rate,
+            "amount": item.amount,
+            "tax_amount": item.tax_amount,
+            "line_total": item.line_total,
+            "item_status": item_status
+        }
+        items_data.append(item_data)
+
+    return items_data
+
+
+
+@frappe.whitelist()
+def update_status_to_ready_for_pickup(item_code, pickup_datetime, docname, child_name,pickupReason,pickupRemark,technician_name,technician_mobile):
+    # Retrieve Rental Orders based on the item_code field in the items child table
+    sales_order_items = frappe.get_all("Sales Order Item", filters={"parent": docname}, fields=["name"])
+
+    if sales_order_items:
+        # If there is only one Sales Order Item, update both Sales Order and Sales Order Item statuses
+        if len(sales_order_items) == 1:
+            sales_order_item_doc = frappe.get_doc("Sales Order Item", sales_order_items[0].name)
+            sales_order_item_doc.child_status = "Ready for Pickup"
+            sales_order_item_doc.pickup_date = pickup_datetime
+            sales_order_item_doc.pickup_remark = pickupRemark
+            sales_order_item_doc.pickup_reason = pickupReason
+            sales_order_item_doc.technician_name_after_delivered = technician_name
+            sales_order_item_doc.technician_mobile_after_delivered = technician_mobile
+            sales_order_item_doc.save(ignore_permissions=True)
+
+            # Retrieve the Sales Order document and update its status
+            sales_order_doc = frappe.get_doc("Sales Order", docname)
+            sales_order_doc.status = "Ready for Pickup"
+            sales_order_doc.pickup_date = pickup_datetime
+            sales_order_doc.pickup_remark = pickupRemark
+            sales_order_doc.pickup_reason = pickupReason
+            sales_order_doc.technician_name_after_delivered = technician_name
+            sales_order_doc.technician_mobile_after_delivered = technician_mobile
+            sales_order_doc.save(ignore_permissions=True)
+
+            return True
+        else:
+            # If there are multiple Sales Order Items, update only the Sales Order Item statuses
+            sales_order_item_doc = frappe.get_doc("Sales Order Item", {"name": child_name})
+            sales_order_item_doc.child_status = "Ready for Pickup"
+            sales_order_item_doc.pickup_date = pickup_datetime
+            sales_order_item_doc.pickup_remark = pickupRemark
+            sales_order_item_doc.pickup_reason = pickupReason
+            sales_order_item_doc.technician_name_after_delivered = technician_name
+            sales_order_item_doc.technician_mobile_after_delivered = technician_mobile
+            sales_order_item_doc.save(ignore_permissions=True)
+
+            return True
+    else:
+        return False
+
+
+@frappe.whitelist()
+def update_status_to_picked_up(item_code, docname, child_name,picked_up_datetime):
+    # Retrieve Rental Orders based on the item_code field in the items child table
+    sales_order_items = frappe.get_all("Sales Order Item", filters={"parent": docname}, fields=["name"])
+
+    if sales_order_items:
+        # If there is only one Sales Order Item, update both Sales Order and Sales Order Item statuses
+        if len(sales_order_items) == 1:
+            sales_order_item_doc = frappe.get_doc("Sales Order Item", sales_order_items[0].name)
+            sales_order_item_doc.child_status = "Picked Up"
+            sales_order_item_doc.pickup_date = picked_up_datetime
+            # sales_order_item_doc.technician_mobile = technician_mobile
+            # sales_order_item_doc.pickup_date = pickup_datetime
+            sales_order_item_doc.save(ignore_permissions=True)
+
+            # Retrieve the Sales Order document and update its status
+            sales_order_doc = frappe.get_doc("Sales Order", sales_order_item_doc.parent)
+            sales_order_doc.status = "Picked Up"
+            sales_order_doc.pickup_date = picked_up_datetime
+            # sales_order_doc.technician_mobile = technician_mobile
+            # sales_order_doc.pickup_date = pickup_datetime
+            sales_order_doc.save(ignore_permissions=True)
+
+            return True
+        else:
+            # If there are multiple Sales Order Items, update only the Sales Order Item statuses
+            sales_order_item_doc = frappe.get_doc("Sales Order Item", {"name": child_name})
+            sales_order_item_doc.child_status = "Picked Up"
+            sales_order_item_doc.pickup_date = picked_up_datetime
+            # sales_order_item_doc.technician_mobile = technician_mobile
+            sales_order_item_doc.save(ignore_permissions=True)
+
+            return True
+    else:
+        return False
+
+
+# import frappe
+
+# @frappe.whitelist()
+# def update_status_to_submitted_to_office(item_code, submission_datetime, docname):
+#     try:
+#         # Retrieve the item document
+#         item = frappe.get_doc("Item", {"item_code": item_code})
+#         if item:
+#             item.status = "Available"
+#             item.save(ignore_permissions=True)
+#             update_rental_order_status(item_code)
+
+#             # Check if all related Rental Orders are closed
+#             rental_orders = frappe.get_all("Rental Order", filters={"item_code": item_code, "rental_group_id": docname}, fields=["status"])
+#             all_orders_closed = all(order.get("status") == "Closed" for order in rental_orders)
+#             # print(all_orders_closed)
+#             # Update the status of the Sales Order only if all orders are closed
+#             if all_orders_closed:
+#                 doc = frappe.get_doc("Sales Order", docname)
+#                 doc.status = "Closed"
+#                 doc.save(ignore_permissions=True)
+#             else:
+#                 doc = frappe.get_doc("Sales Order", docname)
+#                 doc.status = "Partially Closed"
+#                 doc.save(ignore_permissions=True)
+                
+#             return True
+#         else:
+#             return False
+#     except Exception as e:
+#         frappe.log_error(f"Error updating status to Submitted to Office: {e}", "Sales Order")
+#         return False
+
+
+import frappe
+
+@frappe.whitelist()
+def update_status_to_submitted_to_office(item_code, submission_datetime, docname, child_name):
+    try:
+        # Retrieve the item document
+        item = frappe.get_doc("Item", item_code)
+        if item:
+            item.status = "Available"
+            item.save(ignore_permissions=True)
+
+        sales_order_items = frappe.get_all("Sales Order Item", filters={"parent": docname}, fields=["name"])
+
+        if sales_order_items:
+            # If there is only one Sales Order Item, update both Sales Order and Sales Order Item statuses
+            if len(sales_order_items) == 1:
+                sales_order_item_doc = frappe.get_doc("Sales Order Item", sales_order_items[0].name)
+                sales_order_item_doc.child_status = "Submitted to Office"
+                sales_order_item_doc.submitted_date = submission_datetime
+                sales_order_item_doc.save(ignore_permissions=True)
+
+                # Retrieve the Sales Order document and update its status
+                sales_order_doc = frappe.get_doc("Sales Order", docname)
+                sales_order_doc.status = "Submitted to Office"
+                sales_order_doc.submitted_date = submission_datetime
+                sales_order_doc.save(ignore_permissions=True)
+
+                return True
+            else:
+                # If there are multiple Sales Order Items, update only the Sales Order Item statuses
+                sales_order_item_doc = frappe.get_doc("Sales Order Item", {"name": child_name})
+                sales_order_item_doc.child_status = "Submitted to Office"
+                sales_order_item_doc.submitted_date = submission_datetime
+                sales_order_item_doc.save(ignore_permissions=True)
+
+                # Check the statuses of all Sales Order Items
+                sales_order_items = frappe.get_all("Sales Order Item", filters={"parent": docname}, fields=["child_status"])
+
+                if sales_order_items:
+                    # Check if all Sales Order Items have the status "Submitted to Office"
+                    all_submitted_to_office = all(item.get("child_status") == "Submitted to Office" for item in sales_order_items)
+
+                    # Retrieve the Sales Order document
+                    sales_order_doc = frappe.get_doc("Sales Order", docname)
+
+                    if all_submitted_to_office:
+                        # If all Sales Order Items have the status "Submitted to Office", update Sales Order status
+                        sales_order_doc.status = "Submitted to Office"
+                    else:
+                        # If any Sales Order Item doesn't have the status "Submitted to Office", set status to "Partially Closed"
+                        sales_order_doc.status = "Partially Closed"
+
+                    sales_order_doc.save(ignore_permissions=True)
+                    return True
+                else:
+                    # Handle case when there are no sales order items found
+                    return False
+        else:
+            # Handle case when there are no sales order items found
+            return False
+
+    except Exception as e:
+        frappe.log_error(f"Error updating status to Submitted to Office: {e}", "Sales Order")
+        return False
+
+
+
+
+@frappe.whitelist()
+def update_status_to_active(item_code, docname, child_name):
+    sales_order_items = frappe.get_all("Sales Order Item", filters={"parent": docname}, fields=["name"])
+
+    if sales_order_items:
+        # If there is only one Sales Order Item, update both Sales Order and Sales Order Item statuses
+        if len(sales_order_items) == 1:
+            sales_order_item_doc = frappe.get_doc("Sales Order Item", sales_order_items[0].name)
+            sales_order_item_doc.child_status = "Active"
+            sales_order_item_doc.pickup_date = ""
+            sales_order_item_doc.save(ignore_permissions=True)
+
+            # Retrieve the Sales Order document and update its status
+            sales_order_doc = frappe.get_doc("Sales Order", sales_order_item_doc.parent)
+            sales_order_doc.status = "Active"
+            sales_order_doc.pickup_date = ""
+            sales_order_doc.save(ignore_permissions=True)
+
+            return True
+        else:
+            # If there are multiple Sales Order Items, update only the Sales Order Item statuses
+            sales_order_item_doc = frappe.get_doc("Sales Order Item", {"name": child_name})
+            sales_order_item_doc.child_status = "Active"
+            sales_order_item_doc.pickup_date = ""
+            sales_order_item_doc.save(ignore_permissions=True)
+
+            return True
+    else:
+        return False
+
+
+
+
+@frappe.whitelist()
+def update_status_back_to_ready_for_pickup(item_code, docname, child_name):
+    sales_order_items = frappe.get_all("Sales Order Item", filters={"parent": docname}, fields=["name"])
+
+    if sales_order_items:
+        # If there is only one Sales Order Item, update both Sales Order and Sales Order Item statuses
+        if len(sales_order_items) == 1:
+            sales_order_item_doc = frappe.get_doc("Sales Order Item", sales_order_items[0].name)
+            sales_order_item_doc.child_status = "Ready for Pickup"
+            sales_order_item_doc.pickup_date = ""
+            sales_order_item_doc.save(ignore_permissions=True)
+
+            # Retrieve the Sales Order document and update its status
+            sales_order_doc = frappe.get_doc("Sales Order", sales_order_item_doc.parent)
+            sales_order_doc.status = "Ready for Pickup"
+            sales_order_doc.pickup_date = ""
+            sales_order_doc.save(ignore_permissions=True)
+
+            return True
+        else:
+            # If there are multiple Sales Order Items, update only the Sales Order Item statuses
+            sales_order_item_doc = frappe.get_doc("Sales Order Item", {"name": child_name})
+            sales_order_item_doc.child_status = "Ready for Pickup"
+            sales_order_item_doc.pickup_date = ""
+            sales_order_item_doc.save(ignore_permissions=True)
+
+            return True
+    else:
+        return False
+
+
+
+
+@frappe.whitelist()
+def update_status_to_pickup(item_code, docname, child_name):
+    try:
+        # Retrieve the item document
+        item = frappe.get_doc("Item", item_code)
+        if item:
+            item.status = "Rented Out"
+            item.save(ignore_permissions=True)
+
+        sales_order_items = frappe.get_all("Sales Order Item", filters={"parent": docname}, fields=["name"])
+
+        if sales_order_items:
+            # If there is only one Sales Order Item, update both Sales Order and Sales Order Item statuses
+            if len(sales_order_items) == 1:
+                sales_order_item_doc = frappe.get_doc("Sales Order Item", sales_order_items[0].name)
+                sales_order_item_doc.child_status = "Picked Up"
+                sales_order_item_doc.submitted_date = ""
+                sales_order_item_doc.save(ignore_permissions=True)
+
+                # Retrieve the Sales Order document and update its status
+                sales_order_doc = frappe.get_doc("Sales Order", docname)
+                sales_order_doc.status = "Picked Up"
+                sales_order_doc.submitted_date = ""
+                sales_order_doc.save(ignore_permissions=True)
+
+                return True
+            else:
+                # If there are multiple Sales Order Items, update only the Sales Order Item statuses
+                sales_order_item_doc = frappe.get_doc("Sales Order Item", {"name": child_name})
+                sales_order_item_doc.child_status = "Picked Up"
+                sales_order_item_doc.submitted_date = ""
+                sales_order_item_doc.save(ignore_permissions=True)
+
+                # Update sales order status to "Active"
+                sales_order_items_status = frappe.get_all("Sales Order Item", filters={"parent": docname}, fields=["name", "child_status"])
+
+                all_not_submitted = all(item.child_status != "Submitted to Office" for item in sales_order_items_status)
+
+                # Update sales order status
+                sales_order_replace = frappe.get_doc("Sales Order", docname)
+                if all_not_submitted:
+                    sales_order_replace.status = "Active"
+                else:
+                    sales_order_replace.status = "Partially Closed"
+                sales_order_replace.save()
+
+                return True
+                
+        else:
+            # Handle case when there are no sales order items found
+            return False
+
+    except Exception as e:
+        frappe.log_error(f"Error updating status to Submitted to Office: {e}", "Sales Order")
+        return False
+
+
+
+
+from frappe import _, publish_realtime
+from frappe.utils import today, getdate
+
+# Method to change status of overdue Sales Orders
+@frappe.whitelist()
+def mark_overdue_sales_orders():
+    # Get today's date as a datetime.date object
+    today_date = getdate(today())
+    
+    # Get all Sales Orders
+    sales_orders = frappe.get_list("Sales Order",
+                                   fields=["name", "end_date", "overdue_status", "status"])
+
+    for so in sales_orders:
+        end_date = getdate(so.end_date)  # Convert end_date string to datetime.date object
+        
+        # Check if the status is 'RENEWED'
+        if so.status == 'RENEWED':
+            # Update overdue_status to 'Renewed'
+            frappe.db.set_value("Sales Order", so.name, "overdue_status", "Renewed")
+        elif end_date < today_date:
+            # Update overdue_status to 'Overdue'
+            frappe.db.set_value("Sales Order", so.name, "overdue_status", "Overdue")
+        else:
+            # Update overdue_status to 'Active'
+            frappe.db.set_value("Sales Order", so.name, "overdue_status", "Active")
+
+    # Publish a message to refresh the list view
+    # publish_realtime('list_update', "Sales Order")
+
+
+import frappe
+
+@frappe.whitelist()
+def create_renewal_order(sales_order_name):
+    # Get original sales order
+    original_sales_order = frappe.get_doc("Sales Order", sales_order_name)
+
+    # Create a new sales order based on the original one
+    new_sales_order = frappe.copy_doc(original_sales_order)
+    new_sales_order.previous_order_id = original_sales_order.name  # Pass original order ID to renewal_order_id
+    new_sales_order.insert()
+
+    # Update original sales order status only after the new sales order has been submitted
+    # frappe.enqueue(update_original_sales_order_status, original_sales_order=original_sales_order)
+
+    return new_sales_order.name
+
+# def update_original_sales_order_status(original_sales_order):
+#     original_sales_order.status = "RENEWED"
+#     original_sales_order.save()
+
+
+
+
+@frappe.whitelist()
+def get_sales_orders_by_rental_group_id(docname):
+    # Fetch sales orders based on the rental group ID
+    sales_orders = frappe.get_all("Sales Order",
+        filters={"master_order_id": docname},
+        fields=["name", "start_date", "end_date", "total_no_of_dates", "rounded_total","status"])
+    
+    return sales_orders
+
+
+
+
+@frappe.whitelist()
+def validate_and_update_payment_status(docname):
+    sales_order = frappe.get_doc("Sales Order", docname)
+    
+    # Access the rounded_total and advance_paid fields from the document object
+    rounded_total = sales_order.rounded_total
+    advance_paid = sales_order.advance_paid
+
+    # Calculate the balance amount
+    balance_amount = rounded_total - advance_paid
+
+    # Update the balance_amount field in the Sales Order document
+    sales_order.balance_amount = balance_amount
+
+    # Check if the rounded_total is equal to advance_paid
+    if rounded_total == advance_paid:
+        # If rounded_total equals advance_paid, set payment_status to 'Paid'
+        sales_order.payment_status = 'Paid'
+    elif advance_paid == 0:
+        # If advance_paid is zero, set payment_status to 'Unpaid'
+        sales_order.payment_status = 'UnPaid'
+    else:
+        # If rounded_total is not equal to advance_paid and advance_paid is not zero,
+        # set payment_status to 'Partially Paid'
+        sales_order.payment_status = 'Partially Paid'
+
+    sales_order.save()
+    
+    return balance_amount
+
+
+
+@frappe.whitelist()
+def validate_and_update_payment_and_security_deposit_status(docname):
+    try:
+        sales_order = frappe.get_doc("Sales Order", docname)
+
+        # Access the rounded_total and advance_paid fields from the document object
+        rounded_total = sales_order.rounded_total
+        advance_paid = sales_order.advance_paid
+
+        # Calculate the balance amount
+        balance_amount = rounded_total - advance_paid
+
+        # Update the balance_amount field in the Sales Order document
+        sales_order.balance_amount = balance_amount
+
+        # Check if the rounded_total is equal to advance_paid
+        if rounded_total == advance_paid:
+            # If rounded_total equals advance_paid, set payment_status to 'Paid'
+            sales_order.payment_status = 'Paid'
+        elif advance_paid == 0:
+            # If advance_paid is zero, set payment_status to 'Unpaid'
+            sales_order.payment_status = 'UnPaid'
+        else:
+            # If rounded_total is not equal to advance_paid and advance_paid is not zero,
+            # set payment_status to 'Partially Paid'
+            sales_order.payment_status = 'Partially Paid'
+
+        # Query Journal Entry records based on sales_order_id and security_deposit_type
+        journal_entries = frappe.get_all("Journal Entry", 
+                                          filters={"sales_order_id": docname, 
+                                                   "security_deposite_type": "Cash Received From Client"},
+                                          fields=["name", "total_debit"])
+        
+        # Calculate total debit amount from the filtered journal entries
+        total_debit_amount = sum(journal_entry.total_debit for journal_entry in journal_entries)
+        
+        # Convert sales_order.security_deposit to float
+        security_deposit = float(sales_order.security_deposit)
+
+        # Update the paid_security_deposit_amount field
+        sales_order.paid_security_deposite_amount = total_debit_amount
+
+        outstanding_security_deposit_amount = security_deposit - total_debit_amount
+
+        # Update the outstanding_security_deposit_amount field
+        sales_order.outstanding_security_deposit_amount = outstanding_security_deposit_amount
+
+        # Determine the security deposit status based on the outstanding amount
+        if outstanding_security_deposit_amount == 0:
+            # If outstanding amount is zero, set security_deposit_status to 'Paid'
+            sales_order.security_deposit_status = 'Paid'
+        elif outstanding_security_deposit_amount == security_deposit:
+            # If outstanding amount is equal to total security deposit, set security_deposit_status to 'Unpaid'
+            sales_order.security_deposit_status = 'Unpaid'
+        else:
+            # If outstanding amount is not zero and not equal to total security deposit, set security_deposit_status to 'Partially Paid'
+            sales_order.security_deposit_status = 'Partially Paid'
+        
+        # Save the changes to the document
+        sales_order.save()
+        
+        # Return True to indicate successful update
+        return True
+
+    except Exception as e:
+        # Log and raise any exceptions for debugging
+        frappe.log_error(frappe.get_traceback(), _("Failed to update payment status"))
+        frappe.throw(_("Failed to update payment status. Error: {0}".format(str(e))))
+
+
+
+@frappe.whitelist()
+def security_deposit_status(docname):
+    try:
+        sales_order = frappe.get_doc("Sales Order", docname)
+        # Query Journal Entry records based on sales_order_id and security_deposit_type
+        journal_entries = frappe.get_all("Journal Entry", 
+                                          filters={"sales_order_id": docname, 
+                                                   "security_deposite_type": "Cash Received From Client"},
+                                          fields=["name", "total_debit"])
+        
+        # Calculate total debit amount from the filtered journal entries
+        total_debit_amount = sum(journal_entry.total_debit for journal_entry in journal_entries)
+        
+        # Print total debit amount for debugging
+        # print("Total Debit Amount:", total_debit_amount)
+        
+        # Convert sales_order.security_deposit to float
+        security_deposit = float(sales_order.security_deposit)
+
+        # Update the paid_security_deposit_amount field
+        sales_order.paid_security_deposite_amount = total_debit_amount
+
+        outstanding_security_deposit_amount = security_deposit - total_debit_amount
+
+        # Update the outstanding_security_deposit_amount field
+        sales_order.outstanding_security_deposit_amount = outstanding_security_deposit_amount
+
+        # Determine the security deposit status based on the outstanding amount
+        if outstanding_security_deposit_amount == 0:
+            # If outstanding amount is zero, set security_deposit_status to 'Paid'
+            sales_order.security_deposit_status = 'Paid'
+        elif outstanding_security_deposit_amount == security_deposit:
+            # If outstanding amount is equal to total security deposit, set security_deposit_status to 'Unpaid'
+            sales_order.security_deposit_status = 'Unpaid'
+        else:
+            # If outstanding amount is not zero and not equal to total security deposit, set security_deposit_status to 'Partially Paid'
+            sales_order.security_deposit_status = 'Partially Paid'
+        
+        # Save the changes to the document
+        sales_order.save()
+        
+        # Return True to indicate successful update
+        return True
+
+    except Exception as e:
+        # Log and raise any exceptions for debugging
+        frappe.log_error(frappe.get_traceback(), _("Failed to update payment status"))
+        frappe.throw(_("Failed to update payment status. Error: {0}".format(str(e))))
+
+
+
+# import frappe
+
+# @frappe.whitelist()
+# def validateOverlap(docname):
+#     previous_order = frappe.get_doc("Sales Order", docname)
+#     return {
+#         "start_date": previous_order.start_date,
+#         "end_date": previous_order.end_date
+#     }
+
+
+def check_overlap(self):
+    previous_order = frappe.get_doc("Sales Order", self.previous_order_id)
+    if previous_order:
+        if self.start_date and self.end_date:
+            # Convert string dates to datetime.date objects
+            start_date = datetime.strptime(self.start_date, '%Y-%m-%d').date()
+            end_date = datetime.strptime(self.end_date, '%Y-%m-%d').date()
+            
+            # Check for overlap
+            overlap = (start_date <= previous_order.end_date and end_date >= previous_order.start_date)
+            return overlap
+    return False
+
+
+
+@frappe.whitelist()
+def item_replacement(item_code, new_item, replacement_date, master_order_id, docname, old_item_status, reason=None):
+    try:
+        # Add a record in the Rental Order Replaced Item
+        rental_order = frappe.new_doc("Rental Order Replaced Item")
+        rental_order.master_order_id = master_order_id
+        rental_order.sales_order_id = docname
+        rental_order.replaced_datetime = replacement_date
+        rental_order.old_item = item_code
+        rental_order.new_item = new_item
+        rental_order.reason = reason
+        rental_order.save()
+        
+        # Update child_status and replacement_date in Sales Order Items
+        sales_order_items = frappe.get_all("Sales Order Item", filters={"parent": docname, "item_code": item_code}, fields=["name", "child_status"])
+        for item in sales_order_items:
+            if item.child_status == "Picked Up":
+                sales_order_item = frappe.get_doc("Sales Order Item", item.name)
+                sales_order_item.child_status = "Active"
+                sales_order_item.replaced_datetime = replacement_date
+                sales_order_item.old_item_code = item_code
+                sales_order_item.item_code = new_item
+                sales_order_item.save()
+
+                new_item_doc = frappe.get_doc("Item", new_item)
+                new_item_doc.status = "Rented Out"
+                new_item_doc.save()
+            else:
+                sales_order_item = frappe.get_doc("Sales Order Item", item.name)
+                sales_order_item.child_status = item.child_status
+                sales_order_item.replaced_datetime = replacement_date
+                sales_order_item.old_item_code = item_code
+                sales_order_item.item_code = new_item
+                sales_order_item.save()
+
+                new_item_doc = frappe.get_doc("Item", new_item)
+                new_item_doc.status = "Reserved"
+                new_item_doc.save()
+
+        # Update the status of the old item
+        old_item_doc = frappe.get_doc("Item", item_code)
+        old_item_doc.status = old_item_status
+        old_item_doc.replaced_reason = reason
+        old_item_doc.save()
+
+        # Update sales order status to "Active"
+        sales_order_items_status = frappe.get_all("Sales Order Item", filters={"parent": docname}, fields=["name", "child_status"])
+        if any(item.child_status != "Ready for Delivery" and item.child_status != "DISPATCHED" for item in sales_order_items_status):
+            all_active = all(item.child_status == "Active" for item in sales_order_items_status)
+            any_submitted = any(item.child_status == "Submitted to Office" for item in sales_order_items_status)
+            not_submitted = any(item.child_status != "Submitted to Office" for item in sales_order_items_status)
+
+            # Update sales order status
+            sales_order_replace = frappe.get_doc("Sales Order", docname)
+            if all_active:
+                sales_order_replace.status = "Active"
+            elif any_submitted:
+                sales_order_replace.status = "Partially Closed"
+            elif not_submitted:
+                sales_order_replace.status = "Active"  # Handle the case when neither condition is met
+            sales_order_replace.save()
+
+        return True
+    except Exception as e:
+        frappe.log_error(frappe.get_traceback(), _("Item Replacement Failed"))
+        frappe.throw(_("Item Replacement Failed. Please try again later."))
+
+import frappe
+from frappe import _
+
+# Define the server-side method to fetch replaced items
+@frappe.whitelist()
+def get_replaced_items(master_order_id):
+    try:
+        # Fetch replaced items associated with the sales order
+        replaced_items = frappe.get_all("Rental Order Replaced Item",
+                                        filters={"master_order_id": master_order_id},
+                                        fields=["old_item", "new_item", "replaced_datetime", "reason"])
+        return replaced_items
+    except Exception as e:
+        frappe.log_error(frappe.get_traceback(), _("Failed to fetch replaced items"))
+        return None
+
+
+
+
+@frappe.whitelist()
+def get_journal_entry_records(master_order_id):
+    try:
+        # Fetch replaced items associated with the sales order
+        journal_entry_records = frappe.get_all("Journal Entry",
+                                        filters={"master_order_id": master_order_id},
+                                        fields=["name", "sales_order_id", "master_order_id", "security_deposite_type","total_debit","posting_date"])
+
+        # Iterate through each journal entry record
+        for entry in journal_entry_records:
+            # Fetch accounts associated with the current journal entry
+            accounts = frappe.get_all("Journal Entry Account",
+                                       filters={"parent": entry["name"]},
+                                       fields=["account", "debit_in_account_currency", "credit_in_account_currency"])
+
+            # Add accounts data to the journal entry record
+            entry["accounts"] = accounts
+
+        return journal_entry_records
+    except Exception as e:
+        frappe.log_error(frappe.get_traceback(), _("Failed to fetch replaced items"))
+        return None
+
+
+@frappe.whitelist()
+def get_payment_entry_records(master_order_id):
+    try:
+        # Fetch replaced items associated with the sales order
+        payment_entry_records = frappe.get_all("Payment Entry",
+                                        filters={"master_order_id": master_order_id},
+                                        fields=["name", "references.reference_name", "master_order_id","total_allocated_amount","posting_date"])
+        return payment_entry_records
+    except Exception as e:
+        frappe.log_error(frappe.get_traceback(), _("Failed to fetch replaced items"))
+        return None
+
+
+# Method to delete journal entry
+import frappe
+@frappe.whitelist()
+def cancel_and_delete_journal_entry(journal_entry_id):
+    # Get the journal entry
+    journal_entry = frappe.get_doc("Journal Entry", journal_entry_id)
+
+    # Check if the journal entry is submitted
+    if journal_entry.docstatus == 1:
+        # Cancel the journal entry
+        journal_entry.cancel()
+
+        # Commit the changes
+        frappe.db.commit()
+
+        # Delete the journal entry
+        frappe.delete_doc("Journal Entry", journal_entry_id)
+
+        # Commit the deletion
+        frappe.db.commit()
+
+        return True, "Journal entry cancelled and deleted successfully."
+    else:
+        return False, "Journal entry is not submitted."
+
+
+
+@frappe.whitelist()
+def cancel_and_delete_payment_entry(payment_entry_id):
+    # Get the journal entry
+    payment_entry = frappe.get_doc("Payment Entry", payment_entry_id)
+
+    # Check if the journal entry is submitted
+    if payment_entry.docstatus == 1:
+        # Cancel the journal entry
+        payment_entry.cancel()
+
+        # Commit the changes
+        frappe.db.commit()
+
+        # Delete the journal entry
+        frappe.delete_doc("Payment Entry", payment_entry_id)
+
+        # Commit the deletion
+        frappe.db.commit()
+
+        return True, "Journal entry cancelled and deleted successfully."
+    else:
+        return False, "Journal entry is not submitted."
+
+
+
+
+@frappe.whitelist()
+def process_payment(balance_amount, outstanding_security_deposit_amount, customer_name, rental_payment_amount, sales_order_name, master_order_id, security_deposit_status, customer, payment_account=None, security_deposit_account=None, reference_no=None, reference_date=None, mode_of_payment=None,
+                    security_deposit_payment_amount=None, remark=None):
+    try:
+        # Convert balance_amount and outstanding_security_deposit_amount to floats
+        balance_amount = float(balance_amount)
+        outstanding_security_deposit_amount = float(outstanding_security_deposit_amount)
+
+        # Check if rental_payment_amount and security_deposit_payment_amount are not negative
+        if float(rental_payment_amount) < 0 or float(security_deposit_payment_amount) < 0:
+            frappe.throw("Payment amounts cannot be negative.")
+            return False
+
+        # Check if balance_amount and outstanding_security_deposit_amount are not negative
+        if balance_amount < 0 or outstanding_security_deposit_amount < 0:
+            frappe.throw("Balance amounts cannot be negative.")
+            return False
+
+        # Convert rental_payment_amount to a float
+        rental_payment_amount = float(rental_payment_amount) if rental_payment_amount else 0
+        security_deposit_payment_amount = float(security_deposit_payment_amount) if security_deposit_payment_amount else 0
+
+        # Check if security_deposit_payment_amount and rental_payment_amount are greater than 0
+        if security_deposit_payment_amount > 0 and rental_payment_amount > 0:
+            # Check if security_deposit_payment_amount is greater than outstanding_security_deposit_amount
+            if security_deposit_payment_amount > outstanding_security_deposit_amount:
+                # Show an alert if security_deposit_payment_amount is greater
+                frappe.throw("Security Deposit Payment Amount cannot be greater than the Security Deposit Amount.")
+                return False
+            
+            # Check if rental_payment_amount is greater than balance_amount
+            if rental_payment_amount > balance_amount:
+                # Show an alert if rental_payment_amount is greater
+                frappe.throw("Rental Payment Amount cannot be greater than the Balance Amount.")
+                return False
+
+            # Create a journal entry for the security deposit payment amount
+            create_security_deposit_journal_entry_payment(customer_name, security_deposit_payment_amount, sales_order_name, master_order_id, security_deposit_account, reference_no, reference_date, remark)
+            
+            # Create a payment entry for the rental payment amount
+            create_rental_payment_entry(customer_name, rental_payment_amount, mode_of_payment, sales_order_name, security_deposit_status, customer, payment_account, master_order_id, reference_no, reference_date, remark)
+            
+            return True
+
+        elif security_deposit_payment_amount > 0:
+            # Check if security_deposit_payment_amount is greater than outstanding_security_deposit_amount
+            if security_deposit_payment_amount > outstanding_security_deposit_amount:
+                # Show an alert if security_deposit_payment_amount is greater
+                frappe.throw("Security Deposit Payment Amount cannot be greater than the Security Deposit Amount.")
+                return False
+
+            # Create a journal entry for the security deposit payment amount
+            create_security_deposit_journal_entry_payment(customer_name, security_deposit_payment_amount, sales_order_name, master_order_id, security_deposit_account, reference_no, reference_date, remark)
+            return True
+        
+        elif rental_payment_amount > 0:
+            # Check if rental_payment_amount is greater than balance_amount
+            if rental_payment_amount > balance_amount:
+                # Show an alert if rental_payment_amount is greater
+                frappe.throw("Rental Payment Amount cannot be greater than the Balance Amount.")
+                return False
+	
+            # Create a payment entry for the rental payment amount
+            create_rental_payment_entry(customer_name, rental_payment_amount, mode_of_payment, sales_order_name, security_deposit_status, customer, payment_account, master_order_id, reference_no, reference_date, remark)
+            return True
+
+
+    except Exception as e:
+        error_message = f"Failed to process payment: {str(e)}"
+        frappe.log_error(frappe.get_traceback(), error_message)
+        frappe.throw(error_message)
+
+    return False
+
+
+def create_security_deposit_journal_entry_payment(customer, security_deposit_payment_amount, sales_order_name, master_order_id, security_deposit_account, reference_no=None, reference_date=None, remark=None):
+    try:
+        # Create a new Journal Entry document
+        journal_entry = frappe.new_doc("Journal Entry")
+        journal_entry.voucher_type = "Journal Entry"
+        journal_entry.sales_order_id = sales_order_name
+        journal_entry.posting_date = frappe.utils.nowdate()
+        journal_entry.journal_entry_type = "Security Deposit"
+        journal_entry.security_deposite_type = "Cash Received From Client"
+        journal_entry.master_order_id = master_order_id
+        journal_entry.cheque_no = reference_no
+        journal_entry.cheque_date = reference_date
+        journal_entry.user_remark = remark
+
+        # Add accounts for debit and credit
+        journal_entry.append("accounts", {
+            "account": security_deposit_account,
+            "debit_in_account_currency": security_deposit_payment_amount
+        })
+        journal_entry.append("accounts", {
+            "account": "Rental Order Security Deposit Receivable - INR",
+            "party_type": "Customer",
+            "party": customer,
+            "credit_in_account_currency": security_deposit_payment_amount
+        })
+
+        # Save and submit the Journal Entry document
+        journal_entry.insert()
+        journal_entry.submit()
+
+        frappe.msgprint("Security Deposit Journal Entry created successfully.")
+    except Exception as e:
+        frappe.log_error(frappe.get_traceback(), _("Failed to create Security Deposit Journal Entry"))
+        frappe.throw(_("Failed to create Security Deposit Journal Entry. Please try again later."))
+
+
+def create_rental_payment_entry(customer_name, rental_payment_amount, mode_of_payment,
+                                sales_order_name, security_deposit_status, customer, payment_account, master_order_id, reference_no=None, reference_date=None, remark=None):
+    try:
+        rental_payment_amount_numeric = float(rental_payment_amount)  # Convert rental_payment_amount to float
+
+        # Create a new Payment Entry document
+        payment_entry = frappe.get_doc({
+            "doctype": "Payment Entry",
+            "master_order_id": master_order_id,
+            "paid_from": "Debtors - INR",
+            "received_amount": rental_payment_amount_numeric,
+            "base_received_amount": rental_payment_amount_numeric,  # Assuming base currency is INR
+            "received_amount_currency": "INR",
+            "base_received_amount_currency": "INR",
+            "target_exchange_rate": 1,
+            "paid_amount": rental_payment_amount_numeric,
+            "references": [
+                {
+                    "reference_doctype": "Sales Order",
+                    "reference_name": sales_order_name,
+                    "allocated_amount": rental_payment_amount_numeric
+                }
+            ],
+            "reference_date": reference_date,
+            "party_type": "Customer",
+            "party": customer,
+            "mode_of_payment": mode_of_payment,
+            "reference_no": reference_no,
+            "paid_to": payment_account,
+            "payment_remark": remark,
+        }, ignore_permissions=True)
+
+        payment_entry.insert(ignore_permissions=True)
+        payment_entry.submit()
+
+        frappe.msgprint("Payment Entry created successfully.")
+
+        frappe.log_error("Rental Payment Entry created successfully.", _("Rental Payment Entry"))
+    except Exception as e:
+        frappe.log_error(frappe.get_traceback(), _("Failed to create Rental Payment Entry"))
+        frappe.throw(_("Failed to create Rental Payment Entry. Please try again later. Error: {0}".format(str(e))))
+
+
+@frappe.whitelist()
+def get_default_account(mode_of_payment):
+    try:
+        # Fetch the Mode Of Payment document
+        mode_of_payment_doc = frappe.get_doc("Mode of Payment", mode_of_payment)
+
+        # Initialize default_account and journal_entry_default_account
+        default_account = None
+        journal_entry_default_account = mode_of_payment_doc.journal_entry_default_account
+
+        # Iterate through the child table entries
+        for account in mode_of_payment_doc.get("accounts"):
+            if account.default_account:
+                default_account = account.default_account
+                break
+
+        if default_account:
+            return {"default_account": default_account, "journal_entry_default_account": journal_entry_default_account}
+        else:
+            # Return "Bank Account - INR" if default account not found
+            return {"default_account": "Bank Account - INR","journal_entry_default_account": "Kotak Bank Security Deposit Received - INR"}
+    except Exception as e:
+        frappe.log_error(frappe.get_traceback(), _("Failed to fetch default account"))
+        frappe.throw(_("Failed to fetch default account. Please try again later."))
+
+
+
+
+@frappe.whitelist()
+def return_security_deposit(amount_to_return, journal_entry_account, master_order_id, sales_order_id, customer):
+    try:
+        # Create a journal entry to return the security deposit amount
+        journal_entry = frappe.get_doc({
+            "doctype": "Journal Entry",
+            "voucher_type": "Journal Entry",
+            "posting_date": frappe.utils.today(),
+            "company": frappe.defaults.get_user_default("company"),
+            "accounts": [
+                {
+                    "account": "Debtors - INR",
+                    "debit_in_account_currency": amount_to_return,
+					"party_type":"Customer",
+					"party":customer,
+                    "credit_in_account_currency": 0,
+                    # "cost_center": frappe.defaults.get_user_default("cost_center")
+                },
+                {
+                    "account": journal_entry_account,
+                    "debit_in_account_currency": 0,
+                    "credit_in_account_currency": amount_to_return,
+                    "party_type": "Customer",
+                    "party": customer,
+                    # "cost_center": frappe.defaults.get_user_default("cost_center")
+                }
+            ],
+            "remarks": f"Return Security Deposit for Sales Order {sales_order_id}",
+            "master_order_id": master_order_id,
+            "sales_order_id": sales_order_id,
+			"journal_entry_type":"Security Deposit",
+			"security_deposite_type":"Return to Client"
+        })
+
+        # Save the journal entry
+        journal_entry.insert()
+        journal_entry.submit()
+
+        return True
+    except Exception as e:
+        frappe.log_error(frappe.get_traceback(), _("Failed to create journal entry"))
+        return False

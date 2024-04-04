@@ -14,14 +14,12 @@ class ModeofPayment(Document):
 	from typing import TYPE_CHECKING
 
 	if TYPE_CHECKING:
+		from erpnext.accounts.doctype.mode_of_payment_account.mode_of_payment_account import ModeofPaymentAccount
 		from frappe.types import DF
-
-		from erpnext.accounts.doctype.mode_of_payment_account.mode_of_payment_account import (
-			ModeofPaymentAccount,
-		)
 
 		accounts: DF.Table[ModeofPaymentAccount]
 		enabled: DF.Check
+		journal_entry_default_account: DF.Link | None
 		mode_of_payment: DF.Data
 		type: DF.Literal["Cash", "Bank", "General", "Phone"]
 	# end: auto-generated types

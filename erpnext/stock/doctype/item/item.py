@@ -57,23 +57,20 @@ class Item(Document):
 	from typing import TYPE_CHECKING
 
 	if TYPE_CHECKING:
-		from frappe.types import DF
-
 		from erpnext.stock.doctype.item_barcode.item_barcode import ItemBarcode
 		from erpnext.stock.doctype.item_customer_detail.item_customer_detail import ItemCustomerDetail
 		from erpnext.stock.doctype.item_default.item_default import ItemDefault
 		from erpnext.stock.doctype.item_reorder.item_reorder import ItemReorder
 		from erpnext.stock.doctype.item_supplier.item_supplier import ItemSupplier
 		from erpnext.stock.doctype.item_tax.item_tax import ItemTax
-		from erpnext.stock.doctype.item_variant_attribute.item_variant_attribute import (
-			ItemVariantAttribute,
-		)
+		from erpnext.stock.doctype.item_variant_attribute.item_variant_attribute import ItemVariantAttribute
 		from erpnext.stock.doctype.uom_conversion_detail.uom_conversion_detail import UOMConversionDetail
+		from frappe.types import DF
 
 		allow_alternative_item: DF.Check
 		allow_negative_stock: DF.Check
 		asset_category: DF.Link | None
-		asset_naming_series: DF.Literal
+		asset_naming_series: DF.Literal[None]
 		attributes: DF.Table[ItemVariantAttribute]
 		auto_create_assets: DF.Check
 		barcodes: DF.Table[ItemBarcode]
@@ -88,11 +85,10 @@ class Item(Document):
 		default_bom: DF.Link | None
 		default_item_manufacturer: DF.Link | None
 		default_manufacturer_part_no: DF.Data | None
-		default_material_request_type: DF.Literal[
-			"Purchase", "Material Transfer", "Material Issue", "Manufacture", "Customer Provided"
-		]
+		default_material_request_type: DF.Literal["Purchase", "Material Transfer", "Material Issue", "Manufacture", "Customer Provided"]
 		delivered_by_supplier: DF.Check
 		description: DF.TextEditor | None
+		device_type: DF.Data | None
 		disabled: DF.Check
 		enable_deferred_expense: DF.Check
 		enable_deferred_revenue: DF.Check
@@ -130,6 +126,7 @@ class Item(Document):
 		purchase_uom: DF.Link | None
 		quality_inspection_template: DF.Link | None
 		reorder_levels: DF.Table[ItemReorder]
+		replaced_reason: DF.SmallText | None
 		retain_sample: DF.Check
 		safety_stock: DF.Float
 		sales_uom: DF.Link | None
@@ -137,6 +134,7 @@ class Item(Document):
 		serial_no_series: DF.Data | None
 		shelf_life_in_days: DF.Int
 		standard_rate: DF.Currency
+		status: DF.Literal["Available", "Reserved", "Rented Out", "Sold", "Damaged", "Repair Required", "Repair In Progress", "Retired"]
 		stock_uom: DF.Link
 		supplier_items: DF.Table[ItemSupplier]
 		taxes: DF.Table[ItemTax]

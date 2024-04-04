@@ -60,15 +60,15 @@ frappe.ui.form.on("Sales Order", {
 				flt(frm.doc.per_delivered, 2) < 100 &&
 				flt(frm.doc.per_billed, 2) < 100
 			) {
-				frm.add_custom_button(__("Update Items"), () => {
-					erpnext.utils.update_child_items({
-						frm: frm,
-						child_docname: "items",
-						child_doctype: "Sales Order Detail",
-						cannot_add_row: false,
-						has_reserved_stock: frm.doc.__onload && frm.doc.__onload.has_reserved_stock,
-					});
-				});
+				// frm.add_custom_button(__("Update Items"), () => {
+				// 	erpnext.utils.update_child_items({
+				// 		frm: frm,
+				// 		child_docname: "items",
+				// 		child_doctype: "Sales Order Detail",
+				// 		cannot_add_row: false,
+				// 		has_reserved_stock: frm.doc.__onload && frm.doc.__onload.has_reserved_stock,
+				// 	});
+				// });
 
 				// Stock Reservation > Reserve button should only be visible if the SO has unreserved stock and no Pick List is created against the SO.
 				if (
@@ -515,20 +515,20 @@ frappe.ui.form.on("Sales Order", {
 });
 
 frappe.ui.form.on("Sales Order Item", {
-	item_code: function (frm, cdt, cdn) {
-		var row = locals[cdt][cdn];
-		if (frm.doc.delivery_date) {
-			row.delivery_date = frm.doc.delivery_date;
-			refresh_field("delivery_date", cdn, "items");
-		} else {
-			frm.script_manager.copy_from_first_row("items", row, ["delivery_date"]);
-		}
-	},
-	delivery_date: function (frm, cdt, cdn) {
-		if (!frm.doc.delivery_date) {
-			erpnext.utils.copy_value_in_all_rows(frm.doc, cdt, cdn, "items", "delivery_date");
-		}
-	},
+	// item_code: function (frm, cdt, cdn) {
+	// 	var row = locals[cdt][cdn];
+	// 	if (frm.doc.delivery_date) {
+	// 		row.delivery_date = frm.doc.delivery_date;
+	// 		refresh_field("delivery_date", cdn, "items");
+	// 	} else {
+	// 		frm.script_manager.copy_from_first_row("items", row, ["delivery_date"]);
+	// 	}
+	// },
+	// delivery_date: function (frm, cdt, cdn) {
+	// 	if (!frm.doc.delivery_date) {
+	// 		erpnext.utils.copy_value_in_all_rows(frm.doc, cdt, cdn, "items", "delivery_date");
+	// 	}
+	// },
 });
 
 erpnext.selling.SalesOrderController = class SalesOrderController extends erpnext.selling.SellingController {
@@ -542,32 +542,81 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 		let allow_delivery = false;
 
 		if (doc.docstatus == 1) {
-			if (this.frm.has_perm("submit")) {
-				if (doc.status === "On Hold") {
+			if(this.frm.has_perm("submit")) {
+				// 	if(doc.status === 'On Hold') {
+				// 	   // un-hold
+				// 	   this.frm.add_custom_button(__('Resume'), function() {
+				// 		   me.frm.cscript.update_status('Resume', 'Draft')
+				// 	   }, __("Status"));
+	
+				// 	   if(flt(doc.per_delivered, 2) < 100 || flt(doc.per_billed, 2) < 100) {
+				// 		   // close
+				// 		   this.frm.add_custom_button(__('Close'), () => this.close_sales_order(), __("Status"))
+				// 	   }
+				// 	}
+				//    	else if(doc.status === 'Closed') {
+				// 	   // un-close
+				// 	   this.frm.add_custom_button(__('Re-open'), function() {
+				// 		   me.frm.cscript.update_status('Re-open', 'Draft')
+				// 	   }, __("Status"));
+				//    }
+				if (doc.status === 'On Hold') {
 					// un-hold
-					this.frm.add_custom_button(
-						__("Resume"),
-						function () {
-							me.frm.cscript.update_status("Resume", "Draft");
-						},
-						__("Status")
-					);
-
+					this.frm.add_custom_button(__('Resume'), function() {
+						frappe.call({
+							method: 'erpnext.selling.doctype.sales_order.sales_order.update_status',
+							args: {
+								docname: me.frm.doc.name,
+								new_status: 'Pending'
+							},
+							callback: function(response) {
+								if (!response.exc) {
+									frappe.show_alert({
+										message: __('Document Resumed successfully.'),
+										indicator: 'green'
+									});
+									setTimeout(() => {
+										window.location.reload();
+									}, 1000); // 1000 milliseconds = 1 second
+								} else {
+									frappe.msgprint(__('Error while resuming document.'));
+								}
+							}
+						});
+					}, __("Status"));
+				
 					if (flt(doc.per_delivered, 2) < 100 || flt(doc.per_billed, 2) < 100) {
 						// close
-						this.frm.add_custom_button(__("Close"), () => this.close_sales_order(), __("Status"));
+						this.frm.add_custom_button(__('Close'), () => this.close_sales_order(), __("Status"));
 					}
-				} else if (doc.status === "Closed") {
+				} else if (doc.status === 'Closed') {
 					// un-close
-					this.frm.add_custom_button(
-						__("Re-open"),
-						function () {
-							me.frm.cscript.update_status("Re-open", "Draft");
-						},
-						__("Status")
-					);
+					this.frm.add_custom_button(__('Re-open'), function() {
+						frappe.call({
+							method: 'erpnext.selling.doctype.sales_order.sales_order.update_status',
+							args: {
+								docname: me.frm.doc.name,
+								new_status: 'Pending'
+							},
+							callback: function(response) {
+								if (!response.exc) {
+									frappe.show_alert({
+										message: __('Document Reopened successfully.'),
+										indicator: 'green'
+									});
+									setTimeout(() => {
+										window.location.reload();
+									}, 1000); // 1000 milliseconds = 1 second
+								} else {
+									frappe.msgprint(__('Error while reopening document.'));
+								}
+							}
+						});
+					}, __("Status"));
 				}
-			}
+				
+				
+				}
 			if (doc.status !== "Closed") {
 				if (doc.status !== "On Hold") {
 					allow_delivery =
@@ -576,32 +625,38 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 						) && !this.frm.doc.skip_delivery_note;
 
 					if (this.frm.has_perm("submit")) {
-						if (flt(doc.per_delivered, 2) < 100 || flt(doc.per_billed, 2) < 100) {
+						// if (flt(doc.per_delivered, 2) < 100 || flt(doc.per_billed, 2) < 100) {
+						// 	// hold
+						// 	this.frm.add_custom_button(
+						// 		__("Hold"),
+						// 		() => this.hold_sales_order(),
+						// 		__("Status")
+						// 	);
+						// 	// close
+						// 	this.frm.add_custom_button(
+						// 		__("Close"),
+						// 		() => this.close_sales_order(),
+						// 		__("Status")
+						// 	);
+						// }
+						if(flt(doc.per_delivered, 2) < 100 || flt(doc.per_billed, 2) < 100) {
 							// hold
-							this.frm.add_custom_button(
-								__("Hold"),
-								() => this.hold_sales_order(),
-								__("Status")
-							);
+							this.frm.add_custom_button(__('Hold'), () => this.hold_rental_sales_order(), __("Status"))
 							// close
-							this.frm.add_custom_button(
-								__("Close"),
-								() => this.close_sales_order(),
-								__("Status")
-							);
+							this.frm.add_custom_button(__('Close'), () => this.close_rental_sales_order(), __("Status"))
 						}
 					}
 
-					if (!doc.__onload || !doc.__onload.has_reserved_stock) {
-						// Don't show the `Reserve` button if the Sales Order has Picked Items.
-						if (flt(doc.per_picked, 2) < 100 && flt(doc.per_delivered, 2) < 100) {
-							this.frm.add_custom_button(
-								__("Pick List"),
-								() => this.create_pick_list(),
-								__("Create")
-							);
-						}
-					}
+					// if (!doc.__onload || !doc.__onload.has_reserved_stock) {
+					// 	// Don't show the `Reserve` button if the Sales Order has Picked Items.
+					// 	if (flt(doc.per_picked, 2) < 100 && flt(doc.per_delivered, 2) < 100) {
+					// 		this.frm.add_custom_button(
+					// 			__("Pick List"),
+					// 			() => this.create_pick_list(),
+					// 			__("Create")
+					// 		);
+					// 	}
+					// }
 
 					const order_is_a_sale = ["Sales", "Shopping Cart"].indexOf(doc.order_type) !== -1;
 					const order_is_maintenance = ["Maintenance"].indexOf(doc.order_type) !== -1;
@@ -609,110 +664,226 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 					const order_is_a_custom_sale =
 						["Sales", "Shopping Cart", "Maintenance"].indexOf(doc.order_type) === -1;
 
+
+
+
+					// Approved
+
+                    if (flt(doc.per_billed, 2) < 100 && doc.status === 'Pending' && doc.order_type === 'Rental') {
+                        this.frm.add_custom_button(__('Approved'), () => {
+                            frappe.confirm(
+                                __('Are you sure you want to approve. It will Reserve the Item?'),
+                                () => {
+                                    me.make_approved(); // Call the JavaScript method
+                                },
+                                () => {
+                                    // Do nothing on cancel
+                                }
+                            );
+                        }, __('Action'));
+                    }
+
+                    // if (flt(doc.per_billed, 2) < 100 && doc.status === 'Approved' && doc.order_type === 'Rental') {
+                    //     this.frm.add_custom_button(__('Rental Device Assigned'), () => {
+                    //         frappe.confirm(
+                    //             __('Are you sure you want to Assign the Rental Device?'),
+                    //             () => {
+                    //                 me.make_rental_device_assign(); // Call the JavaScript method
+                    //             },
+                    //             () => {
+                    //                 // Do nothing on cancel
+                    //             }
+                    //         );
+                    //     }, __('Create'));
+                    // }
+
+                    if (flt(doc.per_billed, 2) < 100 && doc.status === 'Approved' && doc.order_type === 'Rental') {
+                        this.frm.add_custom_button(__('Ready for Delivery'), () => {
+                            frappe.confirm(
+                                __('Are you sure you want make the status as Ready For Delivery?'),
+                                () => {
+                                    me.make_ready_for_delivery(); // Call the JavaScript method
+                                },
+                                () => {
+                                    // Do nothing on cancel
+                                }
+                            );
+                        }, __('Action'));
+                    }
+
+
+                    if (flt(doc.per_billed, 2) < 100 && doc.status === 'Ready for Delivery' && doc.order_type === 'Rental') {
+                        this.frm.add_custom_button(__('DISPATCHED'), () => {
+                            frappe.confirm(
+                                __('Are you sure you want make the status as DISPATCHED?'),
+                                () => {
+                                    me.make_dispatch(); // Call the JavaScript method
+                                },
+                                () => {
+                                    // Do nothing on cancel
+                                }
+                            );
+                        }, __('Action'));
+                    }
+
+
+                    if (flt(doc.per_billed, 2) < 100 && doc.status === 'DISPATCHED' && doc.order_type === 'Rental') {
+                        this.frm.add_custom_button(__('DELIVERED'), () => {
+                            frappe.confirm(
+                                __('Are you sure you want make the status as DELIVERED?'),
+                                () => {
+                                    me.make_delivered(); // Call the JavaScript method
+                                },
+                                () => {
+                                    // Do nothing on cancel
+                                }
+                            );
+                        }, __('Action'));
+                    }
+
+                    if (flt(doc.per_billed, 2) < 100 && doc.status === 'Active' && doc.order_type === 'Rental') {
+                        this.frm.add_custom_button(__('Ready for Pickup'), () => {
+                            frappe.confirm(
+                                __('Are you sure you want make the status as Ready for Pickup?'),
+                                () => {
+                                    me.make_ready_for_pickup(); // Call the JavaScript method
+                                },
+                                () => {
+                                    // Do nothing on cancel
+                                }
+                            );
+                        }, __('Action'));
+                    }
+					if (flt(doc.per_billed, 2) < 100 && doc.status === 'Ready for Pickup' && doc.order_type === 'Rental') {
+                        this.frm.add_custom_button(__('Picked Up'), () => {
+                            frappe.confirm(
+                                __('Are you sure you want make the status as Ready for Pickup?'),
+                                () => {
+                                    me.make_pickedup(); // Call the JavaScript method
+                                },
+                                () => {
+                                    // Do nothing on cancel
+                                }
+                            );
+                        }, __('Action'));
+                    }
+					if (flt(doc.per_billed, 2) < 100 && doc.status === 'Picked Up' && doc.order_type === 'Rental') {
+                        this.frm.add_custom_button(__('Submitted To Office'), () => {
+                            frappe.confirm(
+                                __('Are you sure you want make the status as Submitted To Office?'),
+                                () => {
+                                    me.make_submitted_to_office(); // Call the JavaScript method
+                                },
+                                () => {
+                                    // Do nothing on cancel
+                                }
+                            );
+                        }, __('Action'));
+                    }
 					// delivery note
-					if (
-						flt(doc.per_delivered, 2) < 100 &&
-						(order_is_a_sale || order_is_a_custom_sale) &&
-						allow_delivery
-					) {
-						this.frm.add_custom_button(
-							__("Delivery Note"),
-							() => this.make_delivery_note_based_on_delivery_date(true),
-							__("Create")
-						);
-						this.frm.add_custom_button(
-							__("Work Order"),
-							() => this.make_work_order(),
-							__("Create")
-						);
-					}
+					// if (
+					// 	flt(doc.per_delivered, 2) < 100 &&
+					// 	(order_is_a_sale || order_is_a_custom_sale) &&
+					// 	allow_delivery
+					// ) {
+					// 	this.frm.add_custom_button(
+					// 		__("Delivery Note"),
+					// 		() => this.make_delivery_note_based_on_delivery_date(true),
+					// 		__("Action")
+					// 	);
+					// 	this.frm.add_custom_button(
+					// 		__("Work Order"),
+					// 		() => this.make_work_order(),
+					// 		__("Action")
+					// 	);
+					// }
 
 					// sales invoice
-					if (flt(doc.per_billed, 2) < 100) {
+					if (flt(doc.per_billed, 2) < 100 && doc.status != 'RENEWED') {
 						this.frm.add_custom_button(
 							__("Sales Invoice"),
 							() => me.make_sales_invoice(),
-							__("Create")
+							__("Action")
 						);
 					}
 
 					// material request
-					if (
-						!doc.order_type ||
-						((order_is_a_sale || order_is_a_custom_sale) && flt(doc.per_delivered, 2) < 100)
-					) {
-						this.frm.add_custom_button(
-							__("Material Request"),
-							() => this.make_material_request(),
-							__("Create")
-						);
-						this.frm.add_custom_button(
-							__("Request for Raw Materials"),
-							() => this.make_raw_material_request(),
-							__("Create")
-						);
-					}
+					// if (
+					// 	!doc.order_type ||
+					// 	((order_is_a_sale || order_is_a_custom_sale) && flt(doc.per_delivered, 2) < 100)
+					// ) {
+					// 	this.frm.add_custom_button(
+					// 		__("Material Request"),
+					// 		() => this.make_material_request(),
+					// 		__("Action")
+					// 	);
+					// 	this.frm.add_custom_button(
+					// 		__("Request for Raw Materials"),
+					// 		() => this.make_raw_material_request(),
+					// 		__("Action")
+					// 	);
+					// }
 
 					// Make Purchase Order
-					if (!this.frm.doc.is_internal_customer) {
-						this.frm.add_custom_button(
-							__("Purchase Order"),
-							() => this.make_purchase_order(),
-							__("Create")
-						);
-					}
+					// if (!this.frm.doc.is_internal_customer) {
+					// 	this.frm.add_custom_button(
+					// 		__("Purchase Order"),
+					// 		() => this.make_purchase_order(),
+					// 		__("Action")
+					// 	);
+					// }
 
 					// maintenance
-					if (flt(doc.per_delivered, 2) < 100 && (order_is_maintenance || order_is_a_custom_sale)) {
-						this.frm.add_custom_button(
-							__("Maintenance Visit"),
-							() => this.make_maintenance_visit(),
-							__("Create")
-						);
-						this.frm.add_custom_button(
-							__("Maintenance Schedule"),
-							() => this.make_maintenance_schedule(),
-							__("Create")
-						);
-					}
+					// if (flt(doc.per_delivered, 2) < 100 && (order_is_maintenance || order_is_a_custom_sale)) {
+					// 	this.frm.add_custom_button(
+					// 		__("Maintenance Visit"),
+					// 		() => this.make_maintenance_visit(),
+					// 		__("Action")
+					// 	);
+					// 	this.frm.add_custom_button(
+					// 		__("Maintenance Schedule"),
+					// 		() => this.make_maintenance_schedule(),
+					// 		__("Action")
+					// 	);
+					// }
 
-					// project
-					if (flt(doc.per_delivered, 2) < 100) {
-						this.frm.add_custom_button(__("Project"), () => this.make_project(), __("Create"));
-					}
+					// // project
+					// if (flt(doc.per_delivered, 2) < 100) {
+					// 	this.frm.add_custom_button(__("Project"), () => this.make_project(), __("Action"));
+					// }
 
-					if (doc.docstatus === 1 && !doc.inter_company_order_reference) {
-						let me = this;
-						let internal = me.frm.doc.is_internal_customer;
-						if (internal) {
-							let button_label =
-								me.frm.doc.company === me.frm.doc.represents_company
-									? "Internal Purchase Order"
-									: "Inter Company Purchase Order";
+					// if (doc.docstatus === 1 && !doc.inter_company_order_reference) {
+					// 	let me = this;
+					// 	let internal = me.frm.doc.is_internal_customer;
+					// 	if (internal) {
+					// 		let button_label =
+					// 			me.frm.doc.company === me.frm.doc.represents_company
+					// 				? "Internal Purchase Order"
+					// 				: "Inter Company Purchase Order";
 
-							me.frm.add_custom_button(
-								button_label,
-								function () {
-									me.make_inter_company_order();
-								},
-								__("Create")
-							);
-						}
-					}
+					// 		me.frm.add_custom_button(
+					// 			button_label,
+					// 			function () {
+					// 				me.make_inter_company_order();
+					// 			},
+					// 			__("Action")
+					// 		);
+					// 	}
+					// }
 				}
 				// payment request
-				if (
-					flt(doc.per_billed, precision("per_billed", doc)) <
-					100 + frappe.boot.sysdefaults.over_billing_allowance
-				) {
-					this.frm.add_custom_button(
-						__("Payment Request"),
-						() => this.make_payment_request(),
-						__("Create")
-					);
-					this.frm.add_custom_button(__("Payment"), () => this.make_payment_entry(), __("Create"));
-				}
-				this.frm.page.set_inner_btn_group_as_primary(__("Create"));
+				// if (
+				// 	flt(doc.per_billed, precision("per_billed", doc)) <
+				// 	100 + frappe.boot.sysdefaults.over_billing_allowance && doc.status != 'RENEWED'
+				// ) {
+				// 	this.frm.add_custom_button(
+				// 		__("Payment Request"),
+				// 		() => this.make_payment_request(),
+				// 		__("Action")
+				// 	);
+				// 	this.frm.add_custom_button(__("Payment"), () => this.make_payment_entry(), __("Action"));
+				// }
+				// this.frm.page.set_inner_btn_group_as_primary(__("Action"));
 			}
 		}
 
@@ -1074,6 +1245,647 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 		frappe.model.open_mapped_doc({
 			method: "erpnext.selling.doctype.sales_order.sales_order.make_sales_invoice",
 			frm: this.frm,
+		});
+	}
+
+	make_approved() {
+        frappe.call({
+            method: 'erpnext.selling.doctype.sales_order.sales_order.make_approved',
+            args: {
+                docname: this.frm.doc.name,
+            },
+            callback: (response) => {
+                // Handle the response
+                if (response.message) {
+                    // Log the result to the console
+                    console.log(response.message);
+    
+                    // Display a success message
+                    frappe.msgprint({
+                        title: __('Success'),
+                        message: __('Rental Sales Order Approved successfully.'),
+                        indicator: 'green'
+                    });
+    
+                    // Reload the entire page after a short delay (adjust as needed)
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000); // 1000 milliseconds = 1 second
+                } else {
+                    // Handle the case where the response does not contain a message
+                    console.error('Unexpected response:', response);
+                }
+            }
+        });
+    }
+
+
+	close_rental_sales_order() {
+        frappe.call({
+            method: 'erpnext.selling.doctype.sales_order.sales_order.close_rental_order',
+            args: {
+                docname: this.frm.doc.name,
+            },
+            callback: function (response) {
+				// Handle the response
+				if (response.message) {
+					// Display an alert directly in the Frappe UI
+					frappe.show_alert({
+						message: __('Document Close successfully.'),
+						indicator: 'green'
+					});
+
+					// Reload the entire page after a short delay (adjust as needed)
+					setTimeout(() => {
+						window.location.reload();
+					}, 1000); // 1000 milliseconds = 1 second
+				} else {
+					// Handle the case where the response does not contain a message
+					console.error('Unexpected response:', response);
+				}
+			}
+        });
+    }
+
+    hold_rental_sales_order() {
+		var me = this;
+	
+		var d = new frappe.ui.Dialog({
+			title: __('Reason for Hold'),
+			fields: [
+				{
+					"fieldname": "reason_for_hold",
+					"fieldtype": "Text",
+					"reqd": 1,
+				}
+			],
+			primary_action: function () {
+				var data = d.get_values();
+				frappe.call({
+					method: "frappe.desk.form.utils.add_comment",
+					args: {
+						reference_doctype: me.frm.doctype,
+						reference_name: me.frm.docname,
+						content: __('Reason for hold:') + ' ' + data.reason_for_hold,
+						comment_email: frappe.session.user,
+						comment_by: frappe.session.user_fullname
+					},
+					callback: function (r) {
+						if (!r.exc) {
+							// Comment added successfully, now proceed with holding the document
+							// me.update_status('Hold', 'On Hold');
+	
+							// Hide the dialog
+							d.hide();
+	
+							// Call the on_hold method
+							frappe.call({
+								method: 'erpnext.selling.doctype.sales_order.sales_order.on_hold',
+								args: {
+									docname: me.frm.doc.name,
+								},
+								callback: function (response) {
+									// Handle the response
+									if (response.message) {
+										// Display an alert directly in the Frappe UI
+										frappe.show_alert({
+											message: __('Document Hold successfully.'),
+											indicator: 'green'
+										});
+	
+										// Reload the entire page after a short delay (adjust as needed)
+										setTimeout(() => {
+											window.location.reload();
+										}, 1000); // 1000 milliseconds = 1 second
+									} else {
+										// Handle the case where the response does not contain a message
+										console.error('Unexpected response:', response);
+									}
+								}
+							});
+						}
+					}
+				});
+			}
+		});
+	
+		d.show();
+	}
+	
+    
+
+	make_rental_device_assign() {
+		const itemGroups = cur_frm.doc.items.map(item => item.item_group).filter(Boolean).filter((value, index, self) => self.indexOf(value) === index);
+	
+		frappe.prompt([
+			{
+				label: 'Item Group',
+				fieldname: 'item_group',
+				fieldtype: 'Link',
+				options: 'Item Group',
+				reqd: 1,
+				read_only: 1,
+				default: cur_frm.doc.items[0].item_group,  // Set a default value based on the first item's group (adjust as needed)
+				get_query: function () {
+					return {
+						filters: {
+							'name': ['in', itemGroups]
+						}
+					};
+				}
+			},
+			{
+				label: 'Item Code',
+				fieldname: 'item_code1',
+				fieldtype: 'Link',
+				options: 'Item',
+				reqd: 1,
+				get_query: function (doc, cdt, cdn) {
+					const selectedGroup = cur_dialog.fields_dict.item_group.get_value();
+					return {
+						filters: {
+							'item_group': selectedGroup,
+							'status': 'Available'  // Replace 'availability_status' with the actual field name for item availability
+						}
+					};
+				}
+			},
+			// Add more fields as neededmake_submitted_to_office
+		], (values) => {
+			// values will contain the entered data
+			// console.log(values);
+	
+			// Update Sales Order with the entered values
+			this.frm.doc.item_group = values.item_group;
+			this.frm.doc.item_code1 = values.item_code1;
+	
+			// Optionally, refresh the form to reflect the changes
+			this.frm.refresh();
+	
+			// Now call the server-side method only after the user submits the device details
+			this.callServerMethod(values);
+		}, __('Rental Device Details'));
+	}
+	
+	
+
+	
+    
+    callServerMethod(values) {
+        frappe.call({
+            method: 'erpnext.selling.doctype.sales_order.sales_order.make_rental_device_assign',
+            args: {
+                docname: this.frm.doc.name,
+                item_group: values.item_group,
+                item_code1: values.item_code1
+            },
+            callback: (response) => {
+                // Handle the response from the server
+                if (response.message) {
+                    // Display a success message
+                    frappe.msgprint({
+                        title: __('Success'),
+                        message: __('Rental Device Assigned successfully.'),
+                        indicator: 'green'
+                    });
+                    // this.frm.save();
+                    // Reload the entire page after a short delay (adjust as needed)
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000); 
+                }
+            }
+        });
+    }
+
+
+
+    make_ready_for_delivery() {
+		const me = this; // Preserve reference to 'this' object
+	
+		frappe.prompt([
+			{
+				fieldname: 'technician_name',
+				fieldtype: 'Link',
+				options: 'Technician Details',
+				label: 'Technician Name',
+				reqd: 1,
+				onchange: function() {
+					// Function to dynamically update technician mobile based on selected technician
+					var technicianName = this.value;
+					if (technicianName) {
+						frappe.call({
+							method: 'frappe.client.get_value',
+							args: {
+								doctype: 'Technician Details',
+								filters: { 'name': technicianName },
+								fieldname: ['mobile_number']
+							},
+							callback: function(response) {
+								if (response.message && response.message.mobile_number) {
+									// Set the value of technician mobile
+									cur_dialog.fields_dict.technician_mobile.set_input(response.message.mobile_number);
+								}
+							}
+						});
+					}
+				}
+			},
+			{
+				fieldname: 'technician_mobile',
+				fieldtype: 'Data',
+				label: 'Technician Mobile Number',
+				reqd: 1
+			}
+		], function(values) {
+			var technicianName = values.technician_name;
+			var technicianMobile = values.technician_mobile;
+	
+			// Call the Python function passing the technician details
+			frappe.call({
+				method: 'erpnext.selling.doctype.sales_order.sales_order.make_ready_for_delivery', // Change to your actual module, doctype, and file name
+				args: {
+					docname: me.frm.doc.name, // Use me.frm.doc.name instead of this.frm.doc.name
+					technician_name: technicianName,
+					technician_mobile: technicianMobile
+				},
+				callback: function(response) {
+					// Handle the response
+					if (response.message) {
+						// Log the result to the console
+						console.log(response.message);
+		
+						// Display a success message
+						frappe.msgprint({
+							title: __('Success'),
+							message: __('Device is Ready For Delivery.'),
+							indicator: 'green'
+						});
+						// Reload the entire page after a short delay (adjust as needed)
+						setTimeout(() => {
+							window.location.reload();
+						}, 1000); // 1000 milliseconds = 1 second
+					} else {
+						// Handle the case where the response does not contain a message
+						console.error('Unexpected response:', response);
+					}
+				}
+			});
+		}, 'Technician Details', 'Submit');
+	}
+	
+	
+    
+    
+
+	make_dispatch() {
+		frappe.prompt([
+			{
+				label: 'Dispatch Date',
+				fieldname: 'dispatch_date',
+				fieldtype: 'Date',
+				default:'Today',
+				reqd: 1
+			}
+		], (values) => {
+			// values will contain the entered data
+			// console.log(values);
+
+			// Update RentalSales Order with the entered values
+			this.frm.doc.dispatch_date = values.dispatch_date;
+
+			// Save the document before calling the server-side method
+			// this.frm.save(() => {
+				// Optionally, refresh the form to reflect the changes
+				this.frm.refresh();
+
+				// Now call the server-side method only after the user submits the dispatch date
+				this.callServerMethodForDispatch(values);
+			// });
+		}, __('DISPATCHED'));
+	}
+	callServerMethodForDispatch(values) {
+		frappe.call({
+			method: 'erpnext.selling.doctype.sales_order.sales_order.make_dispatch',
+			args: {
+				docname: this.frm.doc.name,
+				dispatch_date: values.dispatch_date  // Pass dispatch_date to the server
+			},
+			callback: (response) => {
+				// Handle the response from the server
+				if (response.message) {
+					// Display a success message
+					frappe.msgprint({
+						title: __('Success'),
+						message: __('Rental Device dispatch successfully.'),
+						indicator: 'green'
+					});
+
+					// Reload the entire page after a short delay (adjust as needed)
+					setTimeout(() => {
+						window.location.reload();
+					}, 1000);
+				}
+			}
+		});
+	}
+
+
+		
+
+	make_delivered() {
+		frappe.prompt([
+			{
+				label: 'Delivered Date',
+				fieldname: 'delivered_date',
+				fieldtype: 'Datetime',
+				default:'Now',
+				reqd: 1
+			}
+		], (values) => {
+			// values will contain the entered data
+			// console.log(values);
+
+			// Update RentalSales Order with the entered values
+			this.frm.doc.delivered_date = values.delivered_date;
+
+			// Save the document before calling the server-side method
+			// this.frm.save(() => {
+				// Optionally, refresh the form to reflect the changes
+				this.frm.refresh();
+
+				// Now call the server-side method only after the user submits the dispatch date
+				this.callServerMethodForDelivered(values);
+			// });
+		}, __('DELIVERED'));
+	}
+
+	callServerMethodForDelivered(values) {
+		frappe.call({
+			method: 'erpnext.selling.doctype.sales_order.sales_order.make_delivered',
+			args: {
+				// item_code1: this.frm.doc.item_code1,
+				docname: this.frm.doc.name,
+				delivered_date: values.delivered_date  // Pass dispatch_date to the server
+			},
+			callback: (response) => {
+				// Handle the response from the server
+				if (response.message) {
+					// Display a success message
+					frappe.msgprint({
+						title: __('Success'),
+						message: __('Rental Device Delivered successfully.'),
+						indicator: 'green'
+					});
+
+					// Reload the entire page after a short delay (adjust as needed)
+					setTimeout(() => {
+						window.location.reload();
+					}, 1000);
+				}
+			}
+		});
+	}
+	make_ready_for_pickup() {
+		frappe.prompt([
+			{
+				fieldname: 'technician_name',
+				fieldtype: 'Link',
+				options: 'Technician Details',
+				label: 'Technician Name',
+				reqd: 1,
+				onchange: function() {
+					// Function to dynamically update technician mobile based on selected technician
+					var technicianName = this.value;
+					if (technicianName) {
+						frappe.call({
+							method: 'frappe.client.get_value',
+							args: {
+								doctype: 'Technician Details',
+								filters: { 'name': technicianName },
+								fieldname: ['mobile_number']
+							},
+							callback: function(response) {
+								if (response.message && response.message.mobile_number) {
+									// Set the value of technician mobile
+									cur_dialog.fields_dict.technician_mobile.set_input(response.message.mobile_number);
+								}
+							}
+						});
+					}
+				}
+			},
+			{
+				fieldname: 'technician_mobile',
+				fieldtype: 'Data',
+				label: 'Technician Mobile Number',
+				// reqd: 1
+			},
+			{
+				label: 'Pickup Date',
+				fieldname: 'pickup_date',
+				fieldtype: 'Datetime',
+				default:'Now',
+				reqd: 1
+			},
+			{
+				fieldname: 'pickup_reason',
+				fieldtype: 'Select',
+				label: 'Pick Up Reason',
+				options: 'Patient recovered\nPatient Expired\nPurchased Device from Us\nPurchased Device from Others\nOther Reason',
+				reqd: 1
+			},
+			{
+				fieldname: 'pickup_remark',
+				fieldtype: 'Small Text',
+				label: 'Pick Up Remark',
+				reqd: 1
+			}
+		], (values) => {
+			// Update RentalSales Order with the entered values
+			this.frm.doc.technician_name = values.technician_name;
+			this.frm.doc.technician_mobile = values.technician_mobile;
+			this.frm.doc.Pickup_Date = values.pickup_date;
+			this.frm.doc.pickup_reason = values.pickup_reason;
+			this.frm.doc.pickup_remark = values.pickup_remark;
+
+			// Save the document before calling the server-side method
+			// this.frm.save(() => {
+				// Optionally, refresh the form to reflect the changes
+				this.frm.refresh();
+
+				// Now call the server-side method only after the user submits the pickup date
+				this.callServerMethodForReadyForPickup(values);
+			// });
+		}, __('Ready for Pickup'));
+	}
+
+	callServerMethodForReadyForPickup(values) {
+		frappe.call({
+			method: 'erpnext.selling.doctype.sales_order.sales_order.make_ready_for_pickup',
+			args: {
+				docname: this.frm.doc.name,
+				technician_name: values.technician_name,
+				technician_mobile: values.technician_mobile,
+				pickup_date: values.pickup_date,
+				pickup_reason: values.pickup_reason,
+				pickup_remark: values.pickup_remark
+			},
+			callback: (response) => {
+				// Handle the response from the server
+				if (response.message) {
+					// Display a success message
+					frappe.msgprint({
+						title: __('Success'),
+						message: __('RentalSales Order is Ready for Pickup.'),
+						indicator: 'green'
+					});
+
+					// Reload the entire page after a short delay (adjust as needed)
+					setTimeout(() => {
+						window.location.reload();
+					}, 1000);
+				}
+			}
+		});
+	}
+
+	make_pickedup() {
+		frappe.prompt([
+			// {
+			// 	fieldname: 'technician_name',
+			// 	fieldtype: 'Link',
+			// 	options: 'Technician Details',
+			// 	label: 'Technician Name',
+			// 	reqd: 1,
+			// 	onchange: function() {
+			// 		// Function to dynamically update technician mobile based on selected technician
+			// 		var technicianName = this.value;
+			// 		if (technicianName) {
+			// 			frappe.call({
+			// 				method: 'frappe.client.get_value',
+			// 				args: {
+			// 					doctype: 'Technician Details',
+			// 					filters: { 'name': technicianName },
+			// 					fieldname: ['mobile_number']
+			// 				},
+			// 				callback: function(response) {
+			// 					if (response.message && response.message.mobile_number) {
+			// 						// Set the value of technician mobile
+			// 						cur_dialog.fields_dict.technician_mobile.set_input(response.message.mobile_number);
+			// 					}
+			// 				}
+			// 			});
+			// 		}
+			// 	}
+			// },
+			// {
+			// 	fieldname: 'technician_mobile',
+			// 	fieldtype: 'Data',
+			// 	label: 'Technician Mobile Number',
+			// 	// reqd: 1
+			// }
+			{
+				label: 'Pick Up Date and Time',
+				fieldname: 'pickup_date',
+				fieldtype: 'Datetime',
+				default:'Now',
+				reqd: 1
+			}
+			// Add more fields as needed
+		], (values) => {
+			// values will contain the entered data
+
+			// Update RentalSales Order with the entered values
+			this.frm.doc.pickup_date = values.pickup_date;
+			// this.frm.doc.technician_mobile = values.technician_mobile;
+
+			// Optionally, refresh the form to reflect the changes
+			this.frm.refresh();
+
+			// Now call the server-side method only after the user submits the technician details
+			this.callServerMethodForPickedup(values);
+		}, __('Picked Up'));
+	}
+
+	callServerMethodForPickedup(values) {
+		frappe.call({
+			method: 'erpnext.selling.doctype.sales_order.sales_order.make_pickedup',
+			args: {
+				docname: this.frm.doc.name,
+				pickup_date: values.pickup_date,
+				// technician_mobile: values.technician_mobile
+			},
+			callback: (response) => {
+				// Handle the response from the server
+				if (response.message) {
+					// Display a success message	
+					frappe.msgprint({
+						title: __('Success'),
+						message: __('RentalSales Order is picked up.'),
+						indicator: 'green'
+					});
+					// this.frm.save();
+					// Reload the entire page after a short delay (adjust as needed)
+					setTimeout(() => {
+						window.location.reload();
+					}, 1000);
+				}
+			}
+		});
+	}
+	make_submitted_to_office() {
+		frappe.prompt([
+			{
+				label: 'Submitted Date',
+				fieldname: 'submitted_date',
+				fieldtype: 'Datetime',
+				default:'Now',
+				reqd: 1
+			}
+			// Add more fields as needed
+		], (values) => {
+			// values will contain the entered data
+
+			// Update RentalSales Order with the entered values
+			this.frm.doc.submitted_date = values.submitted_date;
+			// this.frm.doc.rental_device_id = values.device_id;
+
+			// Optionally, refresh the form to reflect the changes
+			this.frm.refresh();
+
+			// Now call the server-side method only after the user submits the device details
+			this.callServerMethodForSubmittedToOffice(values);
+		}, __('Rental Device Details'));
+	}
+
+	callServerMethodForSubmittedToOffice(values) {
+		const itemCodes = this.frm.doc.items.map(item => item.item_code);
+		console.log(itemCodes)
+		frappe.call({
+			method: 'erpnext.selling.doctype.sales_order.sales_order.make_submitted_to_office',
+			args: {
+				docname: this.frm.doc.name,
+				item_code: itemCodes,  // Pass the array of item codes
+				submitted_date: values.submitted_date
+				// device_id: values.device_id
+			},
+			callback: (response) => {
+				// Handle the response from the server
+				if (response.message) {
+					// Display a success message
+					frappe.msgprint({
+						title: __('Success'),
+						message: __('Submitted to Office successfully.'),
+						indicator: 'green'
+					});
+					// this.frm.save();
+					// Reload the entire page after a short delay (adjust as needed)
+					setTimeout(() => {
+						window.location.reload();
+					}, 1000);
+				}
+			}
 		});
 	}
 
