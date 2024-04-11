@@ -197,7 +197,6 @@
    "fieldname": "user_remark",
    "fieldtype": "Small Text",
    "label": "User Remark",
-   "no_copy": 1,
    "oldfieldname": "user_remark",
    "oldfieldtype": "Small Text",
    "print_hide": 1
@@ -635,7 +634,7 @@
    "table_fieldname": "payment_entries"
   }
  ],
- "modified": "2024-04-08 10:13:07.791367",
+ "modified": "2024-04-11 19:51:22.682852",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Journal Entry",

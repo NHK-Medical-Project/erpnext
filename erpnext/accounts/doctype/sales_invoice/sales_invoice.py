@@ -65,6 +65,7 @@ class SalesInvoice(SellingController):
 		additional_discount_account: DF.Link | None
 		additional_discount_percentage: DF.Float
 		address_display: DF.SmallText | None
+		adjusted_sales_order_id: DF.Data | None
 		advances: DF.Table[SalesInvoiceAdvance]
 		against_income_account: DF.SmallText | None
 		allocate_advances_automatically: DF.Check
@@ -155,6 +156,7 @@ class SalesInvoice(SellingController):
 		pricing_rules: DF.Table[PricingRuleDetail]
 		project: DF.Link | None
 		redeem_loyalty_points: DF.Check
+		remark: DF.SmallText | None
 		remarks: DF.SmallText | None
 		repost_required: DF.Check
 		represents_company: DF.Link | None

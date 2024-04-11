@@ -120,7 +120,7 @@ class SalesOrder(SellingController):
         letter_head: DF.Link | None
         loyalty_amount: DF.Currency
         loyalty_points: DF.Int
-        master_order_id: DF.Link | None
+        master_order_id: DF.Data | None
         named_place: DF.Data | None
         naming_series: DF.Literal["SAL-ORD-.YYYY.-"]
         net_total: DF.Currency
@@ -144,7 +144,7 @@ class SalesOrder(SellingController):
         plc_conversion_rate: DF.Float
         po_date: DF.Date | None
         po_no: DF.Data | None
-        previous_order_id: DF.Link | None
+        previous_order_id: DF.Data | None
         price_list_currency: DF.Link
         pricing_rules: DF.Table[PricingRuleDetail]
         project: DF.Link | None
@@ -2912,10 +2912,10 @@ def validate_and_update_payment_and_security_deposit_status(docname,master_order
         sales_order.security_deposit_amount_return_to_client = total_debit_amount_refund
 
         # Calculate refundable security deposit
-        refundable_security_deposit = sales_order.paid_security_deposite_amount - sales_order.adjustment_amount - total_debit_amount_refund
+        # refundable_security_deposit = sales_order.paid_security_deposite_amount - sales_order.adjustment_amount - total_debit_amount_refund
 
         # Update refundable security deposit field
-        sales_order.refundable_security_deposit = refundable_security_deposit
+        sales_order.refundable_security_deposit = sales_order.paid_security_deposite_amount - sales_order.adjustment_amount - total_debit_amount_refund
 
         # Determine security deposit status based on outstanding amount
         if outstanding_security_deposit_amount == 0:
@@ -3394,7 +3394,7 @@ def return_security_deposit(amount_to_return, remark, master_order_id, sales_ord
                     "credit_in_account_currency": amount_to_return,
                 }
             ],
-            "remarks": remark,
+            "user_remark": remark,
             "master_order_id": master_order_id,
             "sales_order_id": sales_order_id,
             "customer_id": customer,
@@ -3429,13 +3429,13 @@ import frappe
 from frappe import _
 
 @frappe.whitelist()
-def process_adjustment(adjust_against,adjust_amount,refundable_security_deposit,sales_order_name,master_order_id,customer,item=None,item_remark=None):
+def process_adjustment(adjust_against,adjust_amount,refundable_security_deposit,sales_order_name,master_order_id,customer,item=None,item_remark=None,sales_order=None):
     print("item:", item)
     print("item_remark:", item_remark)
     if adjust_against == "Product Damaged":
         create_journal_entry_adjustment(adjust_against,adjust_amount,refundable_security_deposit,sales_order_name,master_order_id,customer, item, item_remark)
     elif adjust_against == "Sales Order":
-        create_sales_invoice(adjust_against,adjust_amount,refundable_security_deposit,sales_order_name,master_order_id,customer)
+        create_sales_invoice(adjust_against,adjust_amount,refundable_security_deposit,sales_order_name,master_order_id,customer,item_remark,sales_order)
     else:
         frappe.throw(_("Invalid adjustment type."))
 
@@ -3476,7 +3476,8 @@ def create_journal_entry_adjustment(adjust_against, adjust_amount, refundable_se
             "journal_entry_type": "Security Deposit",
             "security_deposite_type": "Adjusted Device Damage Charges",
             "transactional_effect":"Minus",
-            "customer_id": customer
+            "customer_id": customer,
+            "user_remark": f"Adjusted Security Deposit Against Product Damage and Item Code is {item} and Remark Is {item_remark}",
         })
 
         # Save the journal entry
@@ -3493,7 +3494,7 @@ def create_journal_entry_adjustment(adjust_against, adjust_amount, refundable_se
 
 
 
-def create_sales_invoice(adjust_against, adjust_amount, refundable_security_deposit, sales_order_name, master_order_id, customer):
+def create_sales_invoice(adjust_against, adjust_amount, refundable_security_deposit, sales_order_name, master_order_id, customer, item_remark=None, sales_order=None):
     try:
         # Create a new Sales Invoice document
         sales_invoice = frappe.new_doc("Sales Invoice")
@@ -3503,6 +3504,8 @@ def create_sales_invoice(adjust_against, adjust_amount, refundable_security_depo
         sales_invoice.company = frappe.defaults.get_user_default("company")
         sales_invoice.currency = frappe.defaults.get_user_default("currency")
         sales_invoice.sd_adjustment = 1
+        sales_invoice.adjusted_sales_order_id = sales_order
+        sales_invoice.remark = f"Adjusted Security Deposit Against Sales Order {sales_order} and Remark Is {item_remark}"
 
         # Add items based on adjust_amount from Sales Order Adjustment
         sales_invoice.append("items", {
@@ -3521,7 +3524,7 @@ def create_sales_invoice(adjust_against, adjust_amount, refundable_security_depo
         sales_invoice.save()
 
         # Optionally, you can update some fields in the Sales Order or perform other operations if needed
-        create_journal_entry_for_sales_order_adjustment(adjust_against, adjust_amount, refundable_security_deposit, sales_order_name, master_order_id, customer)
+        create_journal_entry_for_sales_order_adjustment(adjust_against, adjust_amount, refundable_security_deposit, sales_order_name, master_order_id, customer, item_remark, sales_order)
         return sales_invoice.name  # Return the name of the created Sales Invoice
 
     except Exception as e:
@@ -3530,7 +3533,7 @@ def create_sales_invoice(adjust_against, adjust_amount, refundable_security_depo
         frappe.throw(_("Failed to create sales invoice. Error: {0}".format(str(e))))
 
 
-def create_journal_entry_for_sales_order_adjustment(adjust_against, adjust_amount, refundable_security_deposit, sales_order_name, master_order_id, customer):
+def create_journal_entry_for_sales_order_adjustment(adjust_against, adjust_amount, refundable_security_deposit, sales_order_name, master_order_id, customer,item_remark=None,sales_order=None):
     try:
         # Create a new Journal Entry document
         journal_entry = frappe.get_doc({
@@ -3551,13 +3554,15 @@ def create_journal_entry_for_sales_order_adjustment(adjust_against, adjust_amoun
                     "credit_in_account_currency": adjust_amount,
                 }
             ],
-            "remarks": f"Return Security Deposit for Sales Order {sales_order_name}",
+            # "remarks": f"Return Security Deposit for Sales Order {sales_order_name}",
             "master_order_id": master_order_id,
             "sales_order_id": sales_order_name,
             "journal_entry_type": "Security Deposit",
             "security_deposite_type": "Adjusted Against Sales Order Rental Charges",
             "transactional_effect":"Minus",
-            "customer_id": customer
+            "customer_id": customer,
+            "user_remark": f"Adjusted Security Deposit Against Sales Order {sales_order}  and Remark Is {item_remark}",
+
         })
 
         # Save the journal entry
@@ -3600,4 +3605,24 @@ def update_security_deposit(master_order_id, remark, updated_security_deposit):
     except Exception as e:
         frappe.log_error(frappe.get_traceback(), "Failed to update security deposit")
         return False
+
+
+
+
+
+@frappe.whitelist()
+def get_sales_orders(master_order_id):
+    try:
+        # Query sales orders based on the provided master_order_id
+        sales_orders_names = frappe.get_all("Sales Order", filters={"master_order_id": master_order_id}, fields=["name"])
+        
+        # Extract the names from the result list
+        # sales_order = [order.get("name") for order in sales_orders]
+        
+        # Return the list of sales order names
+        print(sales_orders_names)
+        return sales_orders_names
+    except Exception as e:
+        frappe.log_error(frappe.get_traceback(), "Failed to fetch sales orders")
+        return None
 
