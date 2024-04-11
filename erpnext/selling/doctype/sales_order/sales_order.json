@@ -103,17 +103,6 @@
   "packed_items",
   "pricing_rule_details",
   "pricing_rules",
-  "security_deposit_tab",
-  "outstanding_security_deposit_amount",
-  "security_deposit_status",
-  "column_break_xnrd",
-  "paid_security_deposite_amount",
-  "refundable_security_deposit",
-  "security_deposit_amount_return_to_client",
-  "journal_entry_details_section",
-  "journal_entry_details",
-  "payment_entry_details_section",
-  "payment_entry_details",
   "device_details_tab",
   "dispatched_section",
   "rental_delivery_date",
@@ -141,6 +130,20 @@
   "renewal_details_tab",
   "renewal_details_section",
   "renewal_details",
+  "security_deposit_tab",
+  "outstanding_security_deposit_amount",
+  "security_deposit_status",
+  "adjustment_amount",
+  "column_break_xnrd",
+  "paid_security_deposite_amount",
+  "refundable_security_deposit",
+  "security_deposit_amount_return_to_client",
+  "security_deposit_revised_remark",
+  "journal_entry_details_section",
+  "journal_entry_details",
+  "payment_details_tab",
+  "payment_details_section",
+  "payment_entry_details",
   "contact_info",
   "billing_address_column",
   "customer_address",
@@ -1318,7 +1321,7 @@
    "no_copy": 1,
    "oldfieldname": "status",
    "oldfieldtype": "Select",
-   "options": "Draft\nPending\nApproved\nRental Device Assigned\nReady for Delivery\nDISPATCHED\nDELIVERED\nActive\nReady for Pickup\nPicked Up\nSubmitted to Office\nOn Hold\nOverdue\nRENEWED\nTo Pay\nTo Deliver and Bill\nTo Bill\nTo Deliver\nCompleted\nCancelled\nClosed\nPartially Closed",
+   "options": "Draft\nPending\nApproved\nRental Device Assigned\nReady for Delivery\nDISPATCHED\nDELIVERED\nActive\nReady for Pickup\nPicked Up\nSubmitted to Office\nOn Hold\nOverdue\nRENEWED\nTo Pay\nTo Deliver and Bill\nTo Bill\nTo Deliver\nCompleted\nCancelled\nClosed\nPartially Closed\nOrder",
    "print_hide": 1,
    "read_only": 1,
    "reqd": 1,
@@ -1870,10 +1873,12 @@
    "label": "Item Replaced Details"
   },
   {
-   "default": "0",
+   "allow_on_submit": 1,
+   "depends_on": "eval:doc.order_type == 'Rental'",
    "fieldname": "security_deposit",
    "fieldtype": "Data",
-   "label": "Security Deposit"
+   "label": "Security Deposit",
+   "mandatory_depends_on": "eval:doc.order_type == 'Rental'"
   },
   {
    "allow_on_submit": 1,
@@ -1947,19 +1952,22 @@
    "fieldname": "security_deposit_status",
    "fieldtype": "Select",
    "label": "Security Deposit Status",
-   "options": "Unpaid\nPaid\nPartially Paid"
+   "options": "Unpaid\nPaid\nPartially Paid",
+   "read_only": 1
   },
   {
    "allow_on_submit": 1,
    "fieldname": "outstanding_security_deposit_amount",
    "fieldtype": "Currency",
-   "label": "Outstanding Security Deposit Amount"
+   "label": "Outstanding Security Deposit Amount",
+   "read_only": 1
   },
   {
    "allow_on_submit": 1,
    "fieldname": "paid_security_deposite_amount",
    "fieldtype": "Currency",
-   "label": "Paid Security Deposit Amount"
+   "label": "Paid Security Deposit Amount",
+   "read_only": 1
   },
   {
    "depends_on": "eval:doc.order_type == 'Rental'",
@@ -1982,11 +1990,6 @@
    "label": "Journal Entry Details"
   },
   {
-   "fieldname": "payment_entry_details_section",
-   "fieldtype": "Section Break",
-   "label": "Payment Entry Details"
-  },
-  {
    "fieldname": "payment_entry_details",
    "fieldtype": "HTML",
    "label": "Payment Entry Details"
@@ -1995,19 +1998,48 @@
    "allow_on_submit": 1,
    "fieldname": "refundable_security_deposit",
    "fieldtype": "Currency",
-   "label": "Refundable Security Deposit"
+   "label": "Refundable Security Deposit",
+   "non_negative": 1,
+   "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "security_deposit_amount_return_to_client",
    "fieldtype": "Currency",
-   "label": "Security Deposit Amount Return to Client"
+   "label": "Security Deposit Amount Return to Client",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "adjustment_amount",
+   "fieldtype": "Currency",
+   "label": "Adjustment Amount",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "payment_details_tab",
+   "fieldtype": "Tab Break",
+   "label": "Payment Details"
+  },
+  {
+   "fieldname": "payment_details_section",
+   "fieldtype": "Section Break",
+   "label": "Payment Details"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "security_deposit_revised_remark",
+   "fieldtype": "Small Text",
+   "label": "Security Deposit Revised Remark",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-file-text",
  "idx": 105,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-04-03 19:02:45.431281",
+ "modified": "2024-04-10 18:47:57.420996",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order",
@@ -2140,6 +2172,10 @@
   {
    "color": "Red",
    "title": "RENEWED"
+  },
+  {
+   "color": "Green",
+   "title": "Order"
   }
  ],
  "timeline_field": "customer",

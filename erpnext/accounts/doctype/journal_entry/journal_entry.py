@@ -59,6 +59,7 @@ class JournalEntry(AccountsController):
 		clearance_date: DF.Date | None
 		company: DF.Link
 		created_by: DF.Link | None
+		customer_id: DF.Link | None
 		difference: DF.Currency
 		due_date: DF.Date | None
 		finance_book: DF.Link | None
@@ -69,6 +70,7 @@ class JournalEntry(AccountsController):
 		journal_entry_type: DF.Literal["", "Security Deposit"]
 		letter_head: DF.Link | None
 		master_order_id: DF.Link | None
+		mode_of__payment: DF.Link | None
 		mode_of_payment: DF.Link | None
 		multi_currency: DF.Check
 		naming_series: DF.Literal["ACC-JV-.YYYY.-"]
@@ -81,7 +83,7 @@ class JournalEntry(AccountsController):
 		repost_required: DF.Check
 		reversal_of: DF.Link | None
 		sales_order_id: DF.Link | None
-		security_deposite_type: DF.Literal["", "Booking as Advance From Client", "Cash Received From Client", "Return to Client"]
+		security_deposite_type: DF.Literal["", "Booking as Outstanding SD From Client", "Cash Received SD From Client", "Refunding SD to Client", "Adjusted Device Damage Charges", "Adjusted Against Sales Order Rental Charges"]
 		select_print_heading: DF.Link | None
 		stock_entry: DF.Link | None
 		tax_withholding_category: DF.Link | None
@@ -91,6 +93,7 @@ class JournalEntry(AccountsController):
 		total_amount_in_words: DF.Data | None
 		total_credit: DF.Currency
 		total_debit: DF.Currency
+		transactional_effect: DF.Literal["NA", "Plus", "Minus"]
 		user_remark: DF.SmallText | None
 		voucher_type: DF.Literal["Journal Entry", "Inter Company Journal Entry", "Bank Entry", "Cash Entry", "Credit Card Entry", "Debit Note", "Credit Note", "Contra Entry", "Excise Entry", "Write Off Entry", "Opening Entry", "Depreciation Entry", "Exchange Rate Revaluation", "Exchange Gain Or Loss", "Deferred Revenue", "Deferred Expense"]
 		write_off_amount: DF.Currency

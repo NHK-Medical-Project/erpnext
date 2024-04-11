@@ -22,11 +22,16 @@
   "company",
   "posting_date",
   "apply_tds",
+  "created_by",
+  "customer_id",
+  "mode_of__payment",
+  "section_break_tcxd",
+  "master_order_id",
   "sales_order_id",
+  "transactional_effect",
+  "column_break_lcwp",
   "journal_entry_type",
   "security_deposite_type",
-  "master_order_id",
-  "created_by",
   "2_add_edit_gl_entries",
   "accounts",
   "section_break99",
@@ -575,7 +580,7 @@
    "fieldname": "security_deposite_type",
    "fieldtype": "Select",
    "label": "Security Deposit Type",
-   "options": "\nBooking as Advance From Client\nCash Received From Client\nReturn to Client"
+   "options": "\nBooking as Outstanding SD From Client\nCash Received SD From Client\nRefunding SD to Client\nAdjusted Device Damage Charges\nAdjusted Against Sales Order Rental Charges"
   },
   {
    "allow_on_submit": 1,
@@ -590,6 +595,32 @@
    "fieldtype": "Link",
    "label": "Created By",
    "options": "User"
+  },
+  {
+   "fieldname": "section_break_tcxd",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "column_break_lcwp",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "customer_id",
+   "fieldtype": "Link",
+   "label": "Customer ID",
+   "options": "Customer"
+  },
+  {
+   "fieldname": "mode_of__payment",
+   "fieldtype": "Link",
+   "label": "Mode Of  Payment",
+   "options": "Mode of Payment"
+  },
+  {
+   "fieldname": "transactional_effect",
+   "fieldtype": "Select",
+   "label": "Transactional Effect",
+   "options": "NA\nPlus\nMinus"
   }
  ],
  "icon": "fa fa-file-text",
@@ -604,7 +635,7 @@
    "table_fieldname": "payment_entries"
   }
  ],
- "modified": "2024-04-02 17:41:35.609248",
+ "modified": "2024-04-08 10:13:07.791367",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Journal Entry",

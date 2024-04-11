@@ -19,6 +19,7 @@
   "posting_time",
   "set_posting_time",
   "due_date",
+  "sd_adjustment",
   "column_break_14",
   "is_pos",
   "pos_profile",
@@ -1660,6 +1661,7 @@
    "width": "50%"
   },
   {
+   "allow_on_submit": 1,
    "default": "Draft",
    "fieldname": "status",
    "fieldtype": "Select",
@@ -1670,8 +1672,7 @@
    "length": 30,
    "no_copy": 1,
    "options": "\nDraft\nReturn\nCredit Note Issued\nSubmitted\nPaid\nPartly Paid\nUnpaid\nUnpaid and Discounted\nPartly Paid and Discounted\nOverdue and Discounted\nOverdue\nCancelled\nInternal Transfer",
-   "print_hide": 1,
-   "read_only": 1
+   "print_hide": 1
   },
   {
    "fieldname": "source",
@@ -2182,6 +2183,12 @@
    "fieldtype": "Check",
    "label": "Update Outstanding for Self",
    "no_copy": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "sd_adjustment",
+   "fieldtype": "Check",
+   "label": "SD Adjustment"
   }
  ],
  "icon": "fa fa-file-text",
@@ -2194,7 +2201,7 @@
    "link_fieldname": "consolidated_invoice"
   }
  ],
- "modified": "2024-03-28 12:15:53.396046",
+ "modified": "2024-04-08 09:46:38.642725",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Sales Invoice",

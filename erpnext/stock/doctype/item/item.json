@@ -20,6 +20,7 @@
   "stock_uom",
   "status",
   "replaced_reason",
+  "item_damage_remark",
   "column_break0",
   "disabled",
   "allow_alternative_item",
@@ -889,6 +890,7 @@
    "default": "Available",
    "fieldname": "status",
    "fieldtype": "Select",
+   "in_standard_filter": 1,
    "label": "Status",
    "options": "Available\nReserved\nRented Out\nSold\nDamaged\nRepair Required\nRepair In Progress\nRetired"
   },
@@ -904,6 +906,12 @@
    "in_standard_filter": 1,
    "label": "Device Type",
    "read_only": 1
+  },
+  {
+   "fieldname": "item_damage_remark",
+   "fieldtype": "Small Text",
+   "label": "Item Damage Remark",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-tag",
@@ -912,7 +920,7 @@
  "index_web_pages_for_search": 1,
  "links": [],
  "make_attachments_public": 1,
- "modified": "2024-03-28 18:25:40.224179",
+ "modified": "2024-04-08 17:31:57.824630",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Item",

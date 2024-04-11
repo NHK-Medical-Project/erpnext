@@ -184,6 +184,7 @@ frappe.ui.form.on("Sales Order", {
 		// On cancel and amending a sales order with advance payment, reset advance paid amount
 		if (frm.is_new()) {
 			frm.set_value("advance_paid", 0);
+			frm.set_value("master_order_id","");
 		}
 
 		frm.ignore_doctypes_on_cancel_all = ["Purchase Order"];
@@ -675,6 +676,20 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
                                 __('Are you sure you want to approve. It will Reserve the Item?'),
                                 () => {
                                     me.make_approved(); // Call the JavaScript method
+                                },
+                                () => {
+                                    // Do nothing on cancel
+                                }
+                            );
+                        }, __('Action'));
+                    }
+
+					if (flt(doc.per_billed, 2) < 100 && doc.status === 'Pending' && doc.order_type === 'Sales') {
+                        this.frm.add_custom_button(__('Approved'), () => {
+                            frappe.confirm(
+                                __('Are you sure you want to approve. It will Reserve the Item?'),
+                                () => {
+                                    me.make_sales_approved(); // Call the JavaScript method
                                 },
                                 () => {
                                     // Do nothing on cancel
@@ -1264,6 +1279,37 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
                     frappe.msgprint({
                         title: __('Success'),
                         message: __('Rental Sales Order Approved successfully.'),
+                        indicator: 'green'
+                    });
+    
+                    // Reload the entire page after a short delay (adjust as needed)
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000); // 1000 milliseconds = 1 second
+                } else {
+                    // Handle the case where the response does not contain a message
+                    console.error('Unexpected response:', response);
+                }
+            }
+        });
+    }
+
+	make_sales_approved() {
+        frappe.call({
+            method: 'erpnext.selling.doctype.sales_order.sales_order.make_sales_approved',
+            args: {
+                docname: this.frm.doc.name,
+            },
+            callback: (response) => {
+                // Handle the response
+                if (response.message) {
+                    // Log the result to the console
+                    console.log(response.message);
+    
+                    // Display a success message
+                    frappe.msgprint({
+                        title: __('Success'),
+                        message: __('Sales Order Approved successfully.'),
                         indicator: 'green'
                     });
     

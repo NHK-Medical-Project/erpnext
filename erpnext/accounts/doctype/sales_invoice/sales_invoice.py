@@ -164,6 +164,7 @@ class SalesInvoice(SellingController):
 		sales_partner: DF.Link | None
 		sales_team: DF.Table[SalesTeam]
 		scan_barcode: DF.Data | None
+		sd_adjustment: DF.Check
 		select_print_heading: DF.Link | None
 		selling_price_list: DF.Link
 		set_posting_time: DF.Check
