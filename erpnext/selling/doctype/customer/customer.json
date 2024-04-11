@@ -603,7 +603,9 @@
    "link_fieldname": "party"
   }
  ],
+
  "modified": "2024-03-28 18:09:35.367150",
+
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Customer",
@@ -683,7 +685,7 @@
  "quick_entry": 1,
  "search_fields": "customer_group,territory, mobile_no,primary_address",
  "show_name_in_global_search": 1,
- "sort_field": "modified",
+ "sort_field": "creation",
  "sort_order": "DESC",
  "states": [],
  "title_field": "customer_name",

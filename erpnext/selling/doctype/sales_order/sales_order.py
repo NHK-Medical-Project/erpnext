@@ -47,6 +47,7 @@ class WarehouseRequired(frappe.ValidationError):
 
 
 class SalesOrder(SellingController):
+
     # begin: auto-generated types
     # This code is auto-generated. Do not modify anything in this block.
 
@@ -875,12 +876,14 @@ class SalesOrder(SellingController):
 def get_unreserved_qty(item: object, reserved_qty_details: dict) -> float:
     """Returns the unreserved quantity for the Sales Order Item."""
 
+
     existing_reserved_qty = reserved_qty_details.get(item.name, 0)
     return (
         item.stock_qty
         - flt(item.delivered_qty) * item.get("conversion_factor", 1)
         - existing_reserved_qty
     )
+
 
 
 def get_list_context(context=None):
@@ -897,6 +900,11 @@ def get_list_context(context=None):
     )
 
     return list_context
+
+
+@frappe.whitelist()
+def is_enable_cutoff_date_on_bulk_delivery_note_creation():
+	return frappe.db.get_single_value("Selling Settings", "enable_cutoff_date_on_bulk_delivery_note_creation")
 
 
 @frappe.whitelist()
@@ -1316,6 +1324,7 @@ def make_maintenance_visit(source_name, target_doc=None):
 
 @frappe.whitelist()
 def get_events(start, end, filters=None):
+
     """Returns events for Gantt / Calendar view rendering.
 
     :param start: Start date-time.
@@ -1350,8 +1359,10 @@ def get_events(start, end, filters=None):
     return data
 
 
+
 @frappe.whitelist()
 def make_purchase_order_for_default_supplier(source_name, selected_items=None, target_doc=None):
+
     """Creates Purchase Order for each Supplier. Returns a list of doc objects."""
 
     from erpnext.setup.utils import get_exchange_rate
@@ -1475,8 +1486,10 @@ def make_purchase_order_for_default_supplier(source_name, selected_items=None, t
     return purchase_orders
 
 
+
 @frappe.whitelist()
 def make_purchase_order(source_name, selected_items=None, target_doc=None):
+
     if not selected_items:
         return
 
@@ -1600,6 +1613,7 @@ def make_purchase_order(source_name, selected_items=None, target_doc=None):
     return doc
 
 
+
 def set_delivery_date(items, sales_order):
     delivery_dates = frappe.get_all(
         "Sales Order Item", filters={"parent": sales_order}, fields=["delivery_date", "item_code"]
@@ -1660,6 +1674,7 @@ def update_status(status, name):
 
 @frappe.whitelist()
 def make_raw_material_request(items, company, sales_order, project=None):
+
     if not frappe.has_permission("Sales Order", "write"):
         frappe.throw(_("Not permitted"), frappe.PermissionError)
 
@@ -1715,6 +1730,7 @@ def make_raw_material_request(items, company, sales_order, project=None):
     material_request.run_method("set_missing_values")
     material_request.submit()
     return material_request
+
 
 
 @frappe.whitelist()
