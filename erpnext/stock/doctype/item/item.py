@@ -110,6 +110,7 @@ class Item(Document):
 		is_stock_item: DF.Check
 		is_sub_contracted_item: DF.Check
 		item_code: DF.Data
+		item_damage_remark: DF.SmallText | None
 		item_defaults: DF.Table[ItemDefault]
 		item_group: DF.Link
 		item_name: DF.Data | None
