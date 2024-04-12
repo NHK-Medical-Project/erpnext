@@ -3276,7 +3276,7 @@ def create_security_deposit_journal_entry_payment(customer, security_deposit_pay
         journal_entry.master_order_id = master_order_id
         journal_entry.cheque_no = reference_no
         journal_entry.cheque_date = reference_date
-        journal_entry.user_remark = remark
+        journal_entry.user_remark = f"Security Deposit Payment Against Sales Order {sales_order_name} and Master Order Id is {master_order_id}. Remark: {remark}"
         journal_entry.customer_id = customer
         journal_entry.mode_of__payment = mode_of_payment
         journal_entry.transactional_effect = "Plus"
@@ -3332,7 +3332,7 @@ def create_rental_payment_entry(customer_name, rental_payment_amount, mode_of_pa
             "mode_of_payment": mode_of_payment,
             "reference_no": reference_no,
             "paid_to": payment_account,
-            "payment_remark": remark,
+            "payment_remark": f"Payment Against Sales Order {sales_order_name} and Master Order Id is {master_order_id} and Remark Is {remark}",
         }, ignore_permissions=True)
 
         payment_entry.insert(ignore_permissions=True)
