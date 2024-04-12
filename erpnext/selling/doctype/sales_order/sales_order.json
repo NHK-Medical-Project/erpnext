@@ -17,7 +17,6 @@
   "naming_series",
   "customer",
   "tax_id",
-  "payment_status",
   "overdue_status",
   "column_break_7",
   "transaction_date",
@@ -87,9 +86,7 @@
   "rounding_adjustment",
   "rounded_total",
   "in_words",
-  "advance_paid",
   "disable_rounded_total",
-  "balance_amount",
   "section_break_48",
   "apply_discount_on",
   "base_discount_amount",
@@ -140,11 +137,15 @@
   "refundable_security_deposit",
   "security_deposit_amount_return_to_client",
   "security_deposit_revised_remark",
-  "payment_details_section",
-  "payment_entry_details",
   "journal_entry_details_section",
   "journal_entry_details",
-  "payment_details_tab",
+  "payment_details_section",
+  "advance_paid",
+  "payment_status",
+  "column_break_yvcu",
+  "balance_amount",
+  "section_break_ctec",
+  "payment_entry_details",
   "contact_info",
   "billing_address_column",
   "customer_address",
@@ -1848,13 +1849,12 @@
    "fieldname": "previous_order_id",
    "fieldtype": "Data",
    "label": "Previous Order Id",
-   "options": "Sales Order",
    "read_only": 1
   },
   {
    "allow_on_submit": 1,
    "fieldname": "master_order_id",
-   "fieldtype": "Data",
+   "fieldtype": "Link",
    "label": "Master Order Id",
    "options": "Sales Order",
    "read_only": 1
@@ -1982,9 +1982,10 @@
    "fieldtype": "Column Break"
   },
   {
+   "collapsible": 1,
    "fieldname": "journal_entry_details_section",
    "fieldtype": "Section Break",
-   "label": "Journal Entry Details"
+   "label": "SD Transaction Details"
   },
   {
    "fieldname": "journal_entry_details",
@@ -2019,12 +2020,7 @@
    "read_only": 1
   },
   {
-   "allow_on_submit": 1,
-   "fieldname": "payment_details_tab",
-   "fieldtype": "Tab Break",
-   "label": "Payment Details"
-  },
-  {
+   "collapsible": 1,
    "fieldname": "payment_details_section",
    "fieldtype": "Section Break",
    "label": "Payment Details"
@@ -2040,13 +2036,21 @@
    "fieldname": "security_deposit_section",
    "fieldtype": "Section Break",
    "label": "Security Deposit"
+  },
+  {
+   "fieldname": "column_break_yvcu",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_ctec",
+   "fieldtype": "Section Break"
   }
  ],
  "icon": "fa fa-file-text",
  "idx": 105,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-04-11 18:41:34.968963",
+ "modified": "2024-04-12 10:02:20.042300",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order",

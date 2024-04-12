@@ -136,7 +136,7 @@
    "fieldname": "device_type",
    "fieldtype": "Select",
    "label": "Device Type",
-   "options": "\nSales\nRental"
+   "options": "\nSales\nRental\nService"
   },
   {
    "default": "GOODS",
@@ -157,7 +157,7 @@
  "is_tree": 1,
  "links": [],
  "max_attachments": 3,
- "modified": "2024-03-19 14:20:38.059184",
+ "modified": "2024-04-12 09:42:26.712078",
  "modified_by": "Administrator",
  "module": "Setup",
  "name": "Item Group",

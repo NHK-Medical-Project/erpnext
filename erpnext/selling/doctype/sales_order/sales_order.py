@@ -120,7 +120,7 @@ class SalesOrder(SellingController):
         letter_head: DF.Link | None
         loyalty_amount: DF.Currency
         loyalty_points: DF.Int
-        master_order_id: DF.Data | None
+        master_order_id: DF.Link | None
         named_place: DF.Data | None
         naming_series: DF.Literal["SAL-ORD-.YYYY.-"]
         net_total: DF.Currency

@@ -19,7 +19,7 @@ class ItemGroup(NestedSet):
 		from erpnext.stock.doctype.item_tax.item_tax import ItemTax
 		from frappe.types import DF
 
-		device_type: DF.Literal["", "Sales", "Rental"]
+		device_type: DF.Literal["", "Sales", "Rental", "Service"]
 		image: DF.AttachImage | None
 		is_group: DF.Check
 		item_group_defaults: DF.Table[ItemDefault]
