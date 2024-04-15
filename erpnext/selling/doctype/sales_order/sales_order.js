@@ -1271,7 +1271,7 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
             },
             callback: (response) => {
                 // Handle the response
-                if (response.message) {
+                if (response.message === true) {
                     // Log the result to the console
                     console.log(response.message);
     

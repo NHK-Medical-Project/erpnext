@@ -569,7 +569,7 @@ class SalesOrder(SellingController):
         for item in self.get("items"):
             item_code = item.item_code
             item_doc = frappe.get_doc("Item", item_code)
-            if item_doc.status == "Rented Out":
+            if item_doc.status in ["Rented Out", "Reserved"]:
                 item_doc.status = "Available"
                 item_doc.save()
 
@@ -1965,8 +1965,8 @@ def make_approved(docname):
             else:
                 frappe.msgprint(f'Item {item.item_code} is already Booked')
                 # If an item is already booked, don't continue to the next steps
-                break
-
+                # break
+                return False
             # Update child_status to "Approved" for items whose status was successfully updated
             sales_order_item = frappe.get_doc("Sales Order Item", item.name)
             sales_order_item.child_status = "Approved"
@@ -1979,7 +1979,7 @@ def make_approved(docname):
             sales_order.status = "Approved"
             sales_order.save()
 
-        return "Approved Success"
+        return True
 
     except Exception as e:
         # Log the error details without the title parameter
