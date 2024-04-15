@@ -33,6 +33,7 @@
   "update_billed_amount_in_delivery_note",
   "is_debit_note",
   "amended_from",
+  "rental_sales_invoice",
   "accounting_dimensions_section",
   "cost_center",
   "dimension_col_break",
@@ -46,7 +47,6 @@
   "plc_conversion_rate",
   "ignore_pricing_rule",
   "items_section",
-  "scan_barcode",
   "update_stock",
   "column_break_39",
   "set_warehouse",
@@ -598,6 +598,7 @@
    "depends_on": "customer",
    "fieldname": "currency_and_price_list",
    "fieldtype": "Section Break",
+   "hidden": 1,
    "hide_days": 1,
    "hide_seconds": 1,
    "label": "Currency and Price List"
@@ -681,6 +682,7 @@
    "depends_on": "update_stock",
    "fieldname": "set_warehouse",
    "fieldtype": "Link",
+   "hidden": 1,
    "hide_days": 1,
    "hide_seconds": 1,
    "label": "Source Warehouse",
@@ -708,14 +710,6 @@
    "oldfieldname": "update_stock",
    "oldfieldtype": "Check",
    "print_hide": 1
-  },
-  {
-   "fieldname": "scan_barcode",
-   "fieldtype": "Data",
-   "hide_days": 1,
-   "hide_seconds": 1,
-   "label": "Scan Barcode",
-   "options": "Barcode"
   },
   {
    "allow_bulk_edit": 1,
@@ -1905,6 +1899,7 @@
    "collapsible": 1,
    "fieldname": "accounting_dimensions_section",
    "fieldtype": "Section Break",
+   "hidden": 1,
    "hide_days": 1,
    "hide_seconds": 1,
    "label": "Accounting Dimensions"
@@ -1965,6 +1960,7 @@
    "depends_on": "eval: doc.is_internal_customer && doc.update_stock",
    "fieldname": "set_target_warehouse",
    "fieldtype": "Link",
+   "hidden": 1,
    "ignore_user_permissions": 1,
    "label": "Set Target Warehouse",
    "options": "Warehouse"
@@ -2204,6 +2200,13 @@
    "fieldtype": "Small Text",
    "label": "Remark",
    "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "rental_sales_invoice",
+   "fieldtype": "Check",
+   "label": "Rental  Sales Invoice",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-file-text",
@@ -2216,7 +2219,7 @@
    "link_fieldname": "consolidated_invoice"
   }
  ],
- "modified": "2024-04-11 19:19:25.614169",
+ "modified": "2024-04-15 11:07:50.679414",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Sales Invoice",

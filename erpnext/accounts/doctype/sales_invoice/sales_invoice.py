@@ -158,6 +158,7 @@ class SalesInvoice(SellingController):
 		redeem_loyalty_points: DF.Check
 		remark: DF.SmallText | None
 		remarks: DF.SmallText | None
+		rental_sales_invoice: DF.Check
 		repost_required: DF.Check
 		represents_company: DF.Link | None
 		return_against: DF.Link | None
@@ -165,7 +166,6 @@ class SalesInvoice(SellingController):
 		rounding_adjustment: DF.Currency
 		sales_partner: DF.Link | None
 		sales_team: DF.Table[SalesTeam]
-		scan_barcode: DF.Data | None
 		sd_adjustment: DF.Check
 		select_print_heading: DF.Link | None
 		selling_price_list: DF.Link
@@ -401,7 +401,7 @@ class SalesInvoice(SellingController):
 
 	def on_submit(self):
 		self.validate_pos_paid_amount()
-
+		self.update_asset_for_rental_sales()
 		if not self.auto_repeat:
 			frappe.get_doc("Authorization Control").validate_approving_authority(
 				self.doctype, self.company, self.base_grand_total, self
@@ -427,6 +427,8 @@ class SalesInvoice(SellingController):
 					continue
 
 				self.make_bundle_using_old_serial_batch_fields(table_name)
+				
+
 			self.update_stock_ledger()
 
 		# this sequence because outstanding may get -ve
@@ -471,6 +473,15 @@ class SalesInvoice(SellingController):
 
 		self.process_common_party_accounting()
 
+	def update_asset_for_rental_sales(self):
+		if self.rental_sales_invoice == 1:
+			for item in self.get("items"):
+				if item.item_code:
+					# Fetch asset from Asset List based on item_code
+					asset = frappe.db.get_value("Asset", {"item_code": item.item_code}, "name")
+					if asset:
+						item.asset = asset
+ 
 	def validate_pos_return(self):
 		if self.is_consolidated:
 			# pos return is already validated in pos invoice
