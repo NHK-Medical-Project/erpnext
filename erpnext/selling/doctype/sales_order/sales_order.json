@@ -694,7 +694,7 @@
    "fieldtype": "Float",
    "hide_days": 1,
    "hide_seconds": 1,
-   "label": "Total Quantity",
+   "label": "Total No. Of Days",
    "read_only": 1
   },
   {
@@ -1968,7 +1968,7 @@
    "allow_on_submit": 1,
    "fieldname": "paid_security_deposite_amount",
    "fieldtype": "Currency",
-   "label": "Paid Security Deposit Amount",
+   "label": "Received Security Deposit Amount",
    "print_hide": 1,
    "read_only": 1
   },
@@ -2051,7 +2051,7 @@
  "idx": 105,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-04-15 12:25:23.978233",
+ "modified": "2024-04-16 10:08:22.112988",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order",
