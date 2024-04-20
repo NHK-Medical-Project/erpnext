@@ -17,6 +17,7 @@
   "company",
   "mode_of_payment",
   "master_order_id",
+  "sales_order_id",
   "party_section",
   "party_type",
   "party",
@@ -772,6 +773,12 @@
    "fieldname": "payment_remark",
    "fieldtype": "Small Text",
    "label": "Payment Remark"
+  },
+  {
+   "fieldname": "sales_order_id",
+   "fieldtype": "Link",
+   "label": "Sales Order Id",
+   "options": "Sales Order"
   }
  ],
  "index_web_pages_for_search": 1,
@@ -785,7 +792,7 @@
    "table_fieldname": "payment_entries"
   }
  ],
- "modified": "2024-04-03 14:37:58.869562",
+ "modified": "2024-04-20 16:21:06.505322",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Payment Entry",

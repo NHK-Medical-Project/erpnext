@@ -118,6 +118,7 @@ class PaymentEntry(AccountsController):
 		reference_no: DF.Data | None
 		references: DF.Table[PaymentEntryReference]
 		remarks: DF.SmallText | None
+		sales_order_id: DF.Link | None
 		sales_taxes_and_charges_template: DF.Link | None
 		source_exchange_rate: DF.Float
 		status: DF.Literal["", "Draft", "Submitted", "Cancelled"]

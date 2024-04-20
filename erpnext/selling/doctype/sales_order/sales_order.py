@@ -2886,7 +2886,7 @@ def validate_and_update_payment_and_security_deposit_status(docname,master_order
         # Query Journal Entry records for cash received security deposit
         journal_entries = frappe.get_all("Journal Entry",
                                           filters={"master_order_id": master_order_id,
-                                                   "security_deposite_type": "Cash Received SD From Client"},
+                                                   "security_deposite_type": "SD Amount Received From Client"},
                                           fields=["name", "total_debit"])
 
         # Query Journal Entry records for damage and refund
@@ -2957,7 +2957,7 @@ def validate_and_update_payment_and_security_deposit_status(docname,master_order
 #         # Query Journal Entry records based on sales_order_id and security_deposit_type
 #         journal_entries = frappe.get_all("Journal Entry", 
 #                                           filters={"sales_order_id": docname, 
-#                                                    "security_deposite_type": "Cash Received SD From Client"},
+#                                                    "security_deposite_type": "SD Amount Received From Client"},
 #                                           fields=["name", "total_debit"])
         
 #         # Calculate total debit amount from the filtered journal entries
@@ -3142,8 +3142,8 @@ def get_payment_entry_records(master_order_id):
     try:
         # Fetch replaced items associated with the sales order
         payment_entry_records = frappe.get_all("Payment Entry",
-                                        filters={"master_order_id": master_order_id},
-                                        fields=["name", "references.reference_name", "master_order_id","total_allocated_amount","posting_date","mode_of_payment"])
+                                        filters={"sales_order_id": master_order_id},
+                                        fields=["name", "references.reference_name", "master_order_id","total_allocated_amount","posting_date","mode_of_payment","reference_no","reference_date"])
         return payment_entry_records
     except Exception as e:
         frappe.log_error(frappe.get_traceback(), _("Failed to fetch replaced items"))
@@ -3286,7 +3286,7 @@ def create_security_deposit_journal_entry_payment(customer, security_deposit_pay
         journal_entry.sales_order_id = sales_order_name
         journal_entry.posting_date = frappe.utils.nowdate()
         journal_entry.journal_entry_type = "Security Deposit"
-        journal_entry.security_deposite_type = "Cash Received SD From Client"
+        journal_entry.security_deposite_type = "SD Amount Received From Client"
         journal_entry.master_order_id = master_order_id
         journal_entry.cheque_no = reference_no
         journal_entry.cheque_date = reference_date
@@ -3326,6 +3326,7 @@ def create_rental_payment_entry(customer_name, rental_payment_amount, mode_of_pa
         payment_entry = frappe.get_doc({
             "doctype": "Payment Entry",
             "master_order_id": master_order_id,
+            "sales_order_id":sales_order_name,
             "paid_from": "Debtors - INR",
             "received_amount": rental_payment_amount_numeric,
             "base_received_amount": rental_payment_amount_numeric,  # Assuming base currency is INR
