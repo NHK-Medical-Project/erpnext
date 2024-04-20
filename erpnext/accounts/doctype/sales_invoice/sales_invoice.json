@@ -34,6 +34,7 @@
   "is_debit_note",
   "amended_from",
   "rental_sales_invoice",
+  "security_deposit",
   "accounting_dimensions_section",
   "cost_center",
   "dimension_col_break",
@@ -90,6 +91,7 @@
   "total_advance",
   "outstanding_amount",
   "disable_rounded_total",
+  "total_rental_amount",
   "section_break_49",
   "apply_discount_on",
   "base_discount_amount",
@@ -149,6 +151,10 @@
   "address_and_contact",
   "customer_address",
   "address_display",
+  "permanent_address",
+  "delivery_address",
+  "customer_mobile_no",
+  "customer_email_id",
   "col_break4",
   "contact_person",
   "contact_display",
@@ -773,6 +779,7 @@
    "depends_on": "eval:!doc.is_return",
    "fieldname": "time_sheet_list",
    "fieldtype": "Section Break",
+   "hidden": 1,
    "hide_border": 1,
    "hide_days": 1,
    "hide_seconds": 1,
@@ -901,6 +908,7 @@
   {
    "fieldname": "shipping_rule",
    "fieldtype": "Link",
+   "hidden": 1,
    "hide_days": 1,
    "hide_seconds": 1,
    "label": "Shipping Rule",
@@ -911,6 +919,7 @@
   {
    "fieldname": "tax_category",
    "fieldtype": "Link",
+   "hidden": 1,
    "hide_days": 1,
    "hide_seconds": 1,
    "label": "Tax Category",
@@ -2135,6 +2144,7 @@
   {
    "fieldname": "incoterm",
    "fieldtype": "Link",
+   "hidden": 1,
    "label": "Incoterm",
    "options": "Incoterm"
   },
@@ -2207,6 +2217,38 @@
    "fieldtype": "Check",
    "label": "Rental  Sales Invoice",
    "read_only": 1
+  },
+  {
+   "fieldname": "permanent_address",
+   "fieldtype": "Small Text",
+   "label": "Permanent Address"
+  },
+  {
+   "fieldname": "delivery_address",
+   "fieldtype": "Small Text",
+   "label": "Delivery Address"
+  },
+  {
+   "fieldname": "customer_mobile_no",
+   "fieldtype": "Data",
+   "label": "Customer Mobile No."
+  },
+  {
+   "fieldname": "customer_email_id",
+   "fieldtype": "Data",
+   "label": "Customer Email Id"
+  },
+  {
+   "fieldname": "security_deposit",
+   "fieldtype": "Currency",
+   "label": "Security Deposit",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_rental_amount",
+   "fieldtype": "Currency",
+   "label": "Total Rental Amount",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-file-text",
@@ -2219,7 +2261,7 @@
    "link_fieldname": "consolidated_invoice"
   }
  ],
- "modified": "2024-04-15 11:07:50.679414",
+ "modified": "2024-04-19 17:15:40.498009",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Sales Invoice",

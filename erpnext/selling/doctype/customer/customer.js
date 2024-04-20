@@ -4,10 +4,10 @@
 frappe.ui.form.on("Customer", {
 	setup: function (frm) {
 		frm.custom_make_buttons = {
-			Opportunity: "Opportunity",
+			// Opportunity: "Opportunity",
 			Quotation: "Quotation",
 			"Sales Order": "Sales Order",
-			"Pricing Rule": "Pricing Rule",
+			// "Pricing Rule": "Pricing Rule",
 		};
 		frm.make_methods = {
 			Quotation: () =>
@@ -21,12 +21,12 @@ frappe.ui.form.on("Customer", {
 					so.customer = frm.doc.name; // Set the current customer as the SO customer
 					frappe.set_route("Form", "Sales Order", so.name);
 				}),
-			Opportunity: () =>
-				frappe.model.open_mapped_doc({
-					method: "erpnext.selling.doctype.customer.customer.make_opportunity",
-					frm: frm,
-				}),
-			"Pricing Rule": () => erpnext.utils.make_pricing_rule(frm.doc.doctype, frm.doc.name),
+			// Opportunity: () =>
+			// 	frappe.model.open_mapped_doc({
+			// 		method: "erpnext.selling.doctype.customer.customer.make_opportunity",
+			// 		frm: frm,
+			// 	}),
+			// "Pricing Rule": () => erpnext.utils.make_pricing_rule(frm.doc.doctype, frm.doc.name),
 		};
 
 		frm.add_fetch("lead_name", "company_name", "customer_name");
@@ -176,13 +176,13 @@ frappe.ui.form.on("Customer", {
 				frm.add_custom_button(__(doctype), frm.make_methods[doctype], __("Create"));
 			}
 
-			frm.add_custom_button(
-				__("Get Customer Group Details"),
-				function () {
-					frm.trigger("get_customer_group_details");
-				},
-				__("Actions")
-			);
+			// frm.add_custom_button(
+			// 	__("Get Customer Group Details"),
+			// 	function () {
+			// 		frm.trigger("get_customer_group_details");
+			// 	},
+			// 	__("Actions")
+			// );
 
 			if (cint(frappe.defaults.get_default("enable_common_party_accounting"))) {
 				frm.add_custom_button(
@@ -259,3 +259,22 @@ frappe.ui.form.on("Customer", {
 		dialog.show();
 	},
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

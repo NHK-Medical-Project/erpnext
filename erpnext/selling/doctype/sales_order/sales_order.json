@@ -12,10 +12,10 @@
   "customer_section",
   "column_break0",
   "order_type",
-  "customer_name",
-  "title",
   "naming_series",
   "customer",
+  "customer_name",
+  "title",
   "tax_id",
   "overdue_status",
   "column_break_7",
@@ -87,6 +87,7 @@
   "rounded_total",
   "in_words",
   "disable_rounded_total",
+  "total_rental_amount",
   "section_break_48",
   "apply_discount_on",
   "base_discount_amount",
@@ -147,6 +148,11 @@
   "section_break_ctec",
   "payment_entry_details",
   "contact_info",
+  "permanent_address",
+  "customer_mobile_no",
+  "customer_email_id",
+  "column_break_fclk",
+  "delivery_address",
   "billing_address_column",
   "customer_address",
   "address_display",
@@ -416,6 +422,7 @@
    "allow_on_submit": 1,
    "fieldname": "customer_address",
    "fieldtype": "Link",
+   "hidden": 1,
    "hide_days": 1,
    "hide_seconds": 1,
    "label": "Customer Address",
@@ -426,6 +433,7 @@
    "allow_on_submit": 1,
    "fieldname": "address_display",
    "fieldtype": "Small Text",
+   "hidden": 1,
    "hide_days": 1,
    "hide_seconds": 1,
    "label": "Address",
@@ -434,6 +442,7 @@
   {
    "fieldname": "contact_person",
    "fieldtype": "Link",
+   "hidden": 1,
    "hide_days": 1,
    "hide_seconds": 1,
    "label": "Contact Person",
@@ -443,6 +452,7 @@
   {
    "fieldname": "contact_display",
    "fieldtype": "Small Text",
+   "hidden": 1,
    "hide_days": 1,
    "hide_seconds": 1,
    "in_global_search": 1,
@@ -452,6 +462,7 @@
   {
    "fieldname": "contact_mobile",
    "fieldtype": "Small Text",
+   "hidden": 1,
    "hide_days": 1,
    "hide_seconds": 1,
    "label": "Mobile No",
@@ -497,6 +508,7 @@
    "allow_on_submit": 1,
    "fieldname": "shipping_address_name",
    "fieldtype": "Link",
+   "hidden": 1,
    "hide_days": 1,
    "hide_seconds": 1,
    "label": "Shipping Address Name",
@@ -507,6 +519,7 @@
    "allow_on_submit": 1,
    "fieldname": "shipping_address",
    "fieldtype": "Small Text",
+   "hidden": 1,
    "hide_days": 1,
    "hide_seconds": 1,
    "label": "Shipping Address",
@@ -692,6 +705,7 @@
   {
    "fieldname": "total_qty",
    "fieldtype": "Float",
+   "hidden": 1,
    "hide_days": 1,
    "hide_seconds": 1,
    "label": "Total No. Of Days",
@@ -767,6 +781,7 @@
   {
    "fieldname": "tax_category",
    "fieldtype": "Link",
+   "hidden": 1,
    "hide_days": 1,
    "hide_seconds": 1,
    "label": "Tax Category",
@@ -1524,6 +1539,7 @@
   {
    "fieldname": "contact_phone",
    "fieldtype": "Data",
+   "hidden": 1,
    "hide_days": 1,
    "hide_seconds": 1,
    "label": "Phone",
@@ -1568,6 +1584,7 @@
    "allow_on_submit": 1,
    "fieldname": "dispatch_address_name",
    "fieldtype": "Link",
+   "hidden": 1,
    "label": "Dispatch Address Name",
    "options": "Address",
    "print_hide": 1
@@ -1577,6 +1594,7 @@
    "depends_on": "dispatch_address_name",
    "fieldname": "dispatch_address",
    "fieldtype": "Small Text",
+   "hidden": 1,
    "label": "Dispatch Address",
    "read_only": 1
   },
@@ -1642,11 +1660,13 @@
   {
    "fieldname": "billing_address_column",
    "fieldtype": "Section Break",
+   "hidden": 1,
    "label": "Billing Address"
   },
   {
    "fieldname": "shipping_address_column",
    "fieldtype": "Section Break",
+   "hidden": 1,
    "label": "Shipping Address"
   },
   {
@@ -2045,13 +2065,48 @@
   {
    "fieldname": "section_break_ctec",
    "fieldtype": "Section Break"
+  },
+  {
+   "fetch_from": "customer.permanent_address",
+   "fieldname": "permanent_address",
+   "fieldtype": "Small Text",
+   "label": "Permanent Address"
+  },
+  {
+   "fieldname": "column_break_fclk",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "customer.delivery_address",
+   "fieldname": "delivery_address",
+   "fieldtype": "Small Text",
+   "label": "Delivery Address"
+  },
+  {
+   "fetch_from": "customer.mobile_number",
+   "fieldname": "customer_mobile_no",
+   "fieldtype": "Data",
+   "label": "Customer Mobile No."
+  },
+  {
+   "fetch_from": "customer.email",
+   "fieldname": "customer_email_id",
+   "fieldtype": "Data",
+   "label": "Customer Email Id"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "total_rental_amount",
+   "fieldtype": "Currency",
+   "label": "Total Rental Amount",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-file-text",
  "idx": 105,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-04-16 10:08:22.112988",
+ "modified": "2024-04-20 11:34:05.424907",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order",

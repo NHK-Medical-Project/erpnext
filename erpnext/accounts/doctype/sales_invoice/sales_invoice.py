@@ -101,9 +101,12 @@ class SalesInvoice(SellingController):
 		currency: DF.Link
 		customer: DF.Link | None
 		customer_address: DF.Link | None
+		customer_email_id: DF.Data | None
 		customer_group: DF.Link | None
+		customer_mobile_no: DF.Data | None
 		customer_name: DF.SmallText | None
 		debit_to: DF.Link
+		delivery_address: DF.SmallText | None
 		disable_rounded_total: DF.Check
 		discount_amount: DF.Currency
 		dispatch_address: DF.SmallText | None
@@ -146,6 +149,7 @@ class SalesInvoice(SellingController):
 		payment_schedule: DF.Table[PaymentSchedule]
 		payment_terms_template: DF.Link | None
 		payments: DF.Table[SalesInvoicePayment]
+		permanent_address: DF.SmallText | None
 		plc_conversion_rate: DF.Float
 		po_date: DF.Date | None
 		po_no: DF.Data | None
@@ -167,6 +171,7 @@ class SalesInvoice(SellingController):
 		sales_partner: DF.Link | None
 		sales_team: DF.Table[SalesTeam]
 		sd_adjustment: DF.Check
+		security_deposit: DF.Currency
 		select_print_heading: DF.Link | None
 		selling_price_list: DF.Link
 		set_posting_time: DF.Check
@@ -195,6 +200,7 @@ class SalesInvoice(SellingController):
 		total_commission: DF.Currency
 		total_net_weight: DF.Float
 		total_qty: DF.Float
+		total_rental_amount: DF.Currency
 		total_taxes_and_charges: DF.Currency
 		unrealized_profit_loss_account: DF.Link | None
 		update_billed_amount_in_delivery_note: DF.Check

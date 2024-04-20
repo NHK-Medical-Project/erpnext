@@ -38,8 +38,17 @@ class Customer(TransactionBase):
 
 		account_manager: DF.Link | None
 		accounts: DF.Table[PartyAccount]
+		address_line_1: DF.Data | None
+		address_line_2: DF.Data | None
+		address_title: DF.Data | None
+		check_delivery_address: DF.Check
+		check_permanent_address: DF.Check
+		city: DF.Data | None
 		companies: DF.Table[AllowedToTransactWith]
+		country: DF.Data | None
 		credit_limits: DF.Table[CustomerCreditLimit]
+		custom_latitude: DF.Data | None
+		custom_longitude: DF.Data | None
 		customer_details: DF.Text | None
 		customer_group: DF.Link | None
 		customer_name: DF.Data
@@ -52,8 +61,19 @@ class Customer(TransactionBase):
 		default_currency: DF.Link | None
 		default_price_list: DF.Link | None
 		default_sales_partner: DF.Link | None
+		del_state: DF.Data | None
+		deli_address_line1: DF.Data | None
+		deli_address_line2: DF.Data | None
+		deli_address_title: DF.Data | None
+		deli_city: DF.Data | None
+		deli_country: DF.Data | None
+		deli_latitude: DF.Data | None
+		deli_longitude: DF.Data | None
+		deli_pincode: DF.Data | None
+		delivery_address: DF.SmallText | None
 		disabled: DF.Check
 		dn_required: DF.Check
+		email: DF.Data
 		email_id: DF.ReadOnly | None
 		gender: DF.Link | None
 		image: DF.AttachImage | None
@@ -66,15 +86,19 @@ class Customer(TransactionBase):
 		loyalty_program_tier: DF.Data | None
 		market_segment: DF.Link | None
 		mobile_no: DF.ReadOnly | None
+		mobile_number: DF.Data
 		naming_series: DF.Literal["CUST-.YYYY.-"]
 		opportunity_name: DF.Link | None
 		payment_terms: DF.Link | None
+		permanent_address: DF.SmallText | None
+		pincode: DF.Data | None
 		portal_users: DF.Table[PortalUser]
 		primary_address: DF.Text | None
 		represents_company: DF.Link | None
 		sales_team: DF.Table[SalesTeam]
 		salutation: DF.Link | None
 		so_required: DF.Check
+		state: DF.Data | None
 		tax_category: DF.Link | None
 		tax_id: DF.Data | None
 		tax_withholding_category: DF.Link | None

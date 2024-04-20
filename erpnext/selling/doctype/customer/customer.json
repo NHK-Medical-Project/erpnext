@@ -16,6 +16,8 @@
   "salutation",
   "customer_name",
   "customer_group",
+  "mobile_number",
+  "email",
   "column_break0",
   "territory",
   "gender",
@@ -40,6 +42,35 @@
   "website",
   "language",
   "column_break_45",
+  "section_break_sjxt",
+  "check_permanent_address",
+  "check_delivery_address",
+  "delivery_address_section",
+  "delivery_address",
+  "deli_address_title",
+  "deli_address_line1",
+  "deli_address_line2",
+  "deli_city",
+  "del_state",
+  "deli_country",
+  "deli_pincode",
+  "column_break_gsri",
+  "deli_location",
+  "deli_longitude",
+  "deli_latitude",
+  "section_break_xrfq",
+  "address_title",
+  "address_line_1",
+  "address_line_2",
+  "city",
+  "state",
+  "country",
+  "pincode",
+  "permanent_address",
+  "column_break_vcyw",
+  "custom_location",
+  "custom_longitude",
+  "custom_latitude",
   "section_break_gfzn",
   "customer_details",
   "contact_and_address_tab",
@@ -106,10 +137,12 @@
    "depends_on": "eval:doc.customer_type!='Company'",
    "fieldname": "salutation",
    "fieldtype": "Link",
+   "hidden": 1,
    "label": "Salutation",
    "options": "Salutation"
   },
   {
+   "allow_in_quick_entry": 1,
    "bold": 1,
    "fieldname": "customer_name",
    "fieldtype": "Data",
@@ -132,6 +165,7 @@
    "default": "Individual",
    "fieldname": "customer_type",
    "fieldtype": "Select",
+   "hidden": 1,
    "label": "Customer Type",
    "oldfieldname": "customer_type",
    "oldfieldtype": "Select",
@@ -176,10 +210,10 @@
    "read_only": 1
   },
   {
+   "default": "Individual",
    "fieldname": "customer_group",
    "fieldtype": "Link",
-   "in_list_view": 1,
-   "in_standard_filter": 1,
+   "hidden": 1,
    "label": "Customer Group",
    "oldfieldname": "customer_group",
    "oldfieldtype": "Link",
@@ -191,8 +225,6 @@
    "fieldname": "territory",
    "fieldtype": "Link",
    "hidden": 1,
-   "in_list_view": 1,
-   "in_standard_filter": 1,
    "label": "Territory",
    "oldfieldname": "territory",
    "oldfieldtype": "Link",
@@ -490,6 +522,7 @@
   {
    "fieldname": "contact_and_address_tab",
    "fieldtype": "Tab Break",
+   "hidden": 1,
    "label": "Contact & Address"
   },
   {
@@ -552,6 +585,7 @@
   {
    "fieldname": "tax_tab",
    "fieldtype": "Tab Break",
+   "hidden": 1,
    "label": "Tax"
   },
   {
@@ -590,6 +624,177 @@
   {
    "fieldname": "section_break_gfzn",
    "fieldtype": "Section Break"
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "fieldname": "delivery_address",
+   "fieldtype": "Small Text",
+   "label": "Delivery Address"
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "fieldname": "mobile_number",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Mobile Number",
+   "length": 13,
+   "not_nullable": 1,
+   "reqd": 1
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "fieldname": "email",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Email",
+   "reqd": 1
+  },
+  {
+   "collapsible": 1,
+   "depends_on": "check_delivery_address",
+   "fieldname": "delivery_address_section",
+   "fieldtype": "Section Break",
+   "label": "Delivery Address"
+  },
+  {
+   "collapsible": 1,
+   "depends_on": "check_permanent_address",
+   "fieldname": "section_break_xrfq",
+   "fieldtype": "Section Break",
+   "label": "Permanent Address"
+  },
+  {
+   "fieldname": "address_title",
+   "fieldtype": "Data",
+   "label": "Address Title"
+  },
+  {
+   "fieldname": "address_line_1",
+   "fieldtype": "Data",
+   "label": "Address Line 1"
+  },
+  {
+   "fieldname": "address_line_2",
+   "fieldtype": "Data",
+   "label": "Address Line 2"
+  },
+  {
+   "fieldname": "country",
+   "fieldtype": "Data",
+   "label": "Country"
+  },
+  {
+   "fieldname": "custom_location",
+   "fieldtype": "HTML",
+   "label": "Location"
+  },
+  {
+   "fieldname": "column_break_vcyw",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "custom_longitude",
+   "fieldtype": "Data",
+   "label": "Longitude"
+  },
+  {
+   "fieldname": "custom_latitude",
+   "fieldtype": "Data",
+   "label": "Latitude"
+  },
+  {
+   "fieldname": "city",
+   "fieldtype": "Data",
+   "label": "City/Town"
+  },
+  {
+   "fieldname": "state",
+   "fieldtype": "Data",
+   "label": "State/Province"
+  },
+  {
+   "fieldname": "pincode",
+   "fieldtype": "Data",
+   "label": "Postal Code"
+  },
+  {
+   "fieldname": "deli_address_title",
+   "fieldtype": "Data",
+   "label": "Address Title"
+  },
+  {
+   "fieldname": "deli_address_line1",
+   "fieldtype": "Data",
+   "label": "Address Line 1"
+  },
+  {
+   "fieldname": "deli_address_line2",
+   "fieldtype": "Data",
+   "label": "Address Line 2"
+  },
+  {
+   "fieldname": "deli_city",
+   "fieldtype": "Data",
+   "label": "City/Town"
+  },
+  {
+   "fieldname": "del_state",
+   "fieldtype": "Data",
+   "label": "State/Province"
+  },
+  {
+   "fieldname": "deli_country",
+   "fieldtype": "Data",
+   "label": "Country"
+  },
+  {
+   "fieldname": "deli_pincode",
+   "fieldtype": "Data",
+   "label": "Postal Code"
+  },
+  {
+   "fieldname": "column_break_gsri",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "deli_location",
+   "fieldtype": "HTML",
+   "label": "Location"
+  },
+  {
+   "fieldname": "deli_longitude",
+   "fieldtype": "Data",
+   "label": "Longitude"
+  },
+  {
+   "fieldname": "deli_latitude",
+   "fieldtype": "Data",
+   "label": "Latitude"
+  },
+  {
+   "fieldname": "section_break_sjxt",
+   "fieldtype": "Section Break"
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "default": "0",
+   "fieldname": "check_permanent_address",
+   "fieldtype": "Check",
+   "label": "Permanent Address"
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "default": "0",
+   "fieldname": "check_delivery_address",
+   "fieldtype": "Check",
+   "label": "Delivery Address "
+  },
+  {
+   "fieldname": "permanent_address",
+   "fieldtype": "Small Text",
+   "label": "Permanent Address"
   }
  ],
  "icon": "fa fa-user",
@@ -603,7 +808,7 @@
    "link_fieldname": "party"
   }
  ],
- "modified": "2024-03-28 18:09:35.367150",
+ "modified": "2024-04-20 10:40:40.985679",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Customer",
@@ -680,8 +885,7 @@
    "role": "Accounts Manager"
   }
  ],
- "quick_entry": 1,
- "search_fields": "customer_group,territory, mobile_no,primary_address",
+ "search_fields": "customer_name,mobile_number, email",
  "show_name_in_global_search": 1,
  "sort_field": "modified",
  "sort_order": "DESC",

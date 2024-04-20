@@ -97,8 +97,11 @@ class SalesOrder(SellingController):
         currency: DF.Link
         customer: DF.Link
         customer_address: DF.Link | None
+        customer_email_id: DF.Data | None
         customer_group: DF.Link | None
+        customer_mobile_no: DF.Data | None
         customer_name: DF.Data | None
+        delivery_address: DF.SmallText | None
         delivery_date: DF.Date | None
         delivery_status: DF.Literal["Not Delivered", "Fully Delivered", "Partly Delivered", "Closed", "Not Applicable"]
         disable_rounded_total: DF.Check
@@ -137,6 +140,7 @@ class SalesOrder(SellingController):
         per_billed: DF.Percent
         per_delivered: DF.Percent
         per_picked: DF.Percent
+        permanent_address: DF.SmallText | None
         picked_up: DF.Datetime | None
         pickup_date: DF.Datetime | None
         pickup_reason: DF.Literal["", "Patient recovered", "Patient Expired", "Purchased Device from Us", "Purchased Device from Others", "Other Reason"]
@@ -189,6 +193,7 @@ class SalesOrder(SellingController):
         total_net_weight: DF.Float
         total_no_of_dates: DF.Data | None
         total_qty: DF.Float
+        total_rental_amount: DF.Currency
         total_taxes_and_charges: DF.Currency
         transaction_date: DF.Date
     # end: auto-generated types
@@ -2926,8 +2931,15 @@ def validate_and_update_payment_and_security_deposit_status(docname,master_order
             sales_order.security_deposit_status = 'Unpaid'
         else:
             sales_order.security_deposit_status = 'Partially Paid'
+    # Convert strings to floats
+        security_deposit = float(sales_order.security_deposit)
+        rounded_total = float(sales_order.rounded_total)
 
-        # Save changes to the document
+        # Perform addition
+        total_rental_amount = security_deposit + rounded_total
+
+        # Assign the result back to sales_order.total_rental_amount
+        sales_order.total_rental_amount = total_rental_amount        # Save changes to the document
         sales_order.save()
 
         # Return True to indicate successful update
