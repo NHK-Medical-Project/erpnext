@@ -2833,10 +2833,22 @@ def get_sales_orders_by_rental_group_id(docname):
 @frappe.whitelist()
 def validate_and_update_payment_status(docname):
     sales_order = frappe.get_doc("Sales Order", docname)
-    
+    payment_entries = frappe.get_all(
+            "Payment Entry",
+            filters={
+                "docstatus": 1,
+                "sales_order_id":docname
+            },
+            fields=["references.allocated_amount"]
+        )
+
+    # Calculate total allocated amount
+    total_allocated_amount = sum(entry.allocated_amount for entry in payment_entries)
+    # print(total_allocated_amount)
+    sales_order.received_amount = total_allocated_amount
     # Access the rounded_total and advance_paid fields from the document object
     rounded_total = sales_order.rounded_total
-    advance_paid = sales_order.advance_paid
+    advance_paid = sales_order.received_amount
 
     # Calculate the balance amount
     balance_amount = rounded_total - advance_paid
@@ -2880,7 +2892,7 @@ def validate_and_update_payment_and_security_deposit_status(docname,master_order
 
         # Calculate total allocated amount
         total_allocated_amount = sum(entry.allocated_amount for entry in payment_entries)
-        print(total_allocated_amount)
+        # print(total_allocated_amount)
         sales_order.received_amount = total_allocated_amount
         # Calculate balance amount
         balance_amount = sales_order.rounded_total - total_allocated_amount
@@ -2889,9 +2901,9 @@ def validate_and_update_payment_and_security_deposit_status(docname,master_order
         sales_order.balance_amount = balance_amount
 
         # Update payment status based on rounded total and advance paid
-        if sales_order.rounded_total == sales_order.advance_paid:
+        if sales_order.rounded_total == sales_order.received_amount:
             sales_order.payment_status = 'Paid'
-        elif sales_order.advance_paid == 0:
+        elif sales_order.received_amount == 0:
             sales_order.payment_status = 'UnPaid'
         else:
             sales_order.payment_status = 'Partially Paid'
