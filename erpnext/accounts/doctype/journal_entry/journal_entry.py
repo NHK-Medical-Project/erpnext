@@ -83,7 +83,7 @@ class JournalEntry(AccountsController):
 		repost_required: DF.Check
 		reversal_of: DF.Link | None
 		sales_order_id: DF.Link | None
-		security_deposite_type: DF.Literal["", "Booking as Outstanding SD From Client", "Cash Received SD From Client", "Refunding SD to Client", "Adjusted Device Damage Charges", "Adjusted Against Sales Order Rental Charges"]
+		security_deposite_type: DF.Literal["", "Booking as Outstanding SD From Client", "SD Amount Received From Client", "Refunding SD to Client", "Adjusted Device Damage Charges", "Adjusted Against Sales Order Rental Charges"]
 		select_print_heading: DF.Link | None
 		stock_entry: DF.Link | None
 		tax_withholding_category: DF.Link | None

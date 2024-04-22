@@ -407,7 +407,7 @@ class SalesInvoice(SellingController):
 
 	def on_submit(self):
 		self.validate_pos_paid_amount()
-		self.update_asset_for_rental_sales()
+		# self.update_asset_for_rental_sales()
 		if not self.auto_repeat:
 			frappe.get_doc("Authorization Control").validate_approving_authority(
 				self.doctype, self.company, self.base_grand_total, self

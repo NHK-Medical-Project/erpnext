@@ -579,7 +579,7 @@
    "fieldname": "security_deposite_type",
    "fieldtype": "Select",
    "label": "Security Deposit Type",
-   "options": "\nBooking as Outstanding SD From Client\nCash Received SD From Client\nRefunding SD to Client\nAdjusted Device Damage Charges\nAdjusted Against Sales Order Rental Charges"
+   "options": "\nBooking as Outstanding SD From Client\nSD Amount Received From Client\nRefunding SD to Client\nAdjusted Device Damage Charges\nAdjusted Against Sales Order Rental Charges"
   },
   {
    "allow_on_submit": 1,
@@ -634,7 +634,7 @@
    "table_fieldname": "payment_entries"
   }
  ],
- "modified": "2024-04-11 19:51:22.682852",
+ "modified": "2024-04-20 17:40:34.286647",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Journal Entry",

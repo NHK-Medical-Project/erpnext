@@ -152,6 +152,7 @@ class SalesOrder(SellingController):
         price_list_currency: DF.Link
         pricing_rules: DF.Table[PricingRuleDetail]
         project: DF.Link | None
+        received_amount: DF.Currency
         refundable_security_deposit: DF.Currency
         rental_delivery_date: DF.Datetime | None
         represents_company: DF.Link | None
@@ -2868,9 +2869,21 @@ def validate_and_update_payment_and_security_deposit_status(docname,master_order
     try:
         # Retrieve Sales Order document
         sales_order = frappe.get_doc("Sales Order", docname)
+        payment_entries = frappe.get_all(
+            "Payment Entry",
+            filters={
+                "docstatus": 1,
+                "sales_order_id":docname
+            },
+            fields=["references.allocated_amount"]
+        )
 
+        # Calculate total allocated amount
+        total_allocated_amount = sum(entry.allocated_amount for entry in payment_entries)
+        print(total_allocated_amount)
+        sales_order.received_amount = total_allocated_amount
         # Calculate balance amount
-        balance_amount = sales_order.rounded_total - sales_order.advance_paid
+        balance_amount = sales_order.rounded_total - total_allocated_amount
 
         # Update balance amount field
         sales_order.balance_amount = balance_amount
@@ -3204,7 +3217,7 @@ def cancel_and_delete_payment_entry(payment_entry_id):
 
 
 @frappe.whitelist()
-def process_payment(balance_amount, outstanding_security_deposit_amount, customer_name, rental_payment_amount, sales_order_name, master_order_id, security_deposit_status, customer, payment_account=None, reference_no=None, reference_date=None, mode_of_payment=None,
+def process_payment(balance_amount, outstanding_security_deposit_amount, customer_name, rental_payment_amount, sales_order_name, master_order_id, security_deposit_status, customer, payment_account=None,security_deposit_account=None, reference_no=None, reference_date=None, mode_of_payment=None,
                     security_deposit_payment_amount=None, remark=None):
     try:
         # Convert balance_amount and outstanding_security_deposit_amount to floats
@@ -3240,7 +3253,7 @@ def process_payment(balance_amount, outstanding_security_deposit_amount, custome
                 return False
 
             # Create a journal entry for the security deposit payment amount
-            create_security_deposit_journal_entry_payment(customer_name, security_deposit_payment_amount,mode_of_payment, sales_order_name, master_order_id, reference_no, reference_date, remark)
+            create_security_deposit_journal_entry_payment(customer_name, security_deposit_payment_amount,mode_of_payment, sales_order_name, master_order_id,security_deposit_account, reference_no, reference_date, remark)
             
             # Create a payment entry for the rental payment amount
             create_rental_payment_entry(customer_name, rental_payment_amount, mode_of_payment, sales_order_name, security_deposit_status, customer, payment_account, master_order_id, reference_no, reference_date, remark)
@@ -3255,7 +3268,7 @@ def process_payment(balance_amount, outstanding_security_deposit_amount, custome
                 return False
 
             # Create a journal entry for the security deposit payment amount
-            create_security_deposit_journal_entry_payment(customer_name, security_deposit_payment_amount,mode_of_payment ,sales_order_name, master_order_id, reference_no, reference_date, remark)
+            create_security_deposit_journal_entry_payment(customer_name, security_deposit_payment_amount,mode_of_payment ,sales_order_name, master_order_id,security_deposit_account, reference_no, reference_date, remark)
             return True
         
         elif rental_payment_amount > 0:
@@ -3278,7 +3291,7 @@ def process_payment(balance_amount, outstanding_security_deposit_amount, custome
     return False
 
 
-def create_security_deposit_journal_entry_payment(customer, security_deposit_payment_amount,mode_of_payment, sales_order_name, master_order_id, reference_no=None, reference_date=None, remark=None):
+def create_security_deposit_journal_entry_payment(customer, security_deposit_payment_amount,mode_of_payment, sales_order_name, master_order_id,security_deposit_account, reference_no=None, reference_date=None, remark=None):
     try:
         # Create a new Journal Entry document
         journal_entry = frappe.new_doc("Journal Entry")
@@ -3297,7 +3310,7 @@ def create_security_deposit_journal_entry_payment(customer, security_deposit_pay
 
         # Add accounts for debit and credit
         journal_entry.append("accounts", {
-            "account": "Cash - INR",
+            "account": security_deposit_account,
             "debit_in_account_currency": security_deposit_payment_amount
         })
         journal_entry.append("accounts", {

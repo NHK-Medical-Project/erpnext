@@ -97,6 +97,7 @@ class SalesInvoiceItem(Document):
 		weight_per_unit: DF.Float
 		weight_uom: DF.Link | None
 	# end: auto-generated types
+
 	# def before_submit(self):
 		# if self.item_code:
 		# 	asset_id = frappe.db.get_value('Asset', {'item_code': self.item_code}, 'name')

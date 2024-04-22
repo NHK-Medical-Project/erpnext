@@ -87,6 +87,7 @@
   "rounded_total",
   "in_words",
   "disable_rounded_total",
+  "advance_paid",
   "total_rental_amount",
   "section_break_48",
   "apply_discount_on",
@@ -141,7 +142,7 @@
   "journal_entry_details_section",
   "journal_entry_details",
   "payment_details_section",
-  "advance_paid",
+  "received_amount",
   "payment_status",
   "column_break_yvcu",
   "balance_amount",
@@ -2100,13 +2101,20 @@
    "fieldtype": "Currency",
    "label": "Total Rental Amount",
    "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "received_amount",
+   "fieldtype": "Currency",
+   "label": "Received Amount",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-file-text",
  "idx": 105,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-04-20 11:34:05.424907",
+ "modified": "2024-04-22 10:43:01.471600",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order",

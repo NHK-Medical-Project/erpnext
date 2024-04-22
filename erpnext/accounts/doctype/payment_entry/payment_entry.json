@@ -767,7 +767,8 @@
    "fieldname": "master_order_id",
    "fieldtype": "Link",
    "label": "Master Order Id",
-   "options": "Sales Order"
+   "options": "Sales Order",
+   "read_only": 1
   },
   {
    "fieldname": "payment_remark",
@@ -775,10 +776,12 @@
    "label": "Payment Remark"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "sales_order_id",
    "fieldtype": "Link",
    "label": "Sales Order Id",
-   "options": "Sales Order"
+   "options": "Sales Order",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
@@ -792,7 +795,7 @@
    "table_fieldname": "payment_entries"
   }
  ],
- "modified": "2024-04-20 16:21:06.505322",
+ "modified": "2024-04-22 10:53:58.950503",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Payment Entry",
