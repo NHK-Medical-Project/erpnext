@@ -585,7 +585,6 @@
   {
    "fieldname": "tax_tab",
    "fieldtype": "Tab Break",
-   "hidden": 1,
    "label": "Tax"
   },
   {
@@ -808,7 +807,7 @@
    "link_fieldname": "party"
   }
  ],
- "modified": "2024-04-20 10:40:40.985679",
+ "modified": "2024-04-22 13:27:55.443501",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Customer",

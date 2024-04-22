@@ -2880,7 +2880,7 @@ def validate_and_update_payment_and_security_deposit_status(docname,master_order
 
         # Calculate total allocated amount
         total_allocated_amount = sum(entry.allocated_amount for entry in payment_entries)
-        print(total_allocated_amount)
+        #print(total_allocated_amount)
         sales_order.received_amount = total_allocated_amount
         # Calculate balance amount
         balance_amount = sales_order.rounded_total - total_allocated_amount
@@ -2889,9 +2889,9 @@ def validate_and_update_payment_and_security_deposit_status(docname,master_order
         sales_order.balance_amount = balance_amount
 
         # Update payment status based on rounded total and advance paid
-        if sales_order.rounded_total == sales_order.advance_paid:
+        if sales_order.rounded_total == sales_order.received_amount:
             sales_order.payment_status = 'Paid'
-        elif sales_order.advance_paid == 0:
+        elif sales_order.received_amount == 0:
             sales_order.payment_status = 'UnPaid'
         else:
             sales_order.payment_status = 'Partially Paid'
