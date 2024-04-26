@@ -76,6 +76,7 @@ class Item(Document):
 		auto_create_assets: DF.Check
 		barcodes: DF.Table[ItemBarcode]
 		batch_number_series: DF.Data | None
+		billing_price: DF.Currency
 		brand: DF.Link | None
 		country_of_origin: DF.Link | None
 		create_new_batch: DF.Check
@@ -117,16 +118,20 @@ class Item(Document):
 		item_name: DF.Data | None
 		last_purchase_rate: DF.Float
 		lead_time_days: DF.Int
+		manufacture_date: DF.Date | None
 		max_discount: DF.Float
 		min_order_qty: DF.Float
 		naming_series: DF.Literal["STO-ITEM-.YYYY.-"]
 		no_of_months: DF.Int
 		no_of_months_exp: DF.Int
+		notes: DF.SmallText | None
 		opening_stock: DF.Float
 		over_billing_allowance: DF.Float
 		over_delivery_receipt_allowance: DF.Float
+		purchase_date: DF.Date | None
 		purchase_uom: DF.Link | None
 		quality_inspection_template: DF.Link | None
+		rental_converted_date: DF.Date | None
 		reorder_levels: DF.Table[ItemReorder]
 		replaced_reason: DF.SmallText | None
 		retain_sample: DF.Check
@@ -147,6 +152,7 @@ class Item(Document):
 		variant_based_on: DF.Literal["Item Attribute", "Manufacturer"]
 		variant_of: DF.Link | None
 		warranty_period: DF.Data | None
+		warranty_upto: DF.Date | None
 		weight_per_unit: DF.Float
 		weight_uom: DF.Link | None
 	# end: auto-generated types

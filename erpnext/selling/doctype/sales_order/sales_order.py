@@ -212,6 +212,10 @@ class SalesOrder(SellingController):
 
     def validate(self):
         super(SalesOrder, self).validate()
+        if self.order_type == "Rental":
+            self.security_deposit = float(self.security_deposit)
+
+            self.total_rental_amount = self.rounded_total + self.security_deposit
         # self.validate_delivery_date()
         # self.validate_sales_order_payment_status(self)
         self.validate_proj_cust()
@@ -2961,10 +2965,10 @@ def validate_and_update_payment_and_security_deposit_status(docname,master_order
         rounded_total = float(sales_order.rounded_total)
 
         # Perform addition
-        total_rental_amount = security_deposit + rounded_total
+        #total_rental_amount = security_deposit + rounded_total
 
         # Assign the result back to sales_order.total_rental_amount
-        sales_order.total_rental_amount = total_rental_amount        # Save changes to the document
+        #sales_order.total_rental_amount = total_rental_amount        # Save changes to the document
         sales_order.save()
 
         # Return True to indicate successful update

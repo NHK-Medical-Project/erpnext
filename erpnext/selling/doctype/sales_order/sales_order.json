@@ -838,6 +838,7 @@
    "collapsible": 1,
    "fieldname": "sec_tax_breakup",
    "fieldtype": "Section Break",
+   "hidden": 1,
    "hide_days": 1,
    "hide_seconds": 1,
    "label": "Tax Breakup"
@@ -1257,6 +1258,7 @@
    "collapsible": 1,
    "fieldname": "printing_details",
    "fieldtype": "Section Break",
+   "hidden": 1,
    "hide_days": 1,
    "hide_seconds": 1,
    "label": "Print Settings"
@@ -1411,6 +1413,7 @@
    "collapsible_depends_on": "commission_rate",
    "fieldname": "sales_team_section_break",
    "fieldtype": "Section Break",
+   "hidden": 1,
    "hide_days": 1,
    "hide_seconds": 1,
    "label": "Commission",
@@ -1467,6 +1470,7 @@
    "collapsible_depends_on": "sales_team",
    "fieldname": "section_break1",
    "fieldtype": "Section Break",
+   "hidden": 1,
    "hide_days": 1,
    "hide_seconds": 1,
    "label": "Sales Team",
@@ -1489,6 +1493,7 @@
    "collapsible": 1,
    "fieldname": "subscription_section",
    "fieldtype": "Section Break",
+   "hidden": 1,
    "hide_days": 1,
    "hide_seconds": 1,
    "label": "Auto Repeat",
@@ -1686,6 +1691,7 @@
    "collapsible": 1,
    "fieldname": "additional_info_section",
    "fieldtype": "Section Break",
+   "hidden": 1,
    "label": "Additional Info"
   },
   {
@@ -1994,7 +2000,6 @@
    "read_only": 1
   },
   {
-   "depends_on": "eval:doc.order_type == 'Rental'",
    "fieldname": "security_deposit_tab",
    "fieldtype": "Tab Break",
    "label": "Transaction Details"
@@ -2005,6 +2010,7 @@
   },
   {
    "collapsible": 1,
+   "depends_on": "eval:doc.order_type == 'Rental'",
    "fieldname": "journal_entry_details_section",
    "fieldtype": "Section Break",
    "label": "SD Transaction Details"
@@ -2055,6 +2061,7 @@
    "read_only": 1
   },
   {
+   "depends_on": "eval:doc.order_type == 'Rental'",
    "fieldname": "security_deposit_section",
    "fieldtype": "Section Break",
    "label": "Security Deposit"
@@ -2097,6 +2104,7 @@
   },
   {
    "allow_on_submit": 1,
+   "depends_on": "eval:doc.order_type == 'Rental'",
    "fieldname": "total_rental_amount",
    "fieldtype": "Currency",
    "label": "Total Rental Amount",
@@ -2114,7 +2122,7 @@
  "idx": 105,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-04-22 10:43:01.471600",
+ "modified": "2024-04-26 17:39:15.081511",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order",

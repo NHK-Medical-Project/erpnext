@@ -640,12 +640,12 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 						// 		__("Status")
 						// 	);
 						// }
-						if(flt(doc.per_delivered, 2) < 100 || flt(doc.per_billed, 2) < 100) {
+						//if(flt(doc.per_delivered, 2) < 100 || flt(doc.per_billed, 2) < 100 || this.doc.status === "Pending") {
 							// hold
-							this.frm.add_custom_button(__('Hold'), () => this.hold_rental_sales_order(), __("Status"))
+							//this.frm.add_custom_button(__('Hold'), () => this.hold_rental_sales_order(), __("Status"))
 							// close
-							this.frm.add_custom_button(__('Close'), () => this.close_rental_sales_order(), __("Status"))
-						}
+							//this.frm.add_custom_button(__('Close'), () => this.close_rental_sales_order(), __("Status"))
+						//}
 					}
 
 					// if (!doc.__onload || !doc.__onload.has_reserved_stock) {
