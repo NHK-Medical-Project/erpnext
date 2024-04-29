@@ -127,7 +127,7 @@ class SalesOrder(SellingController):
         named_place: DF.Data | None
         naming_series: DF.Literal["SAL-ORD-.YYYY.-"]
         net_total: DF.Currency
-        order_type: DF.Literal["", "Sales", "Maintenance", "Shopping Cart", "Rental"]
+        order_type: DF.Literal["", "Sales", "Service", "Shopping Cart", "Rental"]
         other_charges_calculation: DF.LongText | None
         outstanding_security_deposit_amount: DF.Currency
         overdue_status: DF.Literal["Active", "Overdue", "Renewed"]

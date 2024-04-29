@@ -718,7 +718,6 @@
    "fieldtype": "Section Break"
   },
   {
-   "default": "GST 12% - INR",
    "fieldname": "item_tax_template",
    "fieldtype": "Link",
    "label": "Item Tax Template",
@@ -1080,7 +1079,7 @@
  "idx": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-04-26 11:02:04.230137",
+ "modified": "2024-04-29 15:22:56.338962",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order Item",
