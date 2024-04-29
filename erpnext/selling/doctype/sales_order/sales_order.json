@@ -105,7 +105,12 @@
   "device_details_tab",
   "dispatched_section",
   "rental_delivery_date",
+  "column_break_xbkp",
   "dispatch_date",
+  "attachment_section",
+  "rental_order_agreement_attachment",
+  "column_break_axng",
+  "aadhar_card_attachment",
   "payment_pending_reason_section",
   "reason_for_payment_pending",
   "column_break_tgiz",
@@ -2147,13 +2152,38 @@
   {
    "fieldname": "column_break_tgiz",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "attachment_section",
+   "fieldtype": "Section Break",
+   "label": "Attachment"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "rental_order_agreement_attachment",
+   "fieldtype": "Attach",
+   "label": "Rental Order Agreement Attachment"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "aadhar_card_attachment",
+   "fieldtype": "Attach",
+   "label": "Aadhar Card Attachment"
+  },
+  {
+   "fieldname": "column_break_xbkp",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_axng",
+   "fieldtype": "Column Break"
   }
  ],
  "icon": "fa fa-file-text",
  "idx": 105,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-04-29 16:54:10.592972",
+ "modified": "2024-04-29 19:05:31.567813",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order",

@@ -1670,6 +1670,18 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 				fieldtype: 'Small Text',
 				depends_on: 'eval:doc.payment_status == "UnPaid" || doc.payment_status == "Partially Paid"',
 				// mandatory_depends_on: 'eval:doc.mode_of_payment == "Bank Draft" || doc.mode_of_payment == "Cheque"'
+			},
+			{
+				label: 'Rental Order Agreement Attachment',
+				fieldname: 'rental_order_agreement_attachment',
+				fieldtype: 'Attach',
+				reqd: 1
+			},
+			{
+				label: 'Aadhar Card Attachment',
+				fieldname: 'aadhar_card_attachment',
+				fieldtype: 'Attach',
+				reqd: 1
 			}
 		], (values) => {
 			// values will contain the entered data
@@ -1700,7 +1712,10 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 				docname: this.frm.doc.name,
 				delivered_date: values.delivered_date , // Pass dispatch_date to the server
 				payment_pending_reasons: values.payment_pending_reason,
-				notes: values.notes
+				rental_order_agreement_attachment: values.rental_order_agreement_attachment,
+            	aadhar_card_attachment: values.aadhar_card_attachment,
+				notes: values.notes,
+				
 			},
 			callback: (response) => {
 				// Handle the response from the server

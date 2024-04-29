@@ -61,6 +61,7 @@ class SalesOrder(SellingController):
         from erpnext.stock.doctype.packed_item.packed_item import PackedItem
         from frappe.types import DF
 
+        aadhar_card_attachment: DF.Attach | None
         additional_discount_percentage: DF.Float
         address_display: DF.SmallText | None
         adjustment_amount: DF.Currency
@@ -157,6 +158,7 @@ class SalesOrder(SellingController):
         received_amount: DF.Currency
         refundable_security_deposit: DF.Currency
         rental_delivery_date: DF.Datetime | None
+        rental_order_agreement_attachment: DF.Attach | None
         represents_company: DF.Link | None
         reserve_stock: DF.Check
         rounded_total: DF.Currency
@@ -2203,7 +2205,7 @@ def make_rental_device_assign(docname, item_group, item_code):
 import frappe
 
 @frappe.whitelist()
-def make_delivered(docname, delivered_date, payment_pending_reasons=None, notes=None):
+def make_delivered(docname, delivered_date, rental_order_agreement_attachment, aadhar_card_attachment=None, payment_pending_reasons=None, notes=None):
     try:
         print (payment_pending_reasons,notes)
         # Get the 'Sales Order' document
@@ -2222,6 +2224,8 @@ def make_delivered(docname, delivered_date, payment_pending_reasons=None, notes=
         rental_group_order.rental_delivery_date = delivered_date
         rental_group_order.reason_for_payment_pending = payment_pending_reasons
         rental_group_order.payment_pending_reason = notes
+        rental_group_order.rental_order_agreement_attachment = rental_order_agreement_attachment
+        rental_group_order.aadhar_card_attachment = aadhar_card_attachment
         rental_group_order.status = 'Active'
         rental_group_order.save()
 
