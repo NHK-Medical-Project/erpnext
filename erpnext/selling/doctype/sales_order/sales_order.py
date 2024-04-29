@@ -134,6 +134,7 @@ class SalesOrder(SellingController):
         packed_items: DF.Table[PackedItem]
         paid_security_deposite_amount: DF.Currency
         party_account_currency: DF.Link | None
+        payment_pending_reason: DF.SmallText | None
         payment_schedule: DF.Table[PaymentSchedule]
         payment_status: DF.Literal["Paid", "UnPaid", "Partially Paid"]
         payment_terms_template: DF.Link | None
@@ -152,6 +153,7 @@ class SalesOrder(SellingController):
         price_list_currency: DF.Link
         pricing_rules: DF.Table[PricingRuleDetail]
         project: DF.Link | None
+        reason_for_payment_pending: DF.Link | None
         received_amount: DF.Currency
         refundable_security_deposit: DF.Currency
         rental_delivery_date: DF.Datetime | None
@@ -2201,8 +2203,9 @@ def make_rental_device_assign(docname, item_group, item_code):
 import frappe
 
 @frappe.whitelist()
-def make_delivered(docname, delivered_date):
+def make_delivered(docname, delivered_date, payment_pending_reasons=None, notes=None):
     try:
+        print (payment_pending_reasons,notes)
         # Get the 'Sales Order' document
         rental_group_order = frappe.get_doc('Sales Order', docname)
 
@@ -2217,6 +2220,8 @@ def make_delivered(docname, delivered_date):
 
         # Update values for rental device and update status in Sales Order
         rental_group_order.rental_delivery_date = delivered_date
+        rental_group_order.reason_for_payment_pending = payment_pending_reasons
+        rental_group_order.payment_pending_reason = notes
         rental_group_order.status = 'Active'
         rental_group_order.save()
 

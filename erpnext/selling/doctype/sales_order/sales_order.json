@@ -106,6 +106,10 @@
   "dispatched_section",
   "rental_delivery_date",
   "dispatch_date",
+  "payment_pending_reason_section",
+  "reason_for_payment_pending",
+  "column_break_tgiz",
+  "payment_pending_reason",
   "pick_up_details_section",
   "pickup_date",
   "pickup_reason",
@@ -1914,13 +1918,15 @@
    "fieldname": "pickup_reason",
    "fieldtype": "Select",
    "label": "PickUp Reason",
-   "options": "\nPatient recovered\nPatient Expired\nPurchased Device from Us\nPurchased Device from Others\nOther Reason"
+   "options": "\nPatient recovered\nPatient Expired\nPurchased Device from Us\nPurchased Device from Others\nOther Reason",
+   "read_only": 1
   },
   {
    "allow_on_submit": 1,
    "fieldname": "pickup_remark",
    "fieldtype": "Small Text",
-   "label": "Pickup Remark "
+   "label": "Pickup Remark ",
+   "read_only": 1
   },
   {
    "fieldname": "column_break_ttvl",
@@ -1935,7 +1941,8 @@
    "allow_on_submit": 1,
    "fieldname": "picked_up",
    "fieldtype": "Datetime",
-   "label": "Picked Up"
+   "label": "Picked Up",
+   "read_only": 1
   },
   {
    "allow_on_submit": 1,
@@ -2116,13 +2123,37 @@
    "fieldtype": "Currency",
    "label": "Received Amount",
    "read_only": 1
+  },
+  {
+   "fieldname": "payment_pending_reason_section",
+   "fieldtype": "Section Break",
+   "label": "Payment Pending Reason"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "payment_pending_reason",
+   "fieldtype": "Small Text",
+   "label": "Payment Pending Reason",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "reason_for_payment_pending",
+   "fieldtype": "Link",
+   "label": "Reason For Payment Pending",
+   "options": "Payment Pending Reason",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_tgiz",
+   "fieldtype": "Column Break"
   }
  ],
  "icon": "fa fa-file-text",
  "idx": 105,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-04-29 15:11:54.167358",
+ "modified": "2024-04-29 16:54:10.592972",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order",

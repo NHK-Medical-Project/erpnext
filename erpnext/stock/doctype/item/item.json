@@ -16,6 +16,7 @@
   "item_code",
   "item_name",
   "item_group",
+  "tax_rate",
   "device_type",
   "stock_uom",
   "status",
@@ -977,6 +978,13 @@
    "label": "Service History",
    "options": "Item Service History",
    "read_only": 1
+  },
+  {
+   "fieldname": "tax_rate",
+   "fieldtype": "Link",
+   "label": "Tax Rate",
+   "options": "Item Tax Template",
+   "reqd": 1
   }
  ],
  "icon": "fa fa-tag",
@@ -985,7 +993,7 @@
  "index_web_pages_for_search": 1,
  "links": [],
  "make_attachments_public": 1,
- "modified": "2024-04-29 09:43:57.100049",
+ "modified": "2024-04-29 17:18:27.773461",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Item",

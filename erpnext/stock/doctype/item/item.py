@@ -146,6 +146,7 @@ class Item(Document):
 		status: DF.Literal["Available", "Reserved", "Rented Out", "Sold", "Damaged", "Repair Required", "Repair In Progress", "Retired", "Under Service"]
 		stock_uom: DF.Link
 		supplier_items: DF.Table[ItemSupplier]
+		tax_rate: DF.Link
 		taxes: DF.Table[ItemTax]
 		total_projected_qty: DF.Float
 		uoms: DF.Table[UOMConversionDetail]

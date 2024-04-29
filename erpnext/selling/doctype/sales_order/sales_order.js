@@ -1640,13 +1640,36 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 		
 
 	make_delivered() {
+		let frm = this.frm;
 		frappe.prompt([
 			{
 				label: 'Delivered Date',
 				fieldname: 'delivered_date',
 				fieldtype: 'Datetime',
-				default:'Now',
+				default: 'Now',
 				reqd: 1
+			},
+			{
+				label: 'Payment Status',
+				fieldname: 'payment_status',
+				fieldtype: 'Data',
+				default: frm.doc.payment_status,
+				read_only: 1
+			},
+			{
+				label: 'Payment Pending Reason',
+				fieldname: 'payment_pending_reason',
+				fieldtype: 'Link',
+				options: 'Payment Pending Reason',
+				depends_on: 'eval:doc.payment_status == "UnPaid" || doc.payment_status == "Partially Paid"',
+				mandatory_depends_on: 'eval:doc.payment_status == "UnPaid" || doc.payment_status == "Partially Paid"'
+			},
+			{
+				label: 'Notes',
+				fieldname: 'notes',
+				fieldtype: 'Small Text',
+				depends_on: 'eval:doc.payment_status == "UnPaid" || doc.payment_status == "Partially Paid"',
+				// mandatory_depends_on: 'eval:doc.mode_of_payment == "Bank Draft" || doc.mode_of_payment == "Cheque"'
 			}
 		], (values) => {
 			// values will contain the entered data
@@ -1654,6 +1677,9 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 
 			// Update RentalSales Order with the entered values
 			this.frm.doc.delivered_date = values.delivered_date;
+			this.frm.doc.payment_pending_reason = values.payment_pending_reason;
+			this.frm.doc.notes = values.notes;
+			
 
 			// Save the document before calling the server-side method
 			// this.frm.save(() => {
@@ -1672,7 +1698,9 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 			args: {
 				// item_code1: this.frm.doc.item_code1,
 				docname: this.frm.doc.name,
-				delivered_date: values.delivered_date  // Pass dispatch_date to the server
+				delivered_date: values.delivered_date , // Pass dispatch_date to the server
+				payment_pending_reasons: values.payment_pending_reason,
+				notes: values.notes
 			},
 			callback: (response) => {
 				// Handle the response from the server
@@ -1699,7 +1727,7 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 				fieldtype: 'Link',
 				options: 'Technician Details',
 				label: 'Technician Name',
-				reqd: 1,
+				// reqd: 1,
 				onchange: function() {
 					// Function to dynamically update technician mobile based on selected technician
 					var technicianName = this.value;
