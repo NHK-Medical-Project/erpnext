@@ -2122,7 +2122,7 @@
  "idx": 105,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-04-26 17:39:15.081511",
+ "modified": "2024-04-29 10:38:06.282773",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order",
@@ -2193,8 +2193,8 @@
  ],
  "search_fields": "status,transaction_date,customer,customer_name, territory,order_type,company",
  "show_name_in_global_search": 1,
- "sort_field": "modified",
- "sort_order": "DESC",
+ "sort_field": "transaction_date",
+ "sort_order": "ASC",
  "states": [
   {
    "color": "Blue",
