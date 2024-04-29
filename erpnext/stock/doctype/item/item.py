@@ -67,6 +67,7 @@ class Item(Document):
 		from erpnext.stock.doctype.item_variant_attribute.item_variant_attribute import ItemVariantAttribute
 		from erpnext.stock.doctype.uom_conversion_detail.uom_conversion_detail import UOMConversionDetail
 		from frappe.types import DF
+		from nhk.nhk.doctype.item_service_history.item_service_history import ItemServiceHistory
 
 		allow_alternative_item: DF.Check
 		allow_negative_stock: DF.Check
@@ -139,9 +140,10 @@ class Item(Document):
 		sales_uom: DF.Link | None
 		sample_quantity: DF.Int
 		serial_no_series: DF.Data | None
+		service_history: DF.Table[ItemServiceHistory]
 		shelf_life_in_days: DF.Int
 		standard_rate: DF.Currency
-		status: DF.Literal["Available", "Reserved", "Rented Out", "Sold", "Damaged", "Repair Required", "Repair In Progress", "Retired"]
+		status: DF.Literal["Available", "Reserved", "Rented Out", "Sold", "Damaged", "Repair Required", "Repair In Progress", "Retired", "Under Service"]
 		stock_uom: DF.Link
 		supplier_items: DF.Table[ItemSupplier]
 		taxes: DF.Table[ItemTax]
