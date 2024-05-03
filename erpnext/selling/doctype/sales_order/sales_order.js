@@ -1650,11 +1650,56 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 				reqd: 1
 			},
 			{
+				fieldtype: 'Section Break'
+			},
+			{
 				label: 'Payment Status',
 				fieldname: 'payment_status',
 				fieldtype: 'Data',
 				default: frm.doc.payment_status,
 				read_only: 1
+			},
+			{
+				label: 'Balance Amount',
+				fieldname: 'balance_amount',
+				fieldtype: 'Currency',
+				default: frm.doc.balance_amount,
+				read_only: 1
+			},
+			{
+				label: 'Payment Received Amount',
+				fieldname: 'received_amount',
+				fieldtype: 'Currency',
+				default: frm.doc.received_amount,
+				read_only: 1
+			},
+			
+			{
+				fieldtype: 'Column Break'
+			},
+			{
+				label: 'Security Deposit Payment Status',
+				fieldname: 'security_deposit_payment_status',
+				fieldtype: 'Data',
+				default: frm.doc.security_deposit_status,
+				read_only: 1
+			},
+			{
+				label: 'Payment Outstanding Security Deposit Amount',
+				fieldname: 'outstanding_security_deposit_amount',
+				fieldtype: 'Currency',
+				default: frm.doc.outstanding_security_deposit_amount,
+				read_only: 1
+			},
+			{
+				label: 'Received Security Deposit Amount',
+				fieldname: 'paid_security_deposite_amount',
+				fieldtype: 'Currency',
+				default: frm.doc.paid_security_deposite_amount,
+				read_only: 1
+			},
+			{
+				fieldtype: 'Section Break'
 			},
 			{
 				label: 'Payment Pending Reason',
