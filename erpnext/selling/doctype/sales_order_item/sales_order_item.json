@@ -953,7 +953,6 @@
   },
   {
    "columns": 1,
-   "default": "12",
    "fieldname": "rental_tax_rate",
    "fieldtype": "Currency",
    "in_list_view": 1,
@@ -1079,7 +1078,7 @@
  "idx": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-04-29 15:22:56.338962",
+ "modified": "2024-05-03 14:49:09.359039",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order Item",

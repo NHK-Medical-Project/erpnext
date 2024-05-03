@@ -3682,3 +3682,8 @@ def get_sales_orders(master_order_id):
         frappe.log_error(frappe.get_traceback(), "Failed to fetch sales orders")
         return None
 
+@frappe.whitelist()
+def get_item_tax_template(item_code):
+    # Fetch the item_tax_template for the given item_code from the Item doctype
+    item_tax_template = frappe.db.get_value('Item', item_code, 'tax_rate')
+    return item_tax_template
