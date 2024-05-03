@@ -95,6 +95,8 @@ class Customer(TransactionBase):
 		portal_users: DF.Table[PortalUser]
 		primary_address: DF.Text | None
 		represents_company: DF.Link | None
+		sales_person: DF.Link | None
+		sales_person_mail_id: DF.Data | None
 		sales_team: DF.Table[SalesTeam]
 		salutation: DF.Link | None
 		so_required: DF.Check

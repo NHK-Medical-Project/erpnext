@@ -25,6 +25,8 @@
   "opportunity_name",
   "account_manager",
   "image",
+  "sales_person",
+  "sales_person_mail_id",
   "defaults_tab",
   "default_currency",
   "default_bank_account",
@@ -467,7 +469,8 @@
    "collapsible": 1,
    "collapsible_depends_on": "sales_team",
    "fieldname": "sales_team_section",
-   "fieldtype": "Section Break"
+   "fieldtype": "Section Break",
+   "hidden": 1
   },
   {
    "fieldname": "sales_team",
@@ -543,7 +546,6 @@
    "collapsible_depends_on": "default_sales_partner",
    "fieldname": "sales_team_tab",
    "fieldtype": "Tab Break",
-   "hidden": 1,
    "label": "Sales Team",
    "oldfieldtype": "Section Break",
    "options": "fa fa-group"
@@ -795,6 +797,18 @@
    "fieldname": "permanent_address",
    "fieldtype": "Small Text",
    "label": "Permanent Address"
+  },
+  {
+   "fieldname": "sales_person",
+   "fieldtype": "Link",
+   "label": "Sales Person",
+   "options": "Sales Person"
+  },
+  {
+   "fetch_from": "sales_person.email_id",
+   "fieldname": "sales_person_mail_id",
+   "fieldtype": "Data",
+   "label": "Sales Person Mail Id"
   }
  ],
  "icon": "fa fa-user",
@@ -808,7 +822,7 @@
    "link_fieldname": "party"
   }
  ],
- "modified": "2024-04-20 10:40:40.985679",
+ "modified": "2024-05-03 12:47:05.795976",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Customer",

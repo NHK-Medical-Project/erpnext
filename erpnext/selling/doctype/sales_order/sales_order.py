@@ -164,6 +164,7 @@ class SalesOrder(SellingController):
         rounded_total: DF.Currency
         rounding_adjustment: DF.Currency
         sales_partner: DF.Link | None
+        sales_person: DF.Link | None
         sales_team: DF.Table[SalesTeam]
         security_deposit: DF.Data | None
         security_deposit_amount_return_to_client: DF.Currency
