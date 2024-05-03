@@ -1706,14 +1706,14 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 				fieldname: 'payment_pending_reason',
 				fieldtype: 'Link',
 				options: 'Payment Pending Reason',
-				depends_on: 'eval:doc.payment_status == "UnPaid" || doc.payment_status == "Partially Paid"',
-				mandatory_depends_on: 'eval:doc.payment_status == "UnPaid" || doc.payment_status == "Partially Paid"'
+				depends_on: 'eval: (doc.payment_status == "UnPaid" || doc.payment_status == "Partially Paid") || (doc.security_deposit_payment_status == "Unpaid" || doc.security_deposit_payment_status == "Partially Paid")',
+				mandatory_depends_on: 'eval: (doc.payment_status == "UnPaid" || doc.payment_status == "Partially Paid") || (doc.security_deposit_payment_status == "Unpaid" || doc.security_deposit_payment_status == "Partially Paid")'
 			},
 			{
 				label: 'Notes',
 				fieldname: 'notes',
 				fieldtype: 'Small Text',
-				depends_on: 'eval:doc.payment_status == "UnPaid" || doc.payment_status == "Partially Paid"',
+				depends_on: 'eval: (doc.payment_status == "UnPaid" || doc.payment_status == "Partially Paid") || (doc.security_deposit_payment_status == "Unpaid" || doc.security_deposit_payment_status == "Partially Paid")',
 				// mandatory_depends_on: 'eval:doc.mode_of_payment == "Bank Draft" || doc.mode_of_payment == "Cheque"'
 			},
 			{

@@ -587,6 +587,7 @@ class SalesOrder(SellingController):
             if item_doc.status in ["Rented Out", "Reserved"]:
                 item_doc.status = "Available"
                 item_doc.customer_n = ""
+                item_doc.customer_name = ""
                 item_doc.save()
 
         frappe.db.commit()
