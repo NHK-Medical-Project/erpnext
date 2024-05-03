@@ -23,6 +23,8 @@
   "replaced_reason",
   "item_damage_remark",
   "current_status",
+  "customer_n",
+  "customer_name",
   "column_break0",
   "disabled",
   "allow_alternative_item",
@@ -996,6 +998,19 @@
    "fieldname": "current_status",
    "fieldtype": "Data",
    "label": "Current Status"
+  },
+  {
+   "fetch_from": "customer_n.customer_name",
+   "fieldname": "customer_name",
+   "fieldtype": "Data",
+   "label": "Customer Name"
+  },
+  {
+   "fieldname": "customer_n",
+   "fieldtype": "Link",
+   "label": "Customer",
+   "options": "Customer",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-tag",
@@ -1004,7 +1019,7 @@
  "index_web_pages_for_search": 1,
  "links": [],
  "make_attachments_public": 1,
- "modified": "2024-05-02 11:37:49.937932",
+ "modified": "2024-05-03 13:32:19.647172",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Item",

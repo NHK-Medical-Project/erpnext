@@ -1755,6 +1755,7 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 			args: {
 				// item_code1: this.frm.doc.item_code1,
 				docname: this.frm.doc.name,
+				customer_name: this.frm.doc.customer,
 				delivered_date: values.delivered_date , // Pass dispatch_date to the server
 				payment_pending_reasons: values.payment_pending_reason,
 				rental_order_agreement_attachment: values.rental_order_agreement_attachment,

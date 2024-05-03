@@ -85,6 +85,8 @@ class Item(Document):
 		customer: DF.Link | None
 		customer_code: DF.SmallText | None
 		customer_items: DF.Table[ItemCustomerDetail]
+		customer_n: DF.Link | None
+		customer_name: DF.Data | None
 		customs_tariff_number: DF.Link | None
 		default_bom: DF.Link | None
 		default_item_manufacturer: DF.Link | None
