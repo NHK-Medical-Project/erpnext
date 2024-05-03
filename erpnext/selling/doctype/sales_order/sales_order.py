@@ -586,8 +586,9 @@ class SalesOrder(SellingController):
             item_doc = frappe.get_doc("Item", item_code)
             if item_doc.status in ["Rented Out", "Reserved"]:
                 item_doc.status = "Available"
-                item_doc.customer_n = ""
                 item_doc.customer_name = ""
+                item_doc.customer_n = ""
+                
                 item_doc.save()
 
         frappe.db.commit()
