@@ -1720,13 +1720,13 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 				label: 'Rental Order Agreement Attachment',
 				fieldname: 'rental_order_agreement_attachment',
 				fieldtype: 'Attach',
-				reqd: 1
+				// reqd: 1
 			},
 			{
 				label: 'Aadhar Card Attachment',
 				fieldname: 'aadhar_card_attachment',
 				fieldtype: 'Attach',
-				reqd: 1
+				// reqd: 1
 			}
 		], (values) => {
 			// values will contain the entered data
