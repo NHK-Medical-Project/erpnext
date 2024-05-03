@@ -18,6 +18,7 @@
   "title",
   "tax_id",
   "overdue_status",
+  "sales_person",
   "column_break_7",
   "transaction_date",
   "delivery_date",
@@ -1479,7 +1480,6 @@
    "collapsible_depends_on": "sales_team",
    "fieldname": "section_break1",
    "fieldtype": "Section Break",
-   "hidden": 1,
    "hide_days": 1,
    "hide_seconds": 1,
    "label": "Sales Team",
@@ -2177,13 +2177,20 @@
   {
    "fieldname": "column_break_axng",
    "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "customer.sales_person",
+   "fieldname": "sales_person",
+   "fieldtype": "Link",
+   "label": "Sales Person",
+   "options": "Sales Person"
   }
  ],
  "icon": "fa fa-file-text",
  "idx": 105,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-04-29 19:05:31.567813",
+ "modified": "2024-05-03 13:01:51.446872",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order",
