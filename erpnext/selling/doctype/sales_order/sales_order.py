@@ -2209,7 +2209,7 @@ def make_rental_device_assign(docname, item_group, item_code):
 import frappe
 
 @frappe.whitelist()
-def make_delivered(docname,customer_name, delivered_date, rental_order_agreement_attachment, aadhar_card_attachment=None, payment_pending_reasons=None, notes=None):
+def make_delivered(docname,customer_name, delivered_date, rental_order_agreement_attachment=None, aadhar_card_attachment=None, payment_pending_reasons=None, notes=None):
     try:
         print (payment_pending_reasons,notes)
         # Get the 'Sales Order' document
