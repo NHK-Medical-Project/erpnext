@@ -802,7 +802,8 @@
    "fieldname": "sales_person",
    "fieldtype": "Link",
    "label": "Sales Person",
-   "options": "Sales Person"
+   "options": "Sales Person",
+   "reqd": 1
   },
   {
    "fetch_from": "sales_person.email_id",
@@ -822,7 +823,7 @@
    "link_fieldname": "party"
   }
  ],
- "modified": "2024-05-03 12:47:05.795976",
+ "modified": "2024-05-06 18:16:47.142117",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Customer",
