@@ -2250,7 +2250,7 @@ def make_delivered(docname,customer_name, delivered_date, rental_order_agreement
         frappe.throw("An error occurred while processing the request. Please try again.")
 
 @frappe.whitelist()
-def make_ready_for_pickup(docname, pickup_date, pickup_reason,pickup_remark,technician_name,technician_mobile ):
+def make_ready_for_pickup(docname, pickup_date, pickup_reason,pickup_remark,technician_name=None,technician_mobile=None ):
     try:
         # Get the 'Sales Order' document
         doc = frappe.get_doc('Sales Order', docname)
