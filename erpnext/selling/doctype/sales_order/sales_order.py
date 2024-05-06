@@ -2861,7 +2861,7 @@ def validate_and_update_payment_status(docname):
         )
 
     # Calculate total allocated amount
-    total_allocated_amount = sum(entry.allocated_amount for entry in payment_entries)
+    total_allocated_amount = sum(entry.allocated_amount for entry in payment_entries if entry.allocated_amount is not None)
     # print(total_allocated_amount)
     sales_order.received_amount = total_allocated_amount
     # Access the rounded_total and advance_paid fields from the document object

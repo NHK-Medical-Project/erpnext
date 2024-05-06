@@ -684,7 +684,7 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
                         }, __('Action'));
                     }
 
-					if (flt(doc.per_billed, 2) < 100 && doc.status === 'Pending' && doc.order_type === 'Sales') {
+					if (flt(doc.per_billed, 2) < 100 && doc.status === 'Pending' && (doc.order_type === 'Sales' || doc.order_type === 'Service')) {
                         this.frm.add_custom_button(__('Approved'), () => {
                             frappe.confirm(
                                 __('Are you sure you want to approve. It will Reserve the Item?'),
