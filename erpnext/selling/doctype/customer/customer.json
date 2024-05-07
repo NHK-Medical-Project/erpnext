@@ -478,7 +478,8 @@
    "label": "Sales Team",
    "oldfieldname": "sales_team",
    "oldfieldtype": "Table",
-   "options": "Sales Team"
+   "options": "Sales Team",
+   "read_only": 1
   },
   {
    "fieldname": "customer_pos_id",
@@ -823,7 +824,7 @@
    "link_fieldname": "party"
   }
  ],
- "modified": "2024-05-06 18:16:47.142117",
+ "modified": "2024-05-07 15:05:43.438308",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Customer",
