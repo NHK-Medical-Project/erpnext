@@ -188,8 +188,8 @@ class SalesOrder(SellingController):
         tc_name: DF.Link | None
         technician_mobile_after_delivered: DF.Data | None
         technician_mobile_before_delivered: DF.Data | None
-        technician_name_after_delivered: DF.Data | None
-        technician_name_before_delivered: DF.Data | None
+        technician_name_after_delivered: DF.Link | None
+        technician_name_before_delivered: DF.Link | None
         terms: DF.TextEditor | None
         territory: DF.Link | None
         title: DF.Data | None
@@ -3689,3 +3689,23 @@ def get_item_tax_template(item_code):
     # Fetch the item_tax_template for the given item_code from the Item doctype
     item_tax_template = frappe.db.get_value('Item', item_code, 'tax_rate')
     return item_tax_template
+
+
+
+@frappe.whitelist()
+def get_user_by_role(role_id):
+    # Fetch users based on the given role ID from User Role Profile
+    users = frappe.get_all("UserRole", filters={"role": role_id}, fields=["parent"])
+
+    # Extract user names from the fetched UserRole records
+    user_names = [user["parent"] for user in users]
+
+    # Fetch user details
+    user_details = frappe.get_all("User", filters={"name": ["in", user_names]}, fields=["name", "full_name"])
+
+    # Prepare the response with user details
+    response = []
+    for user in user_details:
+        response.append({"value": user["name"], "description": user["full_name"]})
+
+    return response

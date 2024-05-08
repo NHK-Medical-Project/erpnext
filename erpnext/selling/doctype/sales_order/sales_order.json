@@ -1952,8 +1952,9 @@
   {
    "allow_on_submit": 1,
    "fieldname": "technician_name_before_delivered",
-   "fieldtype": "Data",
+   "fieldtype": "Link",
    "label": "Technician Name Before Delivered",
+   "options": "NHK User",
    "read_only": 1
   },
   {
@@ -1966,8 +1967,9 @@
   {
    "allow_on_submit": 1,
    "fieldname": "technician_name_after_delivered",
-   "fieldtype": "Data",
+   "fieldtype": "Link",
    "label": "Technician Name After Delivered",
+   "options": "NHK User",
    "read_only": 1
   },
   {
@@ -2190,7 +2192,7 @@
  "idx": 105,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-05-06 15:46:35.806518",
+ "modified": "2024-05-08 13:19:24.223354",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order",

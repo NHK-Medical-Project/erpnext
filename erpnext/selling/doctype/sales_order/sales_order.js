@@ -1508,14 +1508,35 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 
     make_ready_for_delivery() {
 		const me = this; // Preserve reference to 'this' object
-	
+		var role_profile = [
+			{ role_profile: "NHK Technician" }, // Example data, replace with actual data
+			{ role_profile: "Other Role" }
+		];
 		frappe.prompt([
 			{
 				fieldname: 'technician_name',
 				fieldtype: 'Link',
-				options: 'Technician Details',
+				options: 'NHK User',
 				label: 'Technician Name',
 				reqd: 1,
+				get_query: function() {
+					// Fetch NHK Technicians based on their role profile
+					var role_profiles = [];
+		
+					// Iterate over the role profiles and extract the role_profile value for NHK Technicians
+					for (var i = 0; i < role_profile.length; i++) {
+						if (role_profile[i].role_profile === 'NHK Technician') {
+							role_profiles.push(role_profile[i].role_profile);
+						}
+					}
+		
+					// Return filters to load NHK Users who are NHK Technicians
+					return {
+						filters: {
+							'role_profile': ['in', role_profiles]
+						}
+					};
+				},
 				onchange: function() {
 					// Function to dynamically update technician mobile based on selected technician
 					var technicianName = this.value;
@@ -1523,14 +1544,14 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 						frappe.call({
 							method: 'frappe.client.get_value',
 							args: {
-								doctype: 'Technician Details',
+								doctype: 'NHK User',
 								filters: { 'name': technicianName },
-								fieldname: ['mobile_number']
+								fieldname: ['mobile_no']
 							},
 							callback: function(response) {
-								if (response.message && response.message.mobile_number) {
+								if (response.message && response.message.mobile_no) {
 									// Set the value of technician mobile
-									cur_dialog.fields_dict.technician_mobile.set_input(response.message.mobile_number);
+									cur_dialog.fields_dict.technician_mobile.set_input(response.message.mobile_no);
 								}
 							}
 						});
@@ -1782,13 +1803,35 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 		});
 	}
 	make_ready_for_pickup() {
+		var role_profile = [
+			{ role_profile: "NHK Technician" }, // Example data, replace with actual data
+			{ role_profile: "Other Role" }
+		];
 		frappe.prompt([
 			{
 				fieldname: 'technician_name',
 				fieldtype: 'Link',
-				options: 'Technician Details',
+				options: 'NHK User',
 				label: 'Technician Name',
 				// reqd: 1,
+				get_query: function() {
+					// Fetch NHK Technicians based on their role profile
+					var role_profiles = [];
+		
+					// Iterate over the role profiles and extract the role_profile value for NHK Technicians
+					for (var i = 0; i < role_profile.length; i++) {
+						if (role_profile[i].role_profile === 'NHK Technician') {
+							role_profiles.push(role_profile[i].role_profile);
+						}
+					}
+		
+					// Return filters to load NHK Users who are NHK Technicians
+					return {
+						filters: {
+							'role_profile': ['in', role_profiles]
+						}
+					};
+				},
 				onchange: function() {
 					// Function to dynamically update technician mobile based on selected technician
 					var technicianName = this.value;
@@ -1796,14 +1839,14 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 						frappe.call({
 							method: 'frappe.client.get_value',
 							args: {
-								doctype: 'Technician Details',
+								doctype: 'NHK User',
 								filters: { 'name': technicianName },
-								fieldname: ['mobile_number']
+								fieldname: ['mobile_no']
 							},
 							callback: function(response) {
-								if (response.message && response.message.mobile_number) {
+								if (response.message && response.message.mobile_no) {
 									// Set the value of technician mobile
-									cur_dialog.fields_dict.technician_mobile.set_input(response.message.mobile_number);
+									cur_dialog.fields_dict.technician_mobile.set_input(response.message.mobile_no);
 								}
 							}
 						});

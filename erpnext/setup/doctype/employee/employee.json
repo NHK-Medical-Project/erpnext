@@ -244,8 +244,7 @@
    "fieldtype": "Date",
    "label": "Date of Joining",
    "oldfieldname": "date_of_joining",
-   "oldfieldtype": "Date",
-   "reqd": 1
+   "oldfieldtype": "Date"
   },
   {
    "allow_in_quick_entry": 1,
@@ -822,7 +821,7 @@
  "image_field": "image",
  "is_tree": 1,
  "links": [],
- "modified": "2024-05-02 13:44:20.807941",
+ "modified": "2024-05-08 10:30:41.560094",
  "modified_by": "Administrator",
  "module": "Setup",
  "name": "Employee",
