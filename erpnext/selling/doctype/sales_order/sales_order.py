@@ -119,6 +119,7 @@ class SalesOrder(SellingController):
         incoterm: DF.Link | None
         inter_company_order_reference: DF.Link | None
         is_internal_customer: DF.Check
+        is_renewed: DF.Check
         items: DF.Table[SalesOrderItem]
         language: DF.Data | None
         letter_head: DF.Link | None
@@ -217,10 +218,11 @@ class SalesOrder(SellingController):
 
     def validate(self):
         super(SalesOrder, self).validate()
-        if self.order_type == "Rental":
+        # if self.order_type == "Rental":
+        if self.security_deposit is not None:  # Check if security_deposit is not None
             self.security_deposit = float(self.security_deposit)
 
-            self.total_rental_amount = self.rounded_total + self.security_deposit
+        self.total_rental_amount = self.rounded_total + (self.security_deposit or 0)
         # self.validate_delivery_date()
         # self.validate_sales_order_payment_status(self)
         self.validate_proj_cust()
@@ -2822,6 +2824,7 @@ def create_renewal_order(sales_order_name):
     new_sales_order = frappe.copy_doc(original_sales_order)
     new_sales_order.previous_order_id = original_sales_order.name  # Pass original order ID to renewal_order_id
     new_sales_order.advance_paid = 0
+    new_sales_order.is_renewed = 1
     new_sales_order.insert()
 
     # Update original sales order status only after the new sales order has been submitted

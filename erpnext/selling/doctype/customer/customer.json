@@ -824,7 +824,7 @@
    "link_fieldname": "party"
   }
  ],
- "modified": "2024-05-07 15:12:41.132732",
+ "modified": "2024-05-08 14:53:10.721067",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Customer",
@@ -903,6 +903,7 @@
  ],
  "search_fields": "customer_name,mobile_number, email",
  "show_name_in_global_search": 1,
+ "show_title_field_in_link": 1,
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": [],
