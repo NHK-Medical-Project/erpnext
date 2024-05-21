@@ -3256,7 +3256,7 @@ def cancel_and_delete_payment_entry(payment_entry_id):
 
 
 @frappe.whitelist()
-def process_payment(balance_amount, outstanding_security_deposit_amount, customer_name, rental_payment_amount, sales_order_name, master_order_id, security_deposit_status, customer, payment_account=None,security_deposit_account=None, reference_no=None, reference_date=None, mode_of_payment=None,
+def process_payment(balance_amount, outstanding_security_deposit_amount, customer_name, rental_payment_amount, sales_order_name, master_order_id, security_deposit_status, customer, payment_date,payment_account=None,security_deposit_account=None, reference_no=None, reference_date=None, mode_of_payment=None,
                     security_deposit_payment_amount=None, remark=None):
     try:
         # Convert balance_amount and outstanding_security_deposit_amount to floats
@@ -3292,10 +3292,10 @@ def process_payment(balance_amount, outstanding_security_deposit_amount, custome
                 return False
 
             # Create a journal entry for the security deposit payment amount
-            create_security_deposit_journal_entry_payment(customer_name, security_deposit_payment_amount,mode_of_payment, sales_order_name, master_order_id,security_deposit_account, reference_no, reference_date, remark)
+            create_security_deposit_journal_entry_payment(customer_name,payment_date, security_deposit_payment_amount,mode_of_payment, sales_order_name, master_order_id,security_deposit_account, reference_no, reference_date, remark)
             
             # Create a payment entry for the rental payment amount
-            create_rental_payment_entry(customer_name, rental_payment_amount, mode_of_payment, sales_order_name, security_deposit_status, customer, payment_account, master_order_id, reference_no, reference_date, remark)
+            create_rental_payment_entry(customer_name,payment_date, rental_payment_amount, mode_of_payment, sales_order_name, security_deposit_status, customer, payment_account, master_order_id, reference_no, reference_date, remark)
             
             return True
 
@@ -3307,7 +3307,7 @@ def process_payment(balance_amount, outstanding_security_deposit_amount, custome
                 return False
 
             # Create a journal entry for the security deposit payment amount
-            create_security_deposit_journal_entry_payment(customer_name, security_deposit_payment_amount,mode_of_payment ,sales_order_name, master_order_id,security_deposit_account, reference_no, reference_date, remark)
+            create_security_deposit_journal_entry_payment(customer_name, payment_date,security_deposit_payment_amount,mode_of_payment ,sales_order_name, master_order_id,security_deposit_account, reference_no, reference_date, remark)
             return True
         
         elif rental_payment_amount > 0:
@@ -3318,7 +3318,7 @@ def process_payment(balance_amount, outstanding_security_deposit_amount, custome
                 return False
     
             # Create a payment entry for the rental payment amount
-            create_rental_payment_entry(customer_name, rental_payment_amount, mode_of_payment, sales_order_name, security_deposit_status, customer, payment_account, master_order_id, reference_no, reference_date, remark)
+            create_rental_payment_entry(customer_name,payment_date, rental_payment_amount, mode_of_payment, sales_order_name, security_deposit_status, customer, payment_account, master_order_id, reference_no, reference_date, remark)
             return True
 
 
@@ -3330,7 +3330,7 @@ def process_payment(balance_amount, outstanding_security_deposit_amount, custome
     return False
 
 
-def create_security_deposit_journal_entry_payment(customer, security_deposit_payment_amount,mode_of_payment, sales_order_name, master_order_id,security_deposit_account, reference_no=None, reference_date=None, remark=None):
+def create_security_deposit_journal_entry_payment(customer, payment_date,security_deposit_payment_amount,mode_of_payment, sales_order_name, master_order_id,security_deposit_account, reference_no=None, reference_date=None, remark=None):
     try:
         # Create a new Journal Entry document
         journal_entry = frappe.new_doc("Journal Entry")
@@ -3341,6 +3341,7 @@ def create_security_deposit_journal_entry_payment(customer, security_deposit_pay
         journal_entry.security_deposite_type = "SD Amount Received From Client"
         journal_entry.master_order_id = master_order_id
         journal_entry.cheque_no = reference_no
+        journal_entry.posting_date = payment_date
         journal_entry.cheque_date = reference_date
         journal_entry.user_remark = f"Security Deposit Payment Against Sales Order {sales_order_name} and Master Order Id is {master_order_id}. Remark: {remark}"
         journal_entry.customer_id = customer
@@ -3369,7 +3370,7 @@ def create_security_deposit_journal_entry_payment(customer, security_deposit_pay
         frappe.throw(_("Failed to create Security Deposit Journal Entry. Please try again later."))
 
 
-def create_rental_payment_entry(customer_name, rental_payment_amount, mode_of_payment,
+def create_rental_payment_entry(customer_name,payment_date, rental_payment_amount, mode_of_payment,
                                 sales_order_name, security_deposit_status, customer, payment_account, master_order_id, reference_no=None, reference_date=None, remark=None):
     try:
         rental_payment_amount_numeric = float(rental_payment_amount)  # Convert rental_payment_amount to float
@@ -3379,6 +3380,7 @@ def create_rental_payment_entry(customer_name, rental_payment_amount, mode_of_pa
             "doctype": "Payment Entry",
             "master_order_id": master_order_id,
             "sales_order_id":sales_order_name,
+            "posting_date":payment_date,
             "paid_from": "Debtors - INR",
             "received_amount": rental_payment_amount_numeric,
             "base_received_amount": rental_payment_amount_numeric,  # Assuming base currency is INR
