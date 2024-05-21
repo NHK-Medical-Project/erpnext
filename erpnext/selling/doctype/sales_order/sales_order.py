@@ -2934,6 +2934,10 @@ def validate_and_update_payment_and_security_deposit_status(docname,master_order
                                           filters={"master_order_id": master_order_id,
                                                    "security_deposite_type": "SD Amount Received From Client"},
                                           fields=["name", "total_debit"])
+        journal_entries_outstanding = frappe.get_all("Journal Entry",
+                                          filters={"master_order_id": master_order_id,
+                                                   "security_deposite_type": "Booking as Outstanding SD From Client"},
+                                          fields=["name", "total_debit"])
 
         # Query Journal Entry records for damage and refund
         journal_entries_damage = frappe.get_all("Journal Entry",
@@ -2950,10 +2954,12 @@ def validate_and_update_payment_and_security_deposit_status(docname,master_order
         total_debit_amount = sum(journal_entry.total_debit for journal_entry in journal_entries)
         total_debit_amount_damage = sum(journal_entry.total_debit for journal_entry in journal_entries_damage)
         total_debit_amount_refund = sum(journal_entry.total_debit for journal_entry in journal_entries_refund)
+        # outstanding_amt = sum(journal_entry.total_debit for journal_entry in journal_entries_outstanding)
         
         # Update paid security deposit amount and adjustment amount fields
         sales_order.paid_security_deposite_amount = total_debit_amount
         sales_order.adjustment_amount = total_debit_amount_damage
+        # sales_order.outstanding_security_deposit_amount = outstanding_amt
         security_deposit = float(sales_order.security_deposit)
         # Calculate outstanding security deposit amount
         outstanding_security_deposit_amount = float(sales_order.security_deposit) - total_debit_amount
@@ -2983,7 +2989,7 @@ def validate_and_update_payment_and_security_deposit_status(docname,master_order
 
         # Perform addition
         #total_rental_amount = security_deposit + rounded_total
-
+        sales_order.total_rental_amount = float(sales_order.security_deposit) + float(sales_order.rounded_total)
         # Assign the result back to sales_order.total_rental_amount
         #sales_order.total_rental_amount = total_rental_amount        # Save changes to the document
         sales_order.save()
@@ -3640,15 +3646,15 @@ def create_journal_entry_for_sales_order_adjustment(adjust_against, adjust_amoun
 
 
 @frappe.whitelist()
-def update_security_deposit(master_order_id, remark, updated_security_deposit):
+def update_security_deposit(master_order_id, remark, updated_security_deposit,amount,sales_order_id,customer):
     try:
         # Fetch the Sales Order document
         sales_order = frappe.get_doc("Sales Order", master_order_id)
         
         # Log debug information
-        print(f"Updating security deposit for Sales Order: {remark}")
-        print(f"Previous security deposit: {sales_order.security_deposit}")
-        print(f"Updated security deposit: {updated_security_deposit}")
+        # print(f"Updating security deposit for Sales Order: {remark}")
+        # print(f"Previous security deposit: {sales_order.security_deposit}")
+        # print(f"Updated security deposit: {updated_security_deposit}")
         
         # Update the security deposit field
         sales_order.security_deposit = updated_security_deposit
@@ -3656,7 +3662,7 @@ def update_security_deposit(master_order_id, remark, updated_security_deposit):
         
         # Save the changes
         sales_order.save()
-        
+        create_security_deposit_journal_entry_update_sd(master_order_id, remark, updated_security_deposit,amount,sales_order_id,customer)
         # frappe.db.commit()
         
         return True
@@ -3668,6 +3674,47 @@ def update_security_deposit(master_order_id, remark, updated_security_deposit):
         return False
 
 
+
+def create_security_deposit_journal_entry_update_sd(master_order_id ,remark, updated_security_deposit,amount,sales_order_id,customer):
+        try:
+            # sales_order = frappe.get_doc("Sales Order", self.name)
+
+            # Create a new Journal Entry document
+            journal_entry = frappe.new_doc("Journal Entry")
+            journal_entry.sales_order_id = sales_order_id
+            journal_entry.master_order_id = master_order_id
+            journal_entry.journal_entry_type = "Security Deposit"
+            journal_entry.journal_entry = "Journal Entry"
+            journal_entry.posting_date = frappe.utils.nowdate()
+            journal_entry.security_deposite_type = "Booking as Outstanding SD From Client"
+            journal_entry.customer_id = customer
+            journal_entry.transactional_effect = "NA"
+
+
+            # Add accounts for debit and credit
+            journal_entry.append("accounts", {
+                "account": "Debtors - INR",
+                "party_type": "Customer",
+                "party": customer,
+                "debit_in_account_currency": amount
+            })
+            journal_entry.append("accounts", {
+                "account": "Rental Security Deposit Payable - INR",
+                # "party_type": "Customer",
+                # "party": self.customer,
+                "credit_in_account_currency": amount
+            })
+
+            # Save the Journal Entry document
+            journal_entry.insert()
+            journal_entry.submit()
+
+            frappe.msgprint("Security Deposit Journal Entry created successfully")  # Debug message
+
+            return True
+        except Exception as e:
+            frappe.log_error(frappe.get_traceback(), _("Failed to create Security Deposit Journal Entry"))
+            frappe.throw(_("Failed to create Security Deposit Journal Entry. Please try again later."))
 
 
 
