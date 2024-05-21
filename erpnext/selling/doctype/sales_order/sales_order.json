@@ -1757,6 +1757,8 @@
    "depends_on": "eval:doc.order_type == 'Rental'",
    "fieldname": "start_date",
    "fieldtype": "Date",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "Start Date",
    "mandatory_depends_on": "eval:doc.order_type == 'Rental'"
   },
@@ -1764,6 +1766,8 @@
    "depends_on": "eval:doc.order_type == 'Rental'",
    "fieldname": "end_date",
    "fieldtype": "Date",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "End Date",
    "mandatory_depends_on": "eval:doc.order_type == 'Rental'"
   },
@@ -2199,7 +2203,7 @@
  "idx": 105,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-05-08 18:09:15.962131",
+ "modified": "2024-05-20 11:10:32.310966",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order",

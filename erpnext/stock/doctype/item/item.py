@@ -108,6 +108,7 @@ class Item(Document):
 		include_item_in_manufacturing: DF.Check
 		inspection_required_before_delivery: DF.Check
 		inspection_required_before_purchase: DF.Check
+		internal_serial_no: DF.Data | None
 		is_customer_provided_item: DF.Check
 		is_fixed_asset: DF.Check
 		is_grouped_asset: DF.Check
@@ -145,6 +146,7 @@ class Item(Document):
 		serial_no_series: DF.Data | None
 		service_history: DF.Table[ItemServiceHistory]
 		shelf_life_in_days: DF.Int
+		sr_no: DF.Data | None
 		standard_rate: DF.Currency
 		status: DF.Literal["Available", "Reserved", "Rented Out", "Sold", "Damaged", "Repair Required", "Repair In Progress", "Retired", "Under Service", "Disabled"]
 		stock_uom: DF.Link

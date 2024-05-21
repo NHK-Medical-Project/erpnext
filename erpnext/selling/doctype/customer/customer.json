@@ -11,6 +11,7 @@
  "engine": "InnoDB",
  "field_order": [
   "basic_info",
+  "customer_search",
   "customer_type",
   "naming_series",
   "salutation",
@@ -18,15 +19,24 @@
   "customer_group",
   "mobile_number",
   "email",
+  "alternate_mobile_no",
   "column_break0",
   "territory",
   "gender",
+  "date_of_birth",
+  "age",
   "lead_name",
   "opportunity_name",
   "account_manager",
   "image",
+  "relative_name",
+  "column_break_lnod",
   "sales_person",
   "sales_person_mail_id",
+  "created_at",
+  "created_by",
+  "old_dashboard_id",
+  "imported_record",
   "defaults_tab",
   "default_currency",
   "default_bank_account",
@@ -73,6 +83,23 @@
   "custom_location",
   "custom_longitude",
   "custom_latitude",
+  "bank_details_section",
+  "account_holder_name",
+  "bank_account_no",
+  "ifsc_code",
+  "column_break_kthp",
+  "account_type",
+  "branch_name",
+  "section_break_ukmm",
+  "bank_setails_note",
+  "gst_detail",
+  "is_gst_registered",
+  "gst_details_section",
+  "gst_no",
+  "aadhar_no",
+  "column_break_kmkm",
+  "gst_firm_name",
+  "gst_state",
   "section_break_gfzn",
   "customer_details",
   "contact_and_address_tab",
@@ -642,8 +669,7 @@
    "in_standard_filter": 1,
    "label": "Mobile Number",
    "length": 13,
-   "not_nullable": 1,
-   "reqd": 1
+   "not_nullable": 1
   },
   {
    "allow_in_quick_entry": 1,
@@ -651,8 +677,7 @@
    "fieldtype": "Data",
    "in_list_view": 1,
    "in_standard_filter": 1,
-   "label": "Email",
-   "reqd": 1
+   "label": "Email"
   },
   {
    "collapsible": 1,
@@ -803,14 +828,159 @@
    "fieldname": "sales_person",
    "fieldtype": "Link",
    "label": "Sales Person",
-   "options": "Sales Person",
-   "reqd": 1
+   "options": "Sales Person"
   },
   {
    "fetch_from": "sales_person.email_id",
    "fieldname": "sales_person_mail_id",
    "fieldtype": "Data",
    "label": "Sales Person Mail Id"
+  },
+  {
+   "fieldname": "alternate_mobile_no",
+   "fieldtype": "Data",
+   "label": "Alternate Mobile No"
+  },
+  {
+   "fieldname": "relative_name",
+   "fieldtype": "Data",
+   "label": "Relative Name"
+  },
+  {
+   "fieldname": "age",
+   "fieldtype": "Data",
+   "label": "Age",
+   "length": 3
+  },
+  {
+   "fieldname": "date_of_birth",
+   "fieldtype": "Date",
+   "label": "Date of Birth"
+  },
+  {
+   "fieldname": "gst_details_section",
+   "fieldtype": "Section Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_gst_registered",
+   "fieldtype": "Check",
+   "label": "Is GST Registered"
+  },
+  {
+   "depends_on": "is_gst_registered",
+   "fieldname": "gst_no",
+   "fieldtype": "Data",
+   "label": "GST No"
+  },
+  {
+   "fieldname": "aadhar_no",
+   "fieldtype": "Data",
+   "label": "Aadhar No"
+  },
+  {
+   "fieldname": "column_break_kmkm",
+   "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "is_gst_registered",
+   "fieldname": "gst_firm_name",
+   "fieldtype": "Data",
+   "label": "GST Firm Name"
+  },
+  {
+   "depends_on": "is_gst_registered",
+   "fieldname": "gst_state",
+   "fieldtype": "Data",
+   "label": "GST State"
+  },
+  {
+   "fieldname": "bank_details_section",
+   "fieldtype": "Section Break",
+   "label": "Bank Details"
+  },
+  {
+   "fieldname": "account_holder_name",
+   "fieldtype": "Data",
+   "label": "Account Holder Name"
+  },
+  {
+   "fieldname": "bank_account_no",
+   "fieldtype": "Data",
+   "label": "Bank Account No"
+  },
+  {
+   "fieldname": "ifsc_code",
+   "fieldtype": "Data",
+   "label": "IFSC Code"
+  },
+  {
+   "fieldname": "account_type",
+   "fieldtype": "Data",
+   "label": "Account Type"
+  },
+  {
+   "fieldname": "branch_name",
+   "fieldtype": "Data",
+   "label": "Branch Name"
+  },
+  {
+   "fieldname": "bank_setails_note",
+   "fieldtype": "Small Text",
+   "label": "Bank Details Note"
+  },
+  {
+   "default": "Now",
+   "fieldname": "created_at",
+   "fieldtype": "Datetime",
+   "label": "Created At"
+  },
+  {
+   "default": "__user",
+   "fieldname": "created_by",
+   "fieldtype": "Link",
+   "label": "Created By",
+   "options": "User"
+  },
+  {
+   "fieldname": "column_break_lnod",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "gst_detail",
+   "fieldtype": "Section Break",
+   "label": "GST Details"
+  },
+  {
+   "fieldname": "column_break_kthp",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_ukmm",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "old_dashboard_id",
+   "fieldtype": "Data",
+   "label": "Old Dashboard ID"
+  },
+  {
+   "fieldname": "customer_search",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "in_filter": 1,
+   "in_global_search": 1,
+   "in_standard_filter": 1,
+   "label": "Customer Search",
+   "options": "Customer",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "imported_record",
+   "fieldtype": "Check",
+   "label": "Imported Record",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-user",
@@ -824,7 +994,7 @@
    "link_fieldname": "party"
   }
  ],
- "modified": "2024-05-08 14:53:10.721067",
+ "modified": "2024-05-16 12:15:29.533847",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Customer",

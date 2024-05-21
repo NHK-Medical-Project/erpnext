@@ -25,6 +25,8 @@
   "current_status",
   "customer_n",
   "customer_name",
+  "internal_serial_no",
+  "sr_no",
   "column_break0",
   "disabled",
   "allow_alternative_item",
@@ -1013,6 +1015,16 @@
    "label": "Customer",
    "options": "Customer",
    "read_only": 1
+  },
+  {
+   "fieldname": "internal_serial_no",
+   "fieldtype": "Data",
+   "label": "Internal Serial No."
+  },
+  {
+   "fieldname": "sr_no",
+   "fieldtype": "Data",
+   "label": "SR No"
   }
  ],
  "icon": "fa fa-tag",
@@ -1021,7 +1033,7 @@
  "index_web_pages_for_search": 1,
  "links": [],
  "make_attachments_public": 1,
- "modified": "2024-05-07 15:06:48.388486",
+ "modified": "2024-05-15 15:28:18.290155",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Item",

@@ -36,16 +36,26 @@ class Customer(TransactionBase):
 		from erpnext.utilities.doctype.portal_user.portal_user import PortalUser
 		from frappe.types import DF
 
+		aadhar_no: DF.Data | None
+		account_holder_name: DF.Data | None
 		account_manager: DF.Link | None
+		account_type: DF.Data | None
 		accounts: DF.Table[PartyAccount]
 		address_line_1: DF.Data | None
 		address_line_2: DF.Data | None
 		address_title: DF.Data | None
+		age: DF.Data | None
+		alternate_mobile_no: DF.Data | None
+		bank_account_no: DF.Data | None
+		bank_setails_note: DF.SmallText | None
+		branch_name: DF.Data | None
 		check_delivery_address: DF.Check
 		check_permanent_address: DF.Check
 		city: DF.Data | None
 		companies: DF.Table[AllowedToTransactWith]
 		country: DF.Data | None
+		created_at: DF.Datetime | None
+		created_by: DF.Link | None
 		credit_limits: DF.Table[CustomerCreditLimit]
 		custom_latitude: DF.Data | None
 		custom_longitude: DF.Data | None
@@ -55,7 +65,9 @@ class Customer(TransactionBase):
 		customer_pos_id: DF.Data | None
 		customer_primary_address: DF.Link | None
 		customer_primary_contact: DF.Link | None
+		customer_search: DF.Link | None
 		customer_type: DF.Literal["Company", "Individual", "Proprietorship", "Partnership"]
+		date_of_birth: DF.Date | None
 		default_bank_account: DF.Link | None
 		default_commission_rate: DF.Float
 		default_currency: DF.Link | None
@@ -73,12 +85,18 @@ class Customer(TransactionBase):
 		delivery_address: DF.SmallText | None
 		disabled: DF.Check
 		dn_required: DF.Check
-		email: DF.Data
+		email: DF.Data | None
 		email_id: DF.ReadOnly | None
 		gender: DF.Link | None
+		gst_firm_name: DF.Data | None
+		gst_no: DF.Data | None
+		gst_state: DF.Data | None
+		ifsc_code: DF.Data | None
 		image: DF.AttachImage | None
+		imported_record: DF.Check
 		industry: DF.Link | None
 		is_frozen: DF.Check
+		is_gst_registered: DF.Check
 		is_internal_customer: DF.Check
 		language: DF.Link | None
 		lead_name: DF.Link | None
@@ -88,14 +106,16 @@ class Customer(TransactionBase):
 		mobile_no: DF.ReadOnly | None
 		mobile_number: DF.Data
 		naming_series: DF.Literal["CUST-.YYYY.-"]
+		old_dashboard_id: DF.Data | None
 		opportunity_name: DF.Link | None
 		payment_terms: DF.Link | None
 		permanent_address: DF.SmallText | None
 		pincode: DF.Data | None
 		portal_users: DF.Table[PortalUser]
 		primary_address: DF.Text | None
+		relative_name: DF.Data | None
 		represents_company: DF.Link | None
-		sales_person: DF.Link
+		sales_person: DF.Link | None
 		sales_person_mail_id: DF.Data | None
 		sales_team: DF.Table[SalesTeam]
 		salutation: DF.Link | None
