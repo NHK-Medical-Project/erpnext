@@ -36,6 +36,7 @@
   "end_date",
   "total_no_of_dates",
   "is_renewed",
+  "renewal_order_count",
   "accounting_dimensions_section",
   "cost_center",
   "dimension_col_break",
@@ -1917,7 +1918,7 @@
   },
   {
    "allow_on_submit": 1,
-   "depends_on": "eval:doc.order_type == 'Rental'",
+   "depends_on": "eval:doc.order_type == 'Rental' && doc.is_renewed == 0",
    "fieldname": "security_deposit",
    "fieldtype": "Data",
    "label": "Security Deposit",
@@ -2197,13 +2198,20 @@
    "fieldtype": "Check",
    "label": "Is Renewed",
    "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "renewal_order_count",
+   "fieldtype": "Int",
+   "label": "Renewal Order Count",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-file-text",
  "idx": 105,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-05-22 11:29:18.878375",
+ "modified": "2024-05-22 15:03:23.845841",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order",

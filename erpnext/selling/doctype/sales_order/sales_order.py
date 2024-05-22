@@ -158,6 +158,7 @@ class SalesOrder(SellingController):
         reason_for_payment_pending: DF.Link | None
         received_amount: DF.Currency
         refundable_security_deposit: DF.Currency
+        renewal_order_count: DF.Int
         rental_delivery_date: DF.Datetime | None
         rental_order_agreement_attachment: DF.Attach | None
         represents_company: DF.Link | None
@@ -2813,8 +2814,6 @@ def mark_overdue_sales_orders():
     # publish_realtime('list_update', "Sales Order")
 
 
-import frappe
-
 @frappe.whitelist()
 def create_renewal_order(sales_order_name):
     # Get original sales order
@@ -2825,12 +2824,20 @@ def create_renewal_order(sales_order_name):
     new_sales_order.previous_order_id = original_sales_order.name  # Pass original order ID to renewal_order_id
     new_sales_order.advance_paid = 0
     new_sales_order.is_renewed = 1
+    new_sales_order.security_deposit = 0
+    new_sales_order.outstanding_security_deposit_amount = 0
+    
+    # Increment the renewal_order_count of the new sales order
+    renewal_count = getattr(original_sales_order, "renewal_order_count", 0)
+    new_sales_order.renewal_order_count = renewal_count + 1 if renewal_count > 0 else 1
+    
     new_sales_order.insert()
 
     # Update original sales order status only after the new sales order has been submitted
     # frappe.enqueue(update_original_sales_order_status, original_sales_order=original_sales_order)
 
     return new_sales_order.name
+
 
 # def update_original_sales_order_status(original_sales_order):
 #     original_sales_order.status = "RENEWED"
@@ -2928,68 +2935,71 @@ def validate_and_update_payment_and_security_deposit_status(docname,master_order
             sales_order.payment_status = 'UnPaid'
         else:
             sales_order.payment_status = 'Partially Paid'
+        if sales_order.is_renewed == 0:
+            # Query Journal Entry records for cash received security deposit
+            journal_entries = frappe.get_all("Journal Entry",
+                                            filters={"master_order_id": master_order_id,
+                                                    "security_deposite_type": "SD Amount Received From Client"},
+                                            fields=["name", "total_debit"])
+            journal_entries_outstanding = frappe.get_all("Journal Entry",
+                                            filters={"master_order_id": master_order_id,
+                                                    "security_deposite_type": "Booking as Outstanding SD From Client"},
+                                            fields=["name", "total_debit"])
 
-        # Query Journal Entry records for cash received security deposit
-        journal_entries = frappe.get_all("Journal Entry",
-                                          filters={"master_order_id": master_order_id,
-                                                   "security_deposite_type": "SD Amount Received From Client"},
-                                          fields=["name", "total_debit"])
-        journal_entries_outstanding = frappe.get_all("Journal Entry",
-                                          filters={"master_order_id": master_order_id,
-                                                   "security_deposite_type": "Booking as Outstanding SD From Client"},
-                                          fields=["name", "total_debit"])
+            # Query Journal Entry records for damage and refund
+            journal_entries_damage = frappe.get_all("Journal Entry",
+                                                    filters={"master_order_id": master_order_id,
+                                                            "security_deposite_type": ["in", ["Adjusted Device Damage Charges", "Adjusted Against Sales Order Rental Charges"]]},
+                                                    fields=["name", "total_debit"])
 
-        # Query Journal Entry records for damage and refund
-        journal_entries_damage = frappe.get_all("Journal Entry",
-                                                 filters={"master_order_id": master_order_id,
-                                                          "security_deposite_type": ["in", ["Adjusted Device Damage Charges", "Adjusted Against Sales Order Rental Charges"]]},
-                                                 fields=["name", "total_debit"])
+            journal_entries_refund = frappe.get_all("Journal Entry",
+                                                    filters={"master_order_id": master_order_id,
+                                                            "security_deposite_type": "Refunding SD to Client"},
+                                                    fields=["name", "total_debit"])
 
-        journal_entries_refund = frappe.get_all("Journal Entry",
-                                                 filters={"master_order_id": master_order_id,
-                                                          "security_deposite_type": "Refunding SD to Client"},
-                                                 fields=["name", "total_debit"])
+            # Calculate total debit amounts
+            total_debit_amount = sum(journal_entry.total_debit for journal_entry in journal_entries)
+            total_debit_amount_damage = sum(journal_entry.total_debit for journal_entry in journal_entries_damage)
+            total_debit_amount_refund = sum(journal_entry.total_debit for journal_entry in journal_entries_refund)
+            # outstanding_amt = sum(journal_entry.total_debit for journal_entry in journal_entries_outstanding)
+            
+            # Update paid security deposit amount and adjustment amount fields
+            sales_order.paid_security_deposite_amount = total_debit_amount
+            sales_order.adjustment_amount = total_debit_amount_damage
+            # sales_order.outstanding_security_deposit_amount = outstanding_amt
+            security_deposit = float(sales_order.security_deposit)
+            # Calculate outstanding security deposit amount
+            outstanding_security_deposit_amount = float(sales_order.security_deposit) - total_debit_amount
 
-        # Calculate total debit amounts
-        total_debit_amount = sum(journal_entry.total_debit for journal_entry in journal_entries)
-        total_debit_amount_damage = sum(journal_entry.total_debit for journal_entry in journal_entries_damage)
-        total_debit_amount_refund = sum(journal_entry.total_debit for journal_entry in journal_entries_refund)
-        # outstanding_amt = sum(journal_entry.total_debit for journal_entry in journal_entries_outstanding)
-        
-        # Update paid security deposit amount and adjustment amount fields
-        sales_order.paid_security_deposite_amount = total_debit_amount
-        sales_order.adjustment_amount = total_debit_amount_damage
-        # sales_order.outstanding_security_deposit_amount = outstanding_amt
-        security_deposit = float(sales_order.security_deposit)
-        # Calculate outstanding security deposit amount
-        outstanding_security_deposit_amount = float(sales_order.security_deposit) - total_debit_amount
+            # Update outstanding security deposit amount field
+            sales_order.outstanding_security_deposit_amount = outstanding_security_deposit_amount
 
-        # Update outstanding security deposit amount field
-        sales_order.outstanding_security_deposit_amount = outstanding_security_deposit_amount
+            # Update security deposit amount return to client field
+            sales_order.security_deposit_amount_return_to_client = total_debit_amount_refund
 
-        # Update security deposit amount return to client field
-        sales_order.security_deposit_amount_return_to_client = total_debit_amount_refund
+            # Calculate refundable security deposit
+            # refundable_security_deposit = sales_order.paid_security_deposite_amount - sales_order.adjustment_amount - total_debit_amount_refund
 
-        # Calculate refundable security deposit
-        # refundable_security_deposit = sales_order.paid_security_deposite_amount - sales_order.adjustment_amount - total_debit_amount_refund
+            # Update refundable security deposit field
+            sales_order.refundable_security_deposit = sales_order.paid_security_deposite_amount - sales_order.adjustment_amount - total_debit_amount_refund
 
-        # Update refundable security deposit field
-        sales_order.refundable_security_deposit = sales_order.paid_security_deposite_amount - sales_order.adjustment_amount - total_debit_amount_refund
-
-        # Determine security deposit status based on outstanding amount
-        if outstanding_security_deposit_amount == 0:
-            sales_order.security_deposit_status = 'Paid'
-        elif outstanding_security_deposit_amount == security_deposit:
-            sales_order.security_deposit_status = 'Unpaid'
-        else:
-            sales_order.security_deposit_status = 'Partially Paid'
-    # Convert strings to floats
-        security_deposit = float(sales_order.security_deposit)
-        rounded_total = float(sales_order.rounded_total)
+            # Determine security deposit status based on outstanding amount
+            if outstanding_security_deposit_amount == 0:
+                sales_order.security_deposit_status = 'Paid'
+            elif outstanding_security_deposit_amount == security_deposit:
+                sales_order.security_deposit_status = 'Unpaid'
+            else:
+                sales_order.security_deposit_status = 'Partially Paid'
+        # Convert strings to floats
+            security_deposit = float(sales_order.security_deposit)
+            rounded_total = float(sales_order.rounded_total)
 
         # Perform addition
         #total_rental_amount = security_deposit + rounded_total
-        sales_order.total_rental_amount = float(sales_order.security_deposit) + float(sales_order.rounded_total)
+        # if sales_order.is_renewed == 0:
+            sales_order.total_rental_amount = float(sales_order.security_deposit) + float(sales_order.rounded_total)
+        else:
+            sales_order.total_rental_amount = float(sales_order.rounded_total)
         # Assign the result back to sales_order.total_rental_amount
         #sales_order.total_rental_amount = total_rental_amount        # Save changes to the document
         sales_order.save()
