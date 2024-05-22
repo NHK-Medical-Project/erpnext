@@ -597,9 +597,9 @@ class SalesOrder(SellingController):
         frappe.db.commit()
 
     def on_trash(self):
-        # pass
-        if not self.previous_order_id:
-            self.item_status_change_cancel()
+        pass
+        # if not self.previous_order_id:
+        #     self.item_status_change_cancel()
 
     def update_project(self):
         if (
