@@ -2331,6 +2331,8 @@ def make_submitted_to_office(docname, item_code, submitted_date):
         for item_code in item_codes:
             item_doc = frappe.get_doc("Item", item_code)
             item_doc.status = "Available"
+            item_doc.customer_n = ""
+            item_doc.customer_name = ""
             item_doc.save()
 
         # Set values for submission to office and update status
