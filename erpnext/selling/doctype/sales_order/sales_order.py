@@ -2478,7 +2478,7 @@ def sales_order_for_html(sales_order_id):
 
 
 @frappe.whitelist()
-def update_status_to_ready_for_pickup(item_code, pickup_datetime, docname, child_name,pickupReason,pickupRemark,technician_name,technician_mobile):
+def update_status_to_ready_for_pickup(item_code, pickup_datetime, docname, child_name,pickupReason,pickupRemark,technician_name=None,technician_mobile=None):
     # Retrieve Rental Orders based on the item_code field in the items child table
     sales_order_items = frappe.get_all("Sales Order Item", filters={"parent": docname}, fields=["name"])
 

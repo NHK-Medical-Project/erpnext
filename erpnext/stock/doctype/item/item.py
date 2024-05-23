@@ -248,12 +248,13 @@ class Item(Document):
             # Fetch tax_rate and valid_from
             tax_rate = self.tax_rate  # Change this according to where your tax rate is stored
             valid_from = '2024-03-01'  # Valid from date
-            
+
             # Add tax entries to taxes child table
-            self.append('taxes', {
-                "item_tax_template": tax_rate,
-                "valid_from": valid_from
-            })
+            if tax_rate != 'Non-GST - INR':
+                self.append('taxes', {
+                    "item_tax_template": tax_rate,
+                    "valid_from": valid_from
+                })
 
             self.append('taxes', {
                 "item_tax_template": 'Non-GST - INR',
@@ -262,6 +263,7 @@ class Item(Document):
 
         except Exception as e:
             frappe.log_error(f"Error in updating taxes: {str(e)}")
+
 
             
             
