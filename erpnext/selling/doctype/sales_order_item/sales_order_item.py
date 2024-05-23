@@ -67,7 +67,7 @@ class SalesOrderItem(Document):
 		picked_qty: DF.Float
 		picked_up: DF.Datetime | None
 		pickup_date: DF.Datetime | None
-		pickup_reason: DF.Literal["", "Patient recovered", "Patient Expired", "Purchased Device from Us", "Purchased Device from Others", "Other Reason"]
+		pickup_reason: DF.Literal["", "Patient recovered", "Patient Expired", "Purchased Device from Us", "Purchased Device from Others", "Item Replacement", "Other Reason"]
 		pickup_remark: DF.SmallText | None
 		planned_qty: DF.Float
 		prevdoc_docname: DF.Link | None

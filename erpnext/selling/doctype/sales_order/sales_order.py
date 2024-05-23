@@ -2478,7 +2478,7 @@ def sales_order_for_html(sales_order_id):
 
 
 @frappe.whitelist()
-def update_status_to_ready_for_pickup(item_code, pickup_datetime, docname, child_name,pickupReason,pickupRemark,technician_name=None,technician_mobile=None):
+def update_status_to_ready_for_pickup(item_code, pickup_datetime, docname, child_name,pickupReason,pickupRemark,technician_name,technician_mobile):
     # Retrieve Rental Orders based on the item_code field in the items child table
     sales_order_items = frappe.get_all("Sales Order Item", filters={"parent": docname}, fields=["name"])
 
@@ -2828,10 +2828,6 @@ def create_renewal_order(sales_order_name):
     new_sales_order.is_renewed = 1
     new_sales_order.security_deposit = 0
     new_sales_order.outstanding_security_deposit_amount = 0
-    new_sales_order.paid_security_deposite_amount = 0
-    new_sales_order.refundable_security_deposit = 0
-    new_sales_order.adjustment_amount = 0
-    new_sales_order.security_deposit_amount_return_to_client = 0
     
     # Increment the renewal_order_count of the new sales order
     renewal_count = getattr(original_sales_order, "renewal_order_count", 0)
@@ -3133,12 +3129,14 @@ def item_replacement(item_code,customer, new_item, replacement_date, master_orde
 
                 new_item_doc = frappe.get_doc("Item", new_item)
                 new_item_doc.status = "Reserved"
-                new_item_doc.customer_n = ""
+                
                 new_item_doc.save()
 
         # Update the status of the old item
         old_item_doc = frappe.get_doc("Item", item_code)
         old_item_doc.status = old_item_status
+        old_item_doc.customer_n = ''
+        old_item_doc.customer_name = ''
         old_item_doc.replaced_reason = reason
         old_item_doc.save()
 

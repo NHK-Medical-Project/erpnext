@@ -1870,7 +1870,7 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 				fieldname: 'pickup_reason',
 				fieldtype: 'Select',
 				label: 'Pick Up Reason',
-				options: 'Patient recovered\nPatient Expired\nPurchased Device from Us\nPurchased Device from Others\nOther Reason',
+				options: 'Patient recovered\nPatient Expired\nPurchased Device from Us\nPurchased Device from Others\nItem Replacement\nOther Reason',
 				reqd: 1
 			},
 			{

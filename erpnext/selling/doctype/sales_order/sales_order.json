@@ -1929,7 +1929,7 @@
    "fieldname": "pickup_reason",
    "fieldtype": "Select",
    "label": "PickUp Reason",
-   "options": "\nPatient recovered\nPatient Expired\nPurchased Device from Us\nPurchased Device from Others\nOther Reason",
+   "options": "\nPatient recovered\nPatient Expired\nPurchased Device from Us\nPurchased Device from Others\nItem Replacement\nOther Reason",
    "read_only": 1
   },
   {
@@ -2211,7 +2211,7 @@
  "idx": 105,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-05-22 15:03:23.845841",
+ "modified": "2024-05-23 16:09:29.581405",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order",

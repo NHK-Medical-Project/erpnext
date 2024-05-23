@@ -1018,7 +1018,7 @@
    "fieldname": "pickup_reason",
    "fieldtype": "Select",
    "label": "PickUp Reason",
-   "options": "\nPatient recovered\nPatient Expired\nPurchased Device from Us\nPurchased Device from Others\nOther Reason"
+   "options": "\nPatient recovered\nPatient Expired\nPurchased Device from Us\nPurchased Device from Others\nItem Replacement\nOther Reason"
   },
   {
    "allow_on_submit": 1,
@@ -1079,7 +1079,7 @@
  "idx": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-05-22 11:51:07.540709",
+ "modified": "2024-05-23 16:08:44.794713",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order Item",
