@@ -2828,6 +2828,10 @@ def create_renewal_order(sales_order_name):
     new_sales_order.is_renewed = 1
     new_sales_order.security_deposit = 0
     new_sales_order.outstanding_security_deposit_amount = 0
+    new_sales_order.paid_security_deposite_amount = 0
+    new_sales_order.refundable_security_deposit = 0
+    new_sales_order.adjustment_amount = 0
+    new_sales_order.security_deposit_amount_return_to_client = 0
     
     # Increment the renewal_order_count of the new sales order
     renewal_count = getattr(original_sales_order, "renewal_order_count", 0)
