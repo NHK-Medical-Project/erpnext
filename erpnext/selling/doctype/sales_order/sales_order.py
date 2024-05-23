@@ -3096,7 +3096,7 @@ def check_overlap(self):
 
 
 @frappe.whitelist()
-def item_replacement(item_code, new_item, replacement_date, master_order_id, docname, old_item_status, reason=None):
+def item_replacement(item_code,customer, new_item, replacement_date, master_order_id, docname, old_item_status, reason=None):
     try:
         # Add a record in the Rental Order Replaced Item
         rental_order = frappe.new_doc("Rental Order Replaced Item")
@@ -3121,6 +3121,7 @@ def item_replacement(item_code, new_item, replacement_date, master_order_id, doc
 
                 new_item_doc = frappe.get_doc("Item", new_item)
                 new_item_doc.status = "Rented Out"
+                new_item_doc.customer_n = customer
                 new_item_doc.save()
             else:
                 sales_order_item = frappe.get_doc("Sales Order Item", item.name)
@@ -3132,6 +3133,7 @@ def item_replacement(item_code, new_item, replacement_date, master_order_id, doc
 
                 new_item_doc = frappe.get_doc("Item", new_item)
                 new_item_doc.status = "Reserved"
+                new_item_doc.customer_n = ""
                 new_item_doc.save()
 
         # Update the status of the old item
