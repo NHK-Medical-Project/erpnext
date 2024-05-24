@@ -2211,6 +2211,7 @@
    "allow_on_submit": 1,
    "fieldname": "item_name",
    "fieldtype": "Small Text",
+   "in_list_view": 1,
    "label": "Item Name",
    "read_only": 1
   }
@@ -2219,7 +2220,7 @@
  "idx": 105,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-05-24 12:35:25.665134",
+ "modified": "2024-05-24 12:42:20.694402",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order",
