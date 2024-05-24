@@ -56,7 +56,6 @@
   "reserve_stock",
   "items_section",
   "items",
-  "item_name",
   "section_break_31",
   "total_qty",
   "total_net_weight",
@@ -109,6 +108,7 @@
   "device_details_tab",
   "dispatched_section",
   "rental_delivery_date",
+  "item_name",
   "column_break_xbkp",
   "dispatch_date",
   "attachment_section",
@@ -2211,14 +2211,15 @@
    "allow_on_submit": 1,
    "fieldname": "item_name",
    "fieldtype": "Small Text",
-   "label": "Item Name"
+   "label": "Item Name",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-file-text",
  "idx": 105,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-05-24 11:46:12.869179",
+ "modified": "2024-05-24 12:35:25.665134",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order",
