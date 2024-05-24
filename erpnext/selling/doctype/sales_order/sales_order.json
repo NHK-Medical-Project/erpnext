@@ -56,6 +56,7 @@
   "reserve_stock",
   "items_section",
   "items",
+  "item_name",
   "section_break_31",
   "total_qty",
   "total_net_weight",
@@ -2205,13 +2206,19 @@
    "fieldtype": "Int",
    "label": "Renewal Order Count",
    "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "item_name",
+   "fieldtype": "Small Text",
+   "label": "Item Name"
   }
  ],
  "icon": "fa fa-file-text",
  "idx": 105,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-05-23 16:09:29.581405",
+ "modified": "2024-05-24 11:46:12.869179",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order",

@@ -120,6 +120,7 @@ class SalesOrder(SellingController):
         inter_company_order_reference: DF.Link | None
         is_internal_customer: DF.Check
         is_renewed: DF.Check
+        item_name: DF.SmallText | None
         items: DF.Table[SalesOrderItem]
         language: DF.Data | None
         letter_head: DF.Link | None
@@ -146,7 +147,7 @@ class SalesOrder(SellingController):
         permanent_address: DF.SmallText | None
         picked_up: DF.Datetime | None
         pickup_date: DF.Datetime | None
-        pickup_reason: DF.Literal["", "Patient recovered", "Patient Expired", "Purchased Device from Us", "Purchased Device from Others", "Other Reason"]
+        pickup_reason: DF.Literal["", "Patient recovered", "Patient Expired", "Purchased Device from Us", "Purchased Device from Others", "Item Replacement", "Other Reason"]
         pickup_remark: DF.SmallText | None
         plc_conversion_rate: DF.Float
         po_date: DF.Date | None
@@ -262,7 +263,6 @@ class SalesOrder(SellingController):
         self.reset_default_field_value("set_warehouse", "items", "warehouse")
 
 
-    
     # def validate_sales_order_payment_status(self):
     # 	# Access the rounded_total and advance_paid fields from the document
     # 	rounded_total = self.rounded_total
@@ -283,7 +283,15 @@ class SalesOrder(SellingController):
     # 	# Save the changes to the selfument
     # 	doc.save()
 
+    def update_item_names(self):
+        item_names = []
 
+        for item in self.items:
+            item_name_with_code = f"{item.item_name} ({item.item_code})"
+            item_names.append(item_name_with_code)
+        # print(item_names)
+        self.item_name = ', '.join(item_names)
+        
     def validate_po(self):
         # validate p.o date v/s delivery date
         if self.po_date and not self.skip_delivery_note:
@@ -449,6 +457,7 @@ class SalesOrder(SellingController):
 
     def on_submit(self):
         self.check_credit_limit()
+        self.update_item_names()
         self.update_reserved_qty()
         # if self.order_type == 'Sales':
         #     self.status = 'Order'
@@ -515,7 +524,8 @@ class SalesOrder(SellingController):
             frappe.throw(_("Failed to create Security Deposit Journal Entry. Please try again later."))
 
 
-
+        
+    
     def before_submit(self):
         if self.previous_order_id:
             overlap = check_overlap(self)
@@ -683,10 +693,12 @@ class SalesOrder(SellingController):
 
     def on_update_after_submit(self):
         # self.validate_sales_order_payment_status()
+        
         self.check_credit_limit()
 
     def before_update_after_submit(self):
         # self.validate_sales_order_payment_status()
+        self.update_item_names()
         self.validate_po()
         self.validate_drop_ship()
         self.validate_supplier_after_submit()

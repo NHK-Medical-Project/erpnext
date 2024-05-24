@@ -796,22 +796,22 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
                         }, __('Action'));
                     }
 					// delivery note
-					// if (
-					// 	flt(doc.per_delivered, 2) < 100 &&
-					// 	(order_is_a_sale || order_is_a_custom_sale) &&
-					// 	allow_delivery
-					// ) {
-					// 	this.frm.add_custom_button(
-					// 		__("Delivery Note"),
-					// 		() => this.make_delivery_note_based_on_delivery_date(true),
-					// 		__("Action")
-					// 	);
-					// 	this.frm.add_custom_button(
-					// 		__("Work Order"),
-					// 		() => this.make_work_order(),
-					// 		__("Action")
-					// 	);
-					// }
+					if (
+						flt(doc.per_delivered, 2) < 100 &&
+						(order_is_a_sale || order_is_a_custom_sale) &&
+						allow_delivery && doc.status === 'Order' && doc.order_type === 'Sales'
+					) {
+						this.frm.add_custom_button(
+							__("Delivery Note"),
+							() => this.make_delivery_note_based_on_delivery_date(true),
+							__("Action")
+						);
+						// this.frm.add_custom_button(
+						// 	__("Work Order"),
+						// 	() => this.make_work_order(),
+						// 	__("Action")
+						// );
+					}
 
 					// sales invoice
 					if (flt(doc.per_billed, 2) < 100 && doc.status != 'RENEWED') {
