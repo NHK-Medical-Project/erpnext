@@ -20,7 +20,6 @@ class StockEntryDetail(Document):
 		allow_alternative_item: DF.Check
 		allow_zero_valuation_rate: DF.Check
 		amount: DF.Currency
-		barcode: DF.Data | None
 		basic_amount: DF.Currency
 		basic_rate: DF.Currency
 		batch_no: DF.Link | None
