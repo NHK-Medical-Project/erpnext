@@ -221,7 +221,7 @@ class SalesOrder(SellingController):
     def validate(self):
         super(SalesOrder, self).validate()
         # if self.order_type == "Rental":
-        if self.security_deposit is not None:  # Check if security_deposit is not None
+        if self.security_deposit not in [None, '']:  # Check if security_deposit is neither None nor empty string
             self.security_deposit = float(self.security_deposit)
 
         self.total_rental_amount = self.rounded_total + (self.security_deposit or 0)
