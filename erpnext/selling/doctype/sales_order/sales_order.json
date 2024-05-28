@@ -4,6 +4,7 @@
  "allow_import": 1,
  "autoname": "naming_series:",
  "creation": "2013-06-18 12:39:59",
+ "default_view": "Report",
  "doctype": "DocType",
  "document_type": "Document",
  "editable_grid": 1,
@@ -305,6 +306,7 @@
    "hide_days": 1,
    "hide_seconds": 1,
    "in_global_search": 1,
+   "in_list_view": 1,
    "label": "Customer Name",
    "read_only": 1
   },
@@ -314,6 +316,9 @@
    "fieldtype": "Select",
    "hide_days": 1,
    "hide_seconds": 1,
+   "in_filter": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "Order Type",
    "oldfieldname": "order_type",
    "oldfieldtype": "Select",
@@ -2098,6 +2103,7 @@
   {
    "allow_on_submit": 1,
    "fetch_from": "customer.permanent_address",
+   "fetch_if_empty": 1,
    "fieldname": "permanent_address",
    "fieldtype": "Small Text",
    "label": "Permanent Address"
@@ -2221,7 +2227,7 @@
  "idx": 105,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-05-24 14:16:13.780149",
+ "modified": "2024-05-28 14:40:09.139948",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order",
