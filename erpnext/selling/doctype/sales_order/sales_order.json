@@ -1887,7 +1887,6 @@
    "depends_on": "eval:doc.order_type == 'Rental'",
    "fieldname": "overdue_status",
    "fieldtype": "Select",
-   "in_standard_filter": 1,
    "label": "Due Status",
    "options": "Active\nOverdue\nRenewed",
    "read_only": 1
@@ -2227,7 +2226,7 @@
  "idx": 105,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-05-28 14:40:09.139948",
+ "modified": "2024-05-28 15:00:10.351880",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order",
