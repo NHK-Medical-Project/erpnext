@@ -3104,7 +3104,7 @@ def check_overlap(self):
 
 
 @frappe.whitelist()
-def item_replacement(item_code,customer, new_item, replacement_date, master_order_id, docname, old_item_status, reason=None):
+def item_replacement(item_code,customer, new_item,new_item_group, replacement_date, master_order_id, docname, old_item_status, reason=None):
     try:
         # Add a record in the Rental Order Replaced Item
         rental_order = frappe.new_doc("Rental Order Replaced Item")
@@ -3124,6 +3124,7 @@ def item_replacement(item_code,customer, new_item, replacement_date, master_orde
                 sales_order_item.child_status = "Active"
                 sales_order_item.replaced_datetime = replacement_date
                 sales_order_item.old_item_code = item_code
+                sales_order_item.item_group = new_item_group
                 sales_order_item.item_code = new_item
                 sales_order_item.save()
 
@@ -3136,6 +3137,7 @@ def item_replacement(item_code,customer, new_item, replacement_date, master_orde
                 sales_order_item.child_status = item.child_status
                 sales_order_item.replaced_datetime = replacement_date
                 sales_order_item.old_item_code = item_code
+                sales_order_item.item_group = new_item_group
                 sales_order_item.item_code = new_item
                 sales_order_item.save()
 
@@ -3789,3 +3791,10 @@ def get_user_by_role(role_id):
         response.append({"value": user["name"], "description": user["full_name"]})
 
     return response
+
+
+
+@frappe.whitelist()
+def get_product_type(item_group):
+    product_type1 = frappe.db.get_value('Item Group', item_group, 'product_type1')
+    return product_type1
