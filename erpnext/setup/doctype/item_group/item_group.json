@@ -18,6 +18,7 @@
   "device_type",
   "product_category",
   "product_type",
+  "product_type1",
   "defaults",
   "item_group_defaults",
   "sec_break_taxes",
@@ -148,7 +149,14 @@
   {
    "fieldname": "product_type",
    "fieldtype": "Data",
+   "hidden": 1,
    "label": "PRODUCT TYPE"
+  },
+  {
+   "fieldname": "product_type1",
+   "fieldtype": "Link",
+   "label": "Product Type",
+   "options": "PRODUCT TYPE"
   }
  ],
  "icon": "fa fa-sitemap",
@@ -157,7 +165,7 @@
  "is_tree": 1,
  "links": [],
  "max_attachments": 3,
- "modified": "2024-04-12 09:42:26.712078",
+ "modified": "2024-05-30 12:18:46.795858",
  "modified_by": "Administrator",
  "module": "Setup",
  "name": "Item Group",
