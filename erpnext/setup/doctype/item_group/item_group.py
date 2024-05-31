@@ -28,7 +28,7 @@ class ItemGroup(NestedSet):
 		old_parent: DF.Link | None
 		parent_item_group: DF.Link | None
 		product_category: DF.Literal["GOODS", "SERVICE"]
-		product_type1: DF.Link | None
+		product_type1: DF.Link
 		product_type: DF.Data | None
 		rgt: DF.Int
 		taxes: DF.Table[ItemTax]

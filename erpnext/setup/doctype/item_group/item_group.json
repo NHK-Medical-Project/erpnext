@@ -156,7 +156,8 @@
    "fieldname": "product_type1",
    "fieldtype": "Link",
    "label": "Product Type",
-   "options": "PRODUCT TYPE"
+   "options": "PRODUCT TYPE",
+   "reqd": 1
   }
  ],
  "icon": "fa fa-sitemap",
@@ -165,7 +166,7 @@
  "is_tree": 1,
  "links": [],
  "max_attachments": 3,
- "modified": "2024-05-30 12:18:46.795858",
+ "modified": "2024-05-30 15:36:12.239516",
  "modified_by": "Administrator",
  "module": "Setup",
  "name": "Item Group",
