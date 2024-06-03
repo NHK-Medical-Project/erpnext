@@ -8,6 +8,10 @@
  "engine": "InnoDB",
  "field_order": [
   "has_item_scanned",
+  "section_break_2",
+  "s_warehouse",
+  "col_break1",
+  "t_warehouse",
   "sec_break1",
   "item_code",
   "item_name",
@@ -45,10 +49,6 @@
   "use_serial_batch_fields",
   "col_break4",
   "serial_and_batch_bundle",
-  "section_break_2",
-  "s_warehouse",
-  "col_break1",
-  "t_warehouse",
   "section_break_rdtg",
   "serial_no",
   "column_break_prps",
@@ -84,8 +84,10 @@
    "fieldtype": "Section Break"
   },
   {
+   "columns": 1,
    "fieldname": "s_warehouse",
    "fieldtype": "Link",
+   "in_list_view": 1,
    "label": "Source Warehouse",
    "oldfieldname": "s_warehouse",
    "oldfieldtype": "Link",
@@ -96,8 +98,10 @@
    "fieldtype": "Column Break"
   },
   {
+   "columns": 1,
    "fieldname": "t_warehouse",
    "fieldtype": "Link",
+   "in_list_view": 1,
    "label": "Target Warehouse",
    "oldfieldname": "t_warehouse",
    "oldfieldtype": "Link",
@@ -579,9 +583,11 @@
    "read_only": 1
   },
   {
+   "columns": 1,
    "depends_on": "eval:doc.use_serial_batch_fields === 0",
    "fieldname": "add_serial_batch_bundle",
    "fieldtype": "Button",
+   "in_list_view": 1,
    "label": "Add Serial / Batch No"
   },
   {
@@ -613,7 +619,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-05-27 17:49:50.831568",
+ "modified": "2024-06-01 16:25:53.261723",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Stock Entry Detail",

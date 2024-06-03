@@ -57,6 +57,7 @@
   "reserve_stock",
   "items_section",
   "items",
+  "ware_house_data",
   "section_break_31",
   "total_qty",
   "total_net_weight",
@@ -1359,7 +1360,7 @@
    "no_copy": 1,
    "oldfieldname": "status",
    "oldfieldtype": "Select",
-   "options": "Draft\nPending\nApproved\nRental Device Assigned\nReady for Delivery\nDISPATCHED\nDELIVERED\nActive\nReady for Pickup\nPicked Up\nSubmitted to Office\nOn Hold\nOverdue\nRENEWED\nTo Pay\nTo Deliver and Bill\nTo Bill\nTo Deliver\nCompleted\nCancelled\nClosed\nPartially Closed\nOrder",
+   "options": "Draft\nPending\nApproved\nRental Device Assigned\nReady for Delivery\nDISPATCHED\nDELIVERED\nActive\nReady for Pickup\nPicked Up\nSubmitted to Office\nOn Hold\nOverdue\nRENEWED\nTo Pay\nTo Deliver and Bill\nTo Bill\nTo Deliver\nCompleted\nCancelled\nClosed\nPartially Closed\nOrder\nSales Completed",
    "print_hide": 1,
    "read_only": 1,
    "reqd": 1,
@@ -2220,13 +2221,18 @@
    "in_list_view": 1,
    "label": "Item Name",
    "read_only": 1
+  },
+  {
+   "fieldname": "ware_house_data",
+   "fieldtype": "HTML",
+   "label": "Ware house Data"
   }
  ],
  "icon": "fa fa-file-text",
  "idx": 105,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-05-28 15:00:10.351880",
+ "modified": "2024-06-03 10:41:54.917867",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order",

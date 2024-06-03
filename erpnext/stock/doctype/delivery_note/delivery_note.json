@@ -23,6 +23,7 @@
   "is_return",
   "issue_credit_note",
   "return_against",
+  "update_serial_number",
   "accounting_dimensions_section",
   "cost_center",
   "column_break_18",
@@ -527,6 +528,7 @@
   },
   {
    "allow_bulk_edit": 1,
+   "allow_on_submit": 1,
    "fieldname": "items",
    "fieldtype": "Table",
    "label": "Delivery Note Item",
@@ -1441,13 +1443,20 @@
    "fieldname": "cstomer_mail_id",
    "fieldtype": "Data",
    "label": "Customer Mail ID"
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "0",
+   "fieldname": "update_serial_number",
+   "fieldtype": "Check",
+   "label": "update serial number"
   }
  ],
  "icon": "fa fa-truck",
  "idx": 146,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-05-27 15:42:20.486497",
+ "modified": "2024-06-03 09:57:27.087482",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Delivery Note",

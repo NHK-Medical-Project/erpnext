@@ -182,7 +182,7 @@ class SalesOrder(SellingController):
         skip_delivery_note: DF.Check
         source: DF.Link | None
         start_date: DF.Date | None
-        status: DF.Literal["Draft", "Pending", "Approved", "Rental Device Assigned", "Ready for Delivery", "DISPATCHED", "DELIVERED", "Active", "Ready for Pickup", "Picked Up", "Submitted to Office", "On Hold", "Overdue", "RENEWED", "To Pay", "To Deliver and Bill", "To Bill", "To Deliver", "Completed", "Cancelled", "Closed", "Partially Closed", "Order"]
+        status: DF.Literal["Draft", "Pending", "Approved", "Rental Device Assigned", "Ready for Delivery", "DISPATCHED", "DELIVERED", "Active", "Ready for Pickup", "Picked Up", "Submitted to Office", "On Hold", "Overdue", "RENEWED", "To Pay", "To Deliver and Bill", "To Bill", "To Deliver", "Completed", "Cancelled", "Closed", "Partially Closed", "Order", "Sales Completed"]
         submitted_date: DF.Datetime | None
         tax_category: DF.Link | None
         tax_id: DF.Data | None
@@ -2872,6 +2872,41 @@ def get_sales_orders_by_rental_group_id(docname):
 
 
 
+
+
+import frappe
+from frappe.utils.background_jobs import enqueue
+
+@frappe.whitelist()
+def validate_and_update_payment_status_for_all():
+    # Get all Sales Orders
+    sales_orders = frappe.get_all("Sales Order", filters={"docstatus": 1, "order_type": ["in", ["Sales", "Service"]]}, fields=["name"])
+
+    # Iterate through each Sales Order
+    for sales_order in sales_orders:
+        docname = sales_order.name
+        # Enqueue the function for each Sales Order
+        enqueue(validate_and_update_payment_status, docname=docname)
+
+@frappe.whitelist()
+def validate_and_update_payment_status_for_all_rental():
+    # Get all Sales Orders
+    sales_orders = frappe.get_all("Sales Order", filters={"docstatus": 1, "order_type": "Rental"}, fields=["name","master_order_id"])
+
+    # Iterate through each Sales Order
+    for sales_order in sales_orders:
+        docname = sales_order.name
+        master_order_id = sales_order.master_order_id
+        # Enqueue the function for each Sales Order
+        enqueue(validate_and_update_payment_and_security_deposit_status, docname=docname, master_order_id=master_order_id)
+
+# Add @frappe.whitelist() decorator if these functions will be called from client-side scripts.
+
+
+
+
+
+
 @frappe.whitelist()
 def validate_and_update_payment_status(docname):
     sales_order = frappe.get_doc("Sales Order", docname)
@@ -2881,12 +2916,14 @@ def validate_and_update_payment_status(docname):
                 "docstatus": 1,
                 "sales_order_id":docname
             },
-            fields=["references.allocated_amount"]
+            fields=["paid_amount"]
         )
 
     # Calculate total allocated amount
-    total_allocated_amount = sum(entry.allocated_amount for entry in payment_entries if entry.allocated_amount is not None)
-    # print(total_allocated_amount)
+    total_allocated_amount = sum(entry.paid_amount for entry in payment_entries if entry.paid_amount is not None)
+    # total_allocated_amount = sum(entry.allocated_amount for entry in payment_entries)
+
+    # print('dssssssssssssssssssssssssssssssssssssssssssssssssss',total_allocated_amount)
     sales_order.received_amount = total_allocated_amount
     # Access the rounded_total and advance_paid fields from the document object
     rounded_total = sales_order.rounded_total
@@ -2929,11 +2966,13 @@ def validate_and_update_payment_and_security_deposit_status(docname,master_order
                 "docstatus": 1,
                 "sales_order_id":docname
             },
-            fields=["references.allocated_amount"]
+            fields=["paid_amount"]
         )
 
         # Calculate total allocated amount
-        total_allocated_amount = sum(entry.allocated_amount for entry in payment_entries)
+        # total_allocated_amount = sum(entry.paid_amount for entry in payment_entries)
+        total_allocated_amount = sum(entry.paid_amount for entry in payment_entries if entry.paid_amount is not None)
+
         # print(total_allocated_amount)
         sales_order.received_amount = total_allocated_amount
         # Calculate balance amount
@@ -3225,7 +3264,7 @@ def get_payment_entry_records(master_order_id):
         # Fetch replaced items associated with the sales order
         payment_entry_records = frappe.get_all("Payment Entry",
                                         filters={"sales_order_id": master_order_id},
-                                        fields=["name", "references.reference_name", "master_order_id","total_allocated_amount","posting_date","mode_of_payment","reference_no","reference_date"])
+                                        fields=["name", "references.reference_name","sales_order_id", "master_order_id","total_allocated_amount","posting_date","mode_of_payment","reference_no","reference_date"])
         return payment_entry_records
     except Exception as e:
         frappe.log_error(frappe.get_traceback(), _("Failed to fetch replaced items"))
@@ -4014,3 +4053,344 @@ def is_payment_entry_exists(reference_id):
 
 
 #####################################################################################
+
+
+
+# make sales invoice and delivery note
+
+    
+# import frappe
+# from erpnext.selling.doctype.sales_order.sales_order import make_sales_invoice, make_delivery_note
+
+# @frappe.whitelist()
+# def create_sales_invoice_and_delivery_note(docname, serial_number=None):
+#     try:
+#         # Fetch the Sales Order document
+#         sales_order = frappe.get_doc("Sales Order", docname)
+
+#         # Create Sales Invoice
+#         sales_invoice = make_sales_invoice(docname)
+#         sales_invoice.allocate_advances_automatically = 1
+#         # # Fetch advances related to the Sales Order
+#         # advances = frappe.get_all("Payment Entry Reference",
+#         #     filters={"reference_doctype": "Sales Order", "reference_name": sales_order.name},
+#         #     fields=["parent as voucher_no", "allocated_amount"])
+
+#         # # Apply advances to the Sales Invoice
+#         # if advances:
+#         #     for advance in advances:
+#         #         # Fetch remarks from the Payment Entry
+#         #         payment_entry = frappe.get_doc("Payment Entry", advance.voucher_no)
+#         #         remarks = payment_entry.remarks if payment_entry.remarks else ""
+
+#         #         sales_invoice.append("advances", {
+#         #             "reference_type": "Payment Entry",
+#         #             "reference_name": advance.voucher_no,
+#         #             "remarks": remarks,
+#         #             "advance_amount": advance.allocated_amount,
+#         #             "allocated_amount": advance.allocated_amount,
+#         #         })
+
+#         sales_invoice.insert(ignore_permissions=True)
+#         sales_invoice.submit()
+
+#         # Create Delivery Note only if serial_number is provided
+#         delivery_note_name = None
+#         if serial_number:
+#             delivery_note = make_delivery_note(docname)
+
+#             # Add the serial number to the Delivery Note items
+#             for item in delivery_note.items:
+#                 item.serial_no = serial_number
+
+#             delivery_note.insert(ignore_permissions=True)
+#             delivery_note.submit()
+#             delivery_note_name = delivery_note.name
+
+#         return {
+#             "sales_invoice": sales_invoice.name,
+#             "delivery_note": delivery_note_name
+#         }
+
+#     except frappe.exceptions.ValidationError as e:
+#         frappe.log_error(f"ValidationError while creating Sales Invoice and Delivery Note: {e}", "Sales Order Creation Error")
+#         return {"message": str(e)}
+#     except frappe.exceptions.DuplicateEntryError as e:
+#         frappe.log_error(f"DuplicateEntryError while creating Sales Invoice and Delivery Note: {e}", "Sales Order Creation Error")
+#         return {"message": str(e)}
+#     except Exception as e:
+#         frappe.log_error(f"Error creating Sales Invoice and Delivery Note: {e}", "Sales Order Creation Error")
+#         return {"message": str(e)}
+
+
+
+
+# import frappe
+# from erpnext.selling.doctype.sales_order.sales_order import make_sales_invoice, make_delivery_note
+
+# @frappe.whitelist()
+# def create_sales_invoice_and_delivery_note(docname):
+#     try:
+#         # Fetch the Sales Order document
+#         sales_order = frappe.get_doc("Sales Order", docname)
+
+#         # Check if a Sales Invoice already exists for this Sales Order
+#         existing_sales_invoices = frappe.get_all("Sales Invoice",
+#                                                  filters={"sales_order": docname},
+#                                                  fields=["name"])
+#         if existing_sales_invoices:
+#             return {"message": "A Sales Invoice has already been created for this Sales Order."}
+
+#         # Check if a Delivery Note already exists for this Sales Order
+#         existing_delivery_notes = frappe.get_all("Delivery Note",
+#                                                   filters={"against_sales_order": docname},
+#                                                   fields=["name"])
+#         if existing_delivery_notes:
+#             return {"message": "A Delivery Note has already been created for this Sales Order."}
+
+#         # Create Sales Invoice
+#         sales_invoice = make_sales_invoice(docname)
+#         sales_invoice.allocate_advances_automatically = 1
+#         sales_invoice.only_include_allocated_payments = 1
+#         sales_invoice.insert(ignore_permissions=True)
+#         sales_invoice.submit()
+
+#         # Create Delivery Note in draft status
+#         delivery_note_name = None
+#         items_with_serial_numbers = []
+#         if sales_order.items:
+#             delivery_note = make_delivery_note(docname)
+#             delivery_note.insert(ignore_permissions=True)
+#             delivery_note_name = delivery_note.name
+
+#             # Collect items with serial numbers
+#             for item in delivery_note.items:
+#                 if item.serial_no and item.item_code not in items_with_serial_numbers:
+#                     items_with_serial_numbers.append({
+#                         'item_code': item.item_code,
+#                         'serial_numbers': get_serial_numbers(item.item_code)
+#                     })
+
+#         return {
+#             "sales_invoice": sales_invoice.name,
+#             "delivery_note": delivery_note_name,
+#             "items_with_serial_numbers": items_with_serial_numbers
+#         }
+
+#     except frappe.exceptions.ValidationError as e:
+#         frappe.log_error(f"ValidationError while creating Sales Invoice and Delivery Note: {e}", "Sales Order Creation Error")
+#         return {"message": str(e)}
+#     except frappe.exceptions.DuplicateEntryError as e:
+#         frappe.log_error(f"DuplicateEntryError while creating Sales Invoice and Delivery Note: {e}", "Sales Order Creation Error")
+#         return {"message": str(e)}
+#     except Exception as e:
+#         frappe.log_error(f"Error creating Sales Invoice and Delivery Note: {e}", "Sales Order Creation Error")
+#         return {"message": str(e)}
+
+# @frappe.whitelist()
+# def update_delivery_note_serial_numbers(docname, serial_numbers, item_code):
+#     try:
+#         delivery_note = frappe.get_doc("Delivery Note", docname)
+#         for item in delivery_note.items:
+#             if item.item_code == item_code:
+#                 item.serial_no = serial_numbers[item.name]
+#         delivery_note.save(ignore_permissions=True)
+#         delivery_note.submit()
+#         return {"message": "Delivery Note updated successfully"}
+#     except Exception as e:
+#         frappe.log_error(f"Error updating Delivery Note serial numbers: {e}", "Delivery Note Update Error")
+#         return {"message": str(e)}
+
+# @frappe.whitelist()
+# def get_serial_numbers(item_code):
+#     try:
+#         # Fetch serial numbers where item_name matches and status is Active
+#         serial_numbers = frappe.get_all("Serial No",
+#                                          filters={"item_code": item_code, "status": "Active"},
+#                                          fields=["name"])
+
+#         return [serial_number.name for serial_number in serial_numbers]
+
+#     except Exception as e:
+#         frappe.log_error(f"Error fetching serial numbers: {e}")
+#         return []
+
+# @frappe.whitelist()
+# def submit_delivery_note(docname):
+#     try:
+#         delivery_note = frappe.get_doc("Delivery Note", docname)
+#         delivery_note.submit()
+#         return {"message": "Delivery Note submitted successfully"}
+#     except Exception as e:
+#         frappe.log_error(f"Error submitting Delivery Note: {e}", "Delivery Note Submission Error")
+#         return {"message": str(e)}
+
+
+
+
+
+
+import frappe
+from erpnext.selling.doctype.sales_order.sales_order import make_sales_invoice, make_delivery_note
+
+@frappe.whitelist()
+def create_sales_invoice_and_delivery_note(docname):
+    try:
+        # Fetch the Sales Order document
+        sales_order = frappe.get_doc("Sales Order", docname)
+
+        # Check if a Sales Invoice already exists for this Sales Order
+        existing_sales_invoices = frappe.get_all("Sales Invoice",
+                                                 filters={"sales_order": docname},
+                                                 fields=["name"])
+        if existing_sales_invoices:
+            return {"message": "A Sales Invoice has already been created for this Sales Order."}
+
+        # Check if a Delivery Note already exists for this Sales Order
+        existing_delivery_notes = frappe.get_all("Delivery Note",
+                                                  filters={"against_sales_order": docname},
+                                                  fields=["name"])
+        if existing_delivery_notes:
+            return {"message": "A Delivery Note has already been created for this Sales Order."}
+
+        # Create Sales Invoice
+        sales_invoice = make_sales_invoice(docname)
+        sales_invoice.allocate_advances_automatically = 1
+        sales_invoice.only_include_allocated_payments = 1
+        sales_invoice.insert(ignore_permissions=True)
+        sales_invoice.submit()
+
+        # Create Delivery Note in draft status
+        delivery_note_name = None
+        items_with_serial_numbers = []
+        if sales_order.items:
+            delivery_note = make_delivery_note(docname)
+            delivery_note.insert(ignore_permissions=True)
+            delivery_note_name = delivery_note.name
+
+            # Collect items with serial numbers
+            for item in delivery_note.items:
+                if item.serial_no and item.item_code not in items_with_serial_numbers:
+                    items_with_serial_numbers.append({
+                        'item_code': item.item_code,
+                        'serial_numbers': get_serial_numbers(item.item_code)
+                    })
+
+        return {
+            "sales_invoice": sales_invoice.name,
+            "delivery_note": delivery_note_name,
+            "items_with_serial_numbers": items_with_serial_numbers
+        }
+
+    except frappe.exceptions.ValidationError as e:
+        frappe.log_error(f"ValidationError while creating Sales Invoice and Delivery Note: {e}", "Sales Order Creation Error")
+        return {"message": str(e)}
+    except frappe.exceptions.DuplicateEntryError as e:
+        frappe.log_error(f"DuplicateEntryError while creating Sales Invoice and Delivery Note: {e}", "Sales Order Creation Error")
+        return {"message": str(e)}
+    except Exception as e:
+        frappe.log_error(f"Error creating Sales Invoice and Delivery Note: {e}", "Sales Order Creation Error")
+        return {"message": str(e)}
+
+@frappe.whitelist()
+def update_delivery_note_serial_numbers(docname, serial_numbers, item_code):
+    try:
+        delivery_note = frappe.get_doc("Delivery Note", docname)
+        for item in delivery_note.items:
+            if item.item_code == item_code:
+                item.serial_no = serial_numbers[item.name]
+        delivery_note.save(ignore_permissions=True)
+        delivery_note.submit()
+        return {"message": "Delivery Note updated successfully"}
+    except Exception as e:
+        frappe.log_error(f"Error updating Delivery Note serial numbers: {e}", "Delivery Note Update Error")
+        return {"message": str(e)}
+
+@frappe.whitelist()
+def get_serial_numbers(item_code):
+    try:
+        # Fetch serial numbers where item_name matches and status is Active
+        serial_numbers = frappe.get_all("Serial No",
+                                         filters={"item_code": item_code, "status": "Active"},
+                                         fields=["name"])
+
+        return [serial_number.name for serial_number in serial_numbers]
+
+    except Exception as e:
+        frappe.log_error(f"Error fetching serial numbers: {e}")
+        return []
+
+@frappe.whitelist()
+def submit_delivery_note(docname):
+    try:
+        delivery_note = frappe.get_doc("Delivery Note", docname)
+        delivery_note.submit()
+        return {"message": "Delivery Note submitted successfully"}
+    except Exception as e:
+        frappe.log_error(f"Error submitting Delivery Note: {e}", "Delivery Note Submission Error")
+        return {"message": str(e)}
+
+@frappe.whitelist()
+def get_delivery_note_serial_numbers(docname):
+    try:
+        delivery_note = frappe.get_doc("Delivery Note", docname)
+        serial_numbers_data = []
+        for item in delivery_note.items:
+            serial_and_batch_bundle = frappe.get_doc("Serial and Batch Bundle", item.serial_and_batch_bundle)
+            serial_numbers = [entry.serial_no for entry in serial_and_batch_bundle.entries]
+            serial_numbers_data.append({
+                "item_code": item.item_code,
+                "serial_numbers": serial_numbers
+            })
+        return {"serial_numbers": serial_numbers_data}
+    except Exception as e:
+        frappe.log_error(f"Error fetching serial numbers for Delivery Note {docname}: {e}", "Delivery Note Serial Numbers Error")
+        return {"message": str(e)}
+
+@frappe.whitelist()
+def update_sales_order_with_serial_numbers(sales_order_name, delivery_note_name):
+    try:
+        delivery_note = frappe.get_doc("Delivery Note", delivery_note_name)
+        sales_order = frappe.get_doc("Sales Order", sales_order_name)
+
+        for dn_item in delivery_note.items:
+            for so_item in sales_order.items:
+                if dn_item.item_code == so_item.item_code:
+                    serial_and_batch_bundle = frappe.get_doc("Serial and Batch Bundle", dn_item.serial_and_batch_bundle)
+                    serial_numbers = ', '.join([entry.serial_no for entry in serial_and_batch_bundle.entries])
+                    so_item.serial_no = serial_numbers
+        sales_order.status = "Sales Completed"
+        sales_order.save(ignore_permissions=True)
+        return {"message": "Sales Order updated with serial numbers successfully"}
+    except Exception as e:
+        frappe.log_error(f"Error updating Sales Order {sales_order_name} with serial numbers from Delivery Note {delivery_note_name}: {e}", "Sales Order Serial Numbers Update Error")
+        return {"message": str(e)}
+
+
+
+
+
+
+@frappe.whitelist()
+def get_bin_data(item_codes):
+    # Convert item_codes string to a list
+    item_codes_list = list(set(frappe.parse_json(item_codes)))
+ 
+ 
+    # Initialize a list to store warehouse quantities for each item
+    items_data = []
+    warehouse=[]
+    # Query Bin data based on the provided item codes
+    for item_code in item_codes_list:
+        item_data = {'item_code': item_code, 'warehouse_qty': {}}
+        bin_data = frappe.get_all('Bin',
+                                  filters={'item_code': item_code},
+                                  fields=['warehouse', 'actual_qty'])
+        for data in bin_data:
+            item_data['warehouse_qty'][data['warehouse']] = data['actual_qty']
+            if data['warehouse'] not in warehouse:
+                warehouse.append(data['warehouse'])
+        items_data.append(item_data)
+    print(items_data)
+ 
+    return {'items_data':items_data,'warehouse':warehouse}

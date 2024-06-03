@@ -23,6 +23,7 @@
   "tax_amount",
   "line_total",
   "rental_tax_rate",
+  "serial_no",
   "picked_up_from_client_place_section",
   "item_tax_template",
   "picked_up",
@@ -1075,12 +1076,18 @@
   {
    "fieldname": "column_break_rkqr",
    "fieldtype": "Column Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "serial_no",
+   "fieldtype": "Small Text",
+   "label": "Serial No."
   }
  ],
  "idx": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-05-30 15:00:36.485178",
+ "modified": "2024-06-01 14:20:06.767460",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order Item",

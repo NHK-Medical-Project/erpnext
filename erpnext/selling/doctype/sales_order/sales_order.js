@@ -687,7 +687,7 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 					if (flt(doc.per_billed, 2) < 100 && doc.status === 'Pending' && (doc.order_type === 'Sales' || doc.order_type === 'Service')) {
                         this.frm.add_custom_button(__('Approved'), () => {
                             frappe.confirm(
-                                __('Are you sure you want to approve. It will Reserve the Item?'),
+                                __('Are you sure you want to approve?'),
                                 () => {
                                     me.make_sales_approved(); // Call the JavaScript method
                                 },
@@ -697,6 +697,26 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
                             );
                         }, __('Action'));
                     }
+
+					if (flt(doc.per_billed, 2) < 100 && doc.status === 'Order' && (doc.order_type === 'Sales')) {
+						this.frm.add_custom_button(__('Create Sales Invoice & Delivery Note'), () => {
+							frappe.confirm(
+								__('Are you sure you want to Create Sales Invoice & Delivery Note?'),
+								() => {
+									// Check the payment status before proceeding
+									if (doc.payment_status === 'Paid') {
+										me.make_sales_invoice_delivery_note(); // Call the JavaScript method
+									} else {
+										frappe.msgprint(__('Payment is not done. Please complete the payment before proceeding.'));
+									}
+								},
+								() => {
+									// Do nothing on cancel
+								}
+							);
+						}, __('Action'));
+					}
+					
 
                     // if (flt(doc.per_billed, 2) < 100 && doc.status === 'Approved' && doc.order_type === 'Rental') {
                     //     this.frm.add_custom_button(__('Rental Device Assigned'), () => {
@@ -799,7 +819,7 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 					if (
 						flt(doc.per_delivered, 2) < 100 &&
 						(order_is_a_sale || order_is_a_custom_sale) &&
-						allow_delivery && doc.status === 'Order' && doc.order_type === 'Sales'
+						allow_delivery && doc.status === 'Order' && doc.order_type === 'Service'
 					) {
 						this.frm.add_custom_button(
 							__("Delivery Note"),
@@ -814,7 +834,7 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 					}
 
 					// sales invoice
-					if (flt(doc.per_billed, 2) < 100 && doc.status != 'RENEWED') {
+					if (flt(doc.per_billed, 2) < 100 && doc.status != 'RENEWED' && (doc.order_type === 'Service' || doc.order_type === 'Rental')) {
 						this.frm.add_custom_button(
 							__("Sales Invoice"),
 							() => me.make_sales_invoice(),
@@ -1600,6 +1620,339 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 			});
 		}, 'Technician Details', 'Submit');
 	}
+
+
+	// make_sales_invoice_delivery_note() {
+	// 	const me = this; // Preserve reference to 'this' object
+		
+	// 	// Call the Python function to create Sales Invoice and Delivery Note
+	// 	frappe.call({
+	// 		method: 'erpnext.selling.doctype.sales_order.sales_order.create_sales_invoice_and_delivery_note', // Change to your actual module, doctype, and file name
+	// 		args: {
+	// 			docname: me.frm.doc.name, // Use me.frm.doc.name instead of this.frm.doc.name
+	// 		},
+	// 		callback: function(response) {
+	// 			// Handle the response
+	// 			if (response.message) {
+	// 				// Log the result to the console
+	// 				console.log(response.message);
+	
+	// 				// Display a success message
+	// 				frappe.msgprint({
+	// 					title: __('Success'),
+	// 					message: __('Sales Invoice and Delivery Note have been created.'),
+	// 					indicator: 'green'
+	// 				});
+	// 				// Reload the entire page after a short delay (adjust as needed)
+	// 				// setTimeout(() => {
+	// 				// 	window.location.reload();
+	// 				// }, 1000); // 1000 milliseconds = 1 second
+	// 			} else {
+	// 				// Handle the case where the response does not contain a message
+	// 				console.error('Unexpected response:', response);
+	// 				frappe.msgprint({
+	// 					title: __('Error'),
+	// 					message: __('Failed to create Sales Invoice and Delivery Note.'),
+	// 					indicator: 'red'
+	// 				});
+	// 			}
+	// 		}
+	// 	});
+	// }
+
+
+
+	// make_sales_invoice_delivery_note() {
+	// 	const me = this; // Preserve reference to 'this' object
+	
+	// 	// Call the Python function to create Sales Invoice and Delivery Note
+	// 	frappe.call({
+	// 		method: 'erpnext.selling.doctype.sales_order.sales_order.create_sales_invoice_and_delivery_note',
+	// 		args: {
+	// 			docname: me.frm.doc.name, // Use me.frm.doc.name instead of this.frm.doc.name
+	// 		},
+	// 		callback: function(response) {
+	// 			// Handle the response
+	// 			if (response.message) {
+	// 				console.log(response.message);
+	
+	// 				if (response.message.delivery_note) {
+	// 					const delivery_note_name = response.message.delivery_note;
+	
+	// 					// Fetch the Delivery Note details
+	// 					frappe.call({
+	// 						method: 'frappe.client.get',
+	// 						args: {
+	// 							doctype: 'Delivery Note',
+	// 							name: delivery_note_name
+	// 						},
+	// 						callback: function(r) {
+	// 							if (r.message) {
+	// 								const delivery_note = r.message;
+	// 								const items = delivery_note.items.map(item => {
+	// 									return {
+	// 										'fieldtype': 'Select',
+	// 										'fieldname': item.item_code + '_serial_number',
+	// 										'label': `${item.item_code} - Serial Number`,
+	// 										'options': getSerialNumbers(item.item_code) // Fetch serial numbers for the item
+	// 									};
+	// 								});
+	
+	// 								frappe.prompt(items,
+	// 									function(values) {
+	// 										// Prepare serial numbers
+	// 										let serial_numbers = {};
+	// 										Object.keys(values).forEach(key => {
+	// 											serial_numbers[key] = values[key];
+	// 										});
+	
+	// 										// Update the Delivery Note with the serial numbers
+	// 										frappe.call({
+	// 											method: 'erpnext.selling.doctype.sales_order.sales_order.update_delivery_note_serial_numbers',
+	// 											args: {
+	// 												docname: delivery_note_name,
+	// 												serial_numbers: serial_numbers,
+	// 												item_code: delivery_note.items[0].item_code  // Pass the item_code from the first item
+	// 											},
+	// 											callback: function(r) {
+	// 												if (r.message) {
+	// 													frappe.msgprint({
+	// 														title: __('Success'),
+	// 														message: __('Sales Invoice and Delivery Note have been created and updated.'),
+	// 														indicator: 'green'
+	// 													});
+	// 													// Optionally reload the page
+	// 													setTimeout(() => {
+	// 														window.location.reload();
+	// 													}, 1000); // 1000 milliseconds = 1 second
+	// 												} else {
+	// 													frappe.msgprint({
+	// 														title: __('Error'),
+	// 														message: __('Failed to update Delivery Note with serial numbers.'),
+	// 														indicator: 'red'
+	// 													});
+	// 												}
+	// 											}
+	// 										});
+	// 									},
+	// 									__('Enter Serial Numbers'),
+	// 									__('Update')
+	// 								);
+	// 							}
+	// 						}
+	// 					});
+	// 				} else {
+	// 					frappe.msgprint({
+	// 						title: __('Success'),
+	// 						message: __('Sales Invoice has been created. No Delivery Note was created as no serial number was provided.'),
+	// 						indicator: 'green'
+	// 					});
+	// 				}
+	// 			} else {
+	// 				console.error('Unexpected response:', response);
+	// 				frappe.msgprint({
+	// 					title: __('Error'),
+	// 					message: __('Failed to create Sales Invoice and Delivery Note.'),
+	// 					indicator: 'red'
+	// 				});
+	// 			}
+	// 		}
+	// 	});
+	// }
+	
+	
+	
+	
+	// make_sales_invoice_delivery_note() {
+	// 	const me = this; // Preserve reference to 'this' object
+	
+	// 	// Call the Python function to create Sales Invoice and Delivery Note
+	// 	frappe.call({
+	// 		method: 'erpnext.selling.doctype.sales_order.sales_order.create_sales_invoice_and_delivery_note',
+	// 		args: {
+	// 			docname: me.frm.doc.name, // Use me.frm.doc.name instead of this.frm.doc.name
+	// 		},
+	// 		callback: function(response) {
+	// 			// Handle the response
+	// 			if (response.message) {
+	// 				if (typeof response.message === 'string') {
+	// 					// Handle string message
+	// 					frappe.msgprint({
+	// 						title: __('Message'),
+	// 						message: response.message,
+	// 						indicator: 'orange'
+	// 					});
+	// 				} else if (response.message.sales_invoice && response.message.delivery_note) {
+	// 					const delivery_note_name = response.message.delivery_note;
+	
+	// 					// Confirm if the user wants to select serial numbers
+	// 					frappe.confirm(
+	// 						__('Do you want to select serial numbers for the items in the Delivery Note?'),
+	// 						function() {
+	// 							// If the user confirms, redirect to the Delivery Note
+	// 							frappe.set_route("Form", "Delivery Note", delivery_note_name);
+	// 						},
+	// 						function() {
+	// 							// If the user declines, refresh and submit the Delivery Note automatically
+	// 							frappe.call({
+	// 								method: 'frappe.client.get',
+	// 								args: {
+	// 									doctype: 'Delivery Note',
+	// 									name: delivery_note_name
+	// 								},
+	// 								callback: function(r) {
+	// 									if (r.message) {
+	// 										frappe.call({
+	// 											method: 'erpnext.selling.doctype.sales_order.sales_order.submit_delivery_note',
+	// 											args: {
+	// 												docname: delivery_note_name
+	// 											},
+	// 											callback: function(r) {
+	// 												if (!r.exc) {
+	// 													frappe.msgprint({
+	// 														title: __('Success'),
+	// 														message: __('Delivery Note has been submitted successfully.'),
+	// 														indicator: 'green'
+	// 													});
+	// 												} else {
+	// 													frappe.msgprint({
+	// 														title: __('Error'),
+	// 														message: __('Failed to submit the Delivery Note.'),
+	// 														indicator: 'red'
+	// 													});
+	// 												}
+	// 											}
+	// 										});
+	// 									} else {
+	// 										frappe.msgprint({
+	// 											title: __('Error'),
+	// 											message: __('Failed to refresh the Delivery Note.'),
+	// 											indicator: 'red'
+	// 										});
+	// 									}
+	// 								}
+	// 							});
+	// 						}
+	// 					);
+	// 				} else {
+	// 					// Handle other object structures or errors
+	// 					frappe.msgprint({
+	// 						title: __('Error'),
+	// 						message: __('Failed to create Sales Invoice and Delivery Note.'),
+	// 						indicator: 'red'
+	// 					});
+	// 				}
+	// 			} else {
+	// 				console.error('Unexpected response:', response);
+	// 				frappe.msgprint({
+	// 					title: __('Error'),
+	// 					message: __('Failed to create Sales Invoice and Delivery Note.'),
+	// 					indicator: 'red'
+	// 				});
+	// 			}
+	// 		}
+	// 	});
+	// }
+	
+	
+	make_sales_invoice_delivery_note() {
+		const me = this; // Preserve reference to 'this' object
+	
+		// Call the Python function to create Sales Invoice and Delivery Note
+		frappe.call({
+			method: 'erpnext.selling.doctype.sales_order.sales_order.create_sales_invoice_and_delivery_note',
+			args: {
+				docname: me.frm.doc.name, // Use me.frm.doc.name instead of this.frm.doc.name
+			},
+			callback: function(response) {
+				// Handle the response
+				if (response.message) {
+					if (typeof response.message === 'string') {
+						// Handle string message
+						frappe.msgprint({
+							title: __('Message'),
+							message: response.message,
+							indicator: 'orange'
+						});
+					} else if (response.message.sales_invoice && response.message.delivery_note) {
+						const delivery_note_name = response.message.delivery_note;
+	
+						// Confirm if the user wants to select serial numbers
+						frappe.confirm(
+							__('Do you want to select serial numbers for the items in the Delivery Note?'),
+							function() {
+								// If the user confirms, redirect to the Delivery Note
+								frappe.set_route("Form", "Delivery Note", delivery_note_name);
+							},
+							function() {
+								// If the user declines, refresh and submit the Delivery Note automatically
+								frappe.call({
+									method: 'frappe.client.get',
+									args: {
+										doctype: 'Delivery Note',
+										name: delivery_note_name
+									},
+									callback: function(r) {
+										if (r.message) {
+											frappe.call({
+												method: 'erpnext.selling.doctype.sales_order.sales_order.submit_delivery_note',
+												args: {
+													docname: delivery_note_name
+												},
+												callback: function(r) {
+													if (!r.exc) {
+														frappe.msgprint({
+															title: __('Success'),
+															message: __('Delivery Note has been submitted successfully.'),
+															indicator: 'green'
+														});
+	
+														// Fetch and update serial numbers in Sales Order
+														update_sales_order_serial_numbers(me.frm.doc.name, delivery_note_name);
+	
+													} else {
+														frappe.msgprint({
+															title: __('Error'),
+															message: __('Failed to submit the Delivery Note.'),
+															indicator: 'red'
+														});
+													}
+												}
+											});
+										} else {
+											frappe.msgprint({
+												title: __('Error'),
+												message: __('Failed to refresh the Delivery Note.'),
+												indicator: 'red'
+											});
+										}
+									}
+								});
+							}
+						);
+					} else {
+						// Handle other object structures or errors
+						frappe.msgprint({
+							title: __('Error'),
+							message: __('Failed to create Sales Invoice and Delivery Note.'),
+							indicator: 'red'
+						});
+					}
+				} else {
+					console.error('Unexpected response:', response);
+					frappe.msgprint({
+						title: __('Error'),
+						message: __('Failed to create Sales Invoice and Delivery Note.'),
+						indicator: 'red'
+					});
+				}
+			}
+		});
+	}
+	
+	
+	
+	
 	
 	
     
@@ -2312,3 +2665,56 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 };
 
 extend_cscript(cur_frm.cscript, new erpnext.selling.SalesOrderController({ frm: cur_frm }));
+function getSerialNumbers(itemCode) {
+    // Define a variable to hold the options
+    let options = [];
+
+    // Call Python function to get serial numbers
+    frappe.call({
+        method: 'erpnext.selling.doctype.sales_order.sales_order.get_serial_numbers',
+        args: {
+            item_code: itemCode
+        },
+        async: false, // Ensure synchronous execution
+        callback: function(response) {
+            if (response.message) {
+                // Map the serial numbers to the required format
+                options = response.message.map(serialNumber => {
+                    return {
+                        label: serialNumber,
+                        value: serialNumber
+                    };
+                });
+            } else {
+                console.error('Failed to fetch serial numbers');
+            }
+        }
+    });
+
+    // Return the options
+    return options;
+}
+function update_sales_order_serial_numbers(sales_order_name, delivery_note_name) {
+	frappe.call({
+		method: 'erpnext.selling.doctype.sales_order.sales_order.update_sales_order_with_serial_numbers',
+		args: {
+			sales_order_name: sales_order_name,
+			delivery_note_name: delivery_note_name
+		},
+		callback: function(response) {
+			if (response.message) {
+				frappe.msgprint({
+					title: __('Serial Numbers Updated'),
+					message: __('Serial numbers have been updated in the Sales Order.'),
+					indicator: 'blue'
+				});
+			} else {
+				frappe.msgprint({
+					title: __('Error'),
+					message: __('Failed to update serial numbers in the Sales Order.'),
+					indicator: 'red'
+				});
+			}
+		}
+	});
+}

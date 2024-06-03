@@ -87,6 +87,7 @@ class SalesOrderItem(Document):
 		replaced_datetime: DF.Datetime | None
 		reserve_stock: DF.Check
 		returned_qty: DF.Float
+		serial_no: DF.SmallText | None
 		stock_qty: DF.Float
 		stock_reserved_qty: DF.Float
 		stock_uom: DF.Link | None
