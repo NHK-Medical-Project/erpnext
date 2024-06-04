@@ -1,6 +1,7 @@
 {
  "actions": [],
  "allow_import": 1,
+ "autoname": "field:warehouse_name",
  "creation": "2023-05-29 13:02:17.121296",
  "description": "A logical Warehouse against which stock entries are made.",
  "doctype": "DocType",
@@ -53,7 +54,8 @@
    "label": "Warehouse Name",
    "oldfieldname": "warehouse_name",
    "oldfieldtype": "Data",
-   "reqd": 1
+   "reqd": 1,
+   "unique": 1
   },
   {
    "bold": 1,
@@ -263,10 +265,11 @@
  "idx": 1,
  "is_tree": 1,
  "links": [],
- "modified": "2024-01-24 16:27:28.299520",
+ "modified": "2024-06-03 15:09:27.043364",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Warehouse",
+ "naming_rule": "By fieldname",
  "nsm_parent_field": "parent_warehouse",
  "owner": "Administrator",
  "permissions": [
@@ -317,6 +320,7 @@
   }
  ],
  "show_name_in_global_search": 1,
+ "show_title_field_in_link": 1,
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": [],

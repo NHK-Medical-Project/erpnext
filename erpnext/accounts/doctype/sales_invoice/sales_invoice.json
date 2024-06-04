@@ -1285,6 +1285,7 @@
    "print_hide": 1
   },
   {
+   "allow_on_submit": 1,
    "default": "0",
    "fieldname": "allocate_advances_automatically",
    "fieldtype": "Check",
@@ -1302,6 +1303,7 @@
    "options": "set_advances"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "advances",
    "fieldtype": "Table",
    "hide_days": 1,
@@ -1367,6 +1369,7 @@
    "print_hide": 1
   },
   {
+   "allow_on_submit": 1,
    "depends_on": "eval:doc.is_pos===1",
    "fieldname": "payments",
    "fieldtype": "Table",
@@ -2155,6 +2158,7 @@
    "label": "Named Place"
   },
   {
+   "allow_on_submit": 1,
    "default": "0",
    "depends_on": "allocate_advances_automatically",
    "description": "Advance payments allocated against orders will only be fetched",
@@ -2261,7 +2265,7 @@
    "link_fieldname": "consolidated_invoice"
   }
  ],
- "modified": "2024-04-19 17:15:40.498009",
+ "modified": "2024-06-03 13:08:52.380365",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Sales Invoice",

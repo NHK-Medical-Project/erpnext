@@ -518,7 +518,7 @@ class DeliveryNote(SellingController):
                 if so_item.item_code == item_code:
                     so_item.serial_no = serial_numbers
             
-            sales_order.status = "Sales Completed"
+            # sales_order.status = "Sales Completed"
             sales_order.save(ignore_permissions=True)
             frappe.msgprint(f"Sales Order {sales_order_name} updated with serial number for item {item_code}")
         except Exception as e:

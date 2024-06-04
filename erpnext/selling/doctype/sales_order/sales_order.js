@@ -704,11 +704,11 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 								__('Are you sure you want to Create Sales Invoice & Delivery Note?'),
 								() => {
 									// Check the payment status before proceeding
-									if (doc.payment_status === 'Paid') {
+									// if (doc.payment_status === 'Paid') {
 										me.make_sales_invoice_delivery_note(); // Call the JavaScript method
-									} else {
-										frappe.msgprint(__('Payment is not done. Please complete the payment before proceeding.'));
-									}
+									// } else {
+									// 	frappe.msgprint(__('Payment is not done. Please complete the payment before proceeding.'));
+									// }
 								},
 								() => {
 									// Do nothing on cancel
@@ -1878,58 +1878,58 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 						const delivery_note_name = response.message.delivery_note;
 	
 						// Confirm if the user wants to select serial numbers
-						frappe.confirm(
-							__('Do you want to select serial numbers for the items in the Delivery Note?'),
-							function() {
+						// frappe.confirm(
+						// 	__('Do you want to select serial numbers for the items in the Delivery Note?'),
+						// 	function() {
 								// If the user confirms, redirect to the Delivery Note
 								frappe.set_route("Form", "Delivery Note", delivery_note_name);
-							},
-							function() {
-								// If the user declines, refresh and submit the Delivery Note automatically
-								frappe.call({
-									method: 'frappe.client.get',
-									args: {
-										doctype: 'Delivery Note',
-										name: delivery_note_name
-									},
-									callback: function(r) {
-										if (r.message) {
-											frappe.call({
-												method: 'erpnext.selling.doctype.sales_order.sales_order.submit_delivery_note',
-												args: {
-													docname: delivery_note_name
-												},
-												callback: function(r) {
-													if (!r.exc) {
-														frappe.msgprint({
-															title: __('Success'),
-															message: __('Delivery Note has been submitted successfully.'),
-															indicator: 'green'
-														});
+							// },
+							// function() {
+							// 	// If the user declines, refresh and submit the Delivery Note automatically
+							// 	frappe.call({
+							// 		method: 'frappe.client.get',
+							// 		args: {
+							// 			doctype: 'Delivery Note',
+							// 			name: delivery_note_name
+							// 		},
+							// 		callback: function(r) {
+							// 			if (r.message) {
+							// 				frappe.call({
+							// 					method: 'erpnext.selling.doctype.sales_order.sales_order.submit_delivery_note',
+							// 					args: {
+							// 						docname: delivery_note_name
+							// 					},
+							// 					callback: function(r) {
+							// 						if (!r.exc) {
+							// 							frappe.msgprint({
+							// 								title: __('Success'),
+							// 								message: __('Delivery Note has been submitted successfully.'),
+							// 								indicator: 'green'
+							// 							});
 	
-														// Fetch and update serial numbers in Sales Order
-														update_sales_order_serial_numbers(me.frm.doc.name, delivery_note_name);
+							// 							// Fetch and update serial numbers in Sales Order
+							// 							update_sales_order_serial_numbers(me.frm.doc.name, delivery_note_name);
 	
-													} else {
-														frappe.msgprint({
-															title: __('Error'),
-															message: __('Failed to submit the Delivery Note.'),
-															indicator: 'red'
-														});
-													}
-												}
-											});
-										} else {
-											frappe.msgprint({
-												title: __('Error'),
-												message: __('Failed to refresh the Delivery Note.'),
-												indicator: 'red'
-											});
-										}
-									}
-								});
-							}
-						);
+							// 						} else {
+							// 							frappe.msgprint({
+							// 								title: __('Error'),
+							// 								message: __('Failed to submit the Delivery Note.'),
+							// 								indicator: 'red'
+							// 							});
+							// 						}
+							// 					}
+							// 				});
+							// 			} else {
+							// 				frappe.msgprint({
+							// 					title: __('Error'),
+							// 					message: __('Failed to refresh the Delivery Note.'),
+							// 					indicator: 'red'
+							// 				});
+							// 			}
+							// 		}
+							// 	});
+							// }
+						// );
 					} else {
 						// Handle other object structures or errors
 						frappe.msgprint({

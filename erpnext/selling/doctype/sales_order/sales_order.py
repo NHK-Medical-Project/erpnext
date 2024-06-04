@@ -4258,7 +4258,7 @@ def create_sales_invoice_and_delivery_note(docname):
         sales_invoice.allocate_advances_automatically = 1
         sales_invoice.only_include_allocated_payments = 1
         sales_invoice.insert(ignore_permissions=True)
-        sales_invoice.submit()
+        # sales_invoice.submit()
 
         # Create Delivery Note in draft status
         delivery_note_name = None

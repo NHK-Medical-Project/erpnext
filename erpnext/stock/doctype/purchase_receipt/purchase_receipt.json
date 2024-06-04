@@ -365,8 +365,10 @@
    "options": "fa fa-tag"
   },
   {
+   "default": "INR",
    "fieldname": "currency",
    "fieldtype": "Link",
+   "hidden": 1,
    "label": "Currency",
    "oldfieldname": "currency",
    "oldfieldtype": "Select",
@@ -393,8 +395,10 @@
    "width": "50%"
   },
   {
+   "default": "Standard Buying",
    "fieldname": "buying_price_list",
    "fieldtype": "Link",
+   "hidden": 1,
    "label": "Price List",
    "options": "Price List",
    "print_hide": 1
@@ -618,6 +622,7 @@
   {
    "fieldname": "shipping_rule",
    "fieldtype": "Link",
+   "hidden": 1,
    "label": "Shipping Rule",
    "options": "Shipping Rule"
   },
@@ -1084,6 +1089,7 @@
   {
    "fieldname": "scan_barcode",
    "fieldtype": "Data",
+   "hidden": 1,
    "label": "Scan Barcode",
    "options": "Barcode"
   },
@@ -1135,6 +1141,7 @@
    "collapsible": 1,
    "fieldname": "accounting_dimensions_section",
    "fieldtype": "Section Break",
+   "hidden": 1,
    "label": "Accounting Dimensions"
   },
   {
@@ -1230,6 +1237,7 @@
   {
    "fieldname": "incoterm",
    "fieldtype": "Link",
+   "hidden": 1,
    "label": "Incoterm",
    "options": "Incoterm"
   },
@@ -1237,6 +1245,7 @@
    "depends_on": "incoterm",
    "fieldname": "named_place",
    "fieldtype": "Data",
+   "hidden": 1,
    "label": "Named Place"
   },
   {
@@ -1252,7 +1261,7 @@
  "idx": 261,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-12-18 17:26:41.279663",
+ "modified": "2024-06-03 18:37:40.022245",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Purchase Receipt",

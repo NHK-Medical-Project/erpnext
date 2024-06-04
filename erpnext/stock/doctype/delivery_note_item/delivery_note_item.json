@@ -476,6 +476,7 @@
    "label": "Warehouse and Reference"
   },
   {
+   "default": "Terracon - INR",
    "fieldname": "warehouse",
    "fieldtype": "Link",
    "in_list_view": 1,
@@ -918,7 +919,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-06-01 16:45:55.382297",
+ "modified": "2024-06-03 14:38:32.075566",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Delivery Note Item",
