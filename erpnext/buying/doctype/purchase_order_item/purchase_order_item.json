@@ -151,14 +151,13 @@
    "allow_on_submit": 1,
    "bold": 1,
    "columns": 2,
+   "default": "Today",
    "fieldname": "schedule_date",
    "fieldtype": "Date",
-   "in_list_view": 1,
    "label": "Required By",
    "oldfieldname": "schedule_date",
    "oldfieldtype": "Date",
-   "print_hide": 1,
-   "reqd": 1
+   "print_hide": 1
   },
   {
    "allow_on_submit": 1,
@@ -915,7 +914,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-02-05 11:23:24.859435",
+ "modified": "2024-06-04 15:58:49.252574",
  "modified_by": "Administrator",
  "module": "Buying",
  "name": "Purchase Order Item",

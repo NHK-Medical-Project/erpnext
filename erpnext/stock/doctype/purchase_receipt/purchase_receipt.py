@@ -98,7 +98,6 @@ class PurchaseReceipt(BuyingController):
 		return_against: DF.Link | None
 		rounded_total: DF.Currency
 		rounding_adjustment: DF.Currency
-		scan_barcode: DF.Data | None
 		select_print_heading: DF.Link | None
 		set_from_warehouse: DF.Link | None
 		set_posting_time: DF.Check

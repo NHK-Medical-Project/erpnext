@@ -39,7 +39,7 @@
   "plc_conversion_rate",
   "ignore_pricing_rule",
   "sec_warehouse",
-  "scan_barcode",
+  "column_break_uhxb",
   "column_break_31",
   "set_warehouse",
   "set_from_warehouse",
@@ -215,6 +215,7 @@
   {
    "fieldname": "supplier_delivery_note",
    "fieldtype": "Data",
+   "hidden": 1,
    "label": "Supplier Delivery Note"
   },
   {
@@ -276,6 +277,7 @@
    "default": "0",
    "fieldname": "is_return",
    "fieldtype": "Check",
+   "hidden": 1,
    "label": "Is Return",
    "no_copy": 1,
    "print_hide": 1,
@@ -460,6 +462,7 @@
    "default": "0",
    "fieldname": "is_subcontracted",
    "fieldtype": "Check",
+   "hidden": 1,
    "label": "Is Subcontracted",
    "oldfieldname": "is_subcontracted",
    "oldfieldtype": "Select",
@@ -524,6 +527,7 @@
    "collapsible_depends_on": "supplied_items",
    "fieldname": "raw_material_details",
    "fieldtype": "Section Break",
+   "hidden": 1,
    "label": "Raw Materials Consumed",
    "oldfieldtype": "Section Break",
    "options": "fa fa-table",
@@ -1087,13 +1091,6 @@
    "read_only": 1
   },
   {
-   "fieldname": "scan_barcode",
-   "fieldtype": "Data",
-   "hidden": 1,
-   "label": "Scan Barcode",
-   "options": "Barcode"
-  },
-  {
    "fieldname": "billing_address",
    "fieldtype": "Link",
    "label": "Billing Address",
@@ -1109,6 +1106,7 @@
    "default": "0",
    "fieldname": "apply_putaway_rule",
    "fieldtype": "Check",
+   "hidden": 1,
    "label": "Apply Putaway Rule"
   },
   {
@@ -1255,13 +1253,17 @@
    "label": "Subcontracting Receipt",
    "options": "Subcontracting Receipt",
    "search_index": 1
+  },
+  {
+   "fieldname": "column_break_uhxb",
+   "fieldtype": "Column Break"
   }
  ],
  "icon": "fa fa-truck",
  "idx": 261,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-06-03 18:37:40.022245",
+ "modified": "2024-06-04 16:19:38.224492",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Purchase Receipt",
