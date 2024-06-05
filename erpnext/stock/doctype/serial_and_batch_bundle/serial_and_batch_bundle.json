@@ -111,6 +111,7 @@
    "reqd": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "voucher_no",
    "fieldtype": "Dynamic Link",
    "in_standard_filter": 1,
@@ -251,7 +252,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-03-15 15:22:24.003486",
+ "modified": "2024-06-05 11:51:03.301589",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Serial and Batch Bundle",
