@@ -2613,6 +2613,8 @@ def update_status_to_submitted_to_office(item_code, submission_datetime, docname
         item = frappe.get_doc("Item", item_code)
         if item:
             item.status = "Available"
+            item.customer_n = ""
+            item.customer_name = ""
             item.save(ignore_permissions=True)
 
         sales_order_items = frappe.get_all("Sales Order Item", filters={"parent": docname}, fields=["name"])
