@@ -134,21 +134,21 @@ erpnext.accounts.PurchaseInvoice = class PurchaseInvoice extends erpnext.buying.
 			cur_frm.page.set_inner_btn_group_as_primary(__("Create"));
 		}
 
-		if (!doc.is_return && doc.docstatus == 1) {
-			if (doc.outstanding_amount >= 0 || Math.abs(flt(doc.outstanding_amount)) < flt(doc.grand_total)) {
-				cur_frm.add_custom_button(__("Return / Debit Note"), this.make_debit_note, __("Create"));
-			}
-		}
+		// if (!doc.is_return && doc.docstatus == 1) {
+		// 	if (doc.outstanding_amount >= 0 || Math.abs(flt(doc.outstanding_amount)) < flt(doc.grand_total)) {
+		// 		cur_frm.add_custom_button(__("Return / Debit Note"), this.make_debit_note, __("Create"));
+		// 	}
+		// }
 
-		if (doc.outstanding_amount > 0 && !cint(doc.is_return) && !doc.on_hold) {
-			cur_frm.add_custom_button(
-				__("Payment Request"),
-				function () {
-					me.make_payment_request();
-				},
-				__("Create")
-			);
-		}
+		// if (doc.outstanding_amount > 0 && !cint(doc.is_return) && !doc.on_hold) {
+		// 	cur_frm.add_custom_button(
+		// 		__("Payment Request"),
+		// 		function () {
+		// 			me.make_payment_request();
+		// 		},
+		// 		__("Create")
+		// 	);
+		// }
 
 		if (doc.docstatus === 0) {
 			this.frm.add_custom_button(

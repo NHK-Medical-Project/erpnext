@@ -255,7 +255,7 @@ erpnext.stock.PurchaseReceiptController = class PurchaseReceiptController extend
 					cur_frm.add_custom_button(__("Close"), this.close_purchase_receipt, __("Status"));
 				}
 
-				cur_frm.add_custom_button(__("Purchase Return"), this.make_purchase_return, __("Create"));
+				// cur_frm.add_custom_button(__("Purchase Return"), this.make_purchase_return, __("Create"));
 
 				cur_frm.add_custom_button(
 					__("Make Stock Entry"),
@@ -270,11 +270,11 @@ erpnext.stock.PurchaseReceiptController = class PurchaseReceiptController extend
 						__("Create")
 					);
 				}
-				cur_frm.add_custom_button(
-					__("Retention Stock Entry"),
-					this.make_retention_stock_entry,
-					__("Create")
-				);
+				// cur_frm.add_custom_button(
+				// 	__("Retention Stock Entry"),
+				// 	this.make_retention_stock_entry,
+				// 	__("Create")
+				// );
 
 				cur_frm.page.set_inner_btn_group_as_primary(__("Create"));
 			}
