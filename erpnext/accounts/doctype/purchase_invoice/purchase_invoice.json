@@ -265,6 +265,7 @@
    "default": "0",
    "fieldname": "is_paid",
    "fieldtype": "Check",
+   "hidden": 1,
    "label": "Is Paid",
    "print_hide": 1
   },
@@ -609,6 +610,7 @@
    "default": "0",
    "fieldname": "update_stock",
    "fieldtype": "Check",
+   "hidden": 1,
    "label": "Update Stock",
    "print_hide": 1
   },
@@ -1653,7 +1655,7 @@
  "idx": 204,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-06-04 16:39:10.470884",
+ "modified": "2024-06-05 10:59:24.538847",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Purchase Invoice",
