@@ -2830,6 +2830,9 @@ def mark_overdue_sales_orders():
     # publish_realtime('list_update', "Sales Order")
 
 
+import frappe
+from frappe.utils import add_days
+
 @frappe.whitelist()
 def create_renewal_order(sales_order_name):
     # Get original sales order
@@ -2847,6 +2850,13 @@ def create_renewal_order(sales_order_name):
     renewal_count = getattr(original_sales_order, "renewal_order_count", 0)
     new_sales_order.renewal_order_count = renewal_count + 1 if renewal_count > 0 else 1
     
+    # Set the new order's start date to the original order's end date + 1 day
+    if original_sales_order.end_date:
+        new_start_date = add_days(original_sales_order.end_date, 1)
+        new_sales_order.start_date = new_start_date
+        new_sales_order.end_date = ""
+        new_sales_order.total_no_of_dates = ""
+
     new_sales_order.insert()
 
     # Update original sales order status only after the new sales order has been submitted
@@ -3878,7 +3888,7 @@ def create_razorpay_payment_link_sales_order(amount, invoice_name, customer, cus
         "description": f"Sales order type {order_type}",
         "notes": {"invoice_name": invoice_name},
         "reference_id": invoice_name,
-        "callback_url": f"http://192.168.1.125:8029/api/method/erpnext.selling.doctype.sales_order.sales_order.get_razorpay_payment_details?razorpay_payment_link_reference_id={invoice_name}&customer={customer}&actual_amount={actual_amount}",
+        "callback_url": f"http://13.202.3.66/api/method/erpnext.selling.doctype.sales_order.sales_order.get_razorpay_payment_details?razorpay_payment_link_reference_id={invoice_name}&customer={customer}&actual_amount={actual_amount}",
         "callback_method": "get"
     }
     
