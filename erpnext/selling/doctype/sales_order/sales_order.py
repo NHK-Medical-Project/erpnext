@@ -4406,3 +4406,45 @@ def get_bin_data(item_codes):
     print(items_data)
  
     return {'items_data':items_data,'warehouse':warehouse}
+    
+    
+    
+    
+    
+# to show the item wrong status 
+    
+import frappe
+
+@frappe.whitelist()
+def get_rental_order_items_status():
+    # Fetch all Sales Orders with status 'Active' and order_type 'Rental'
+    sales_orders = frappe.get_all('Sales Order', filters={
+        'status': 'Active',
+        'order_type': 'Rental',
+        'docstatus':1,
+    }, fields=['name', 'status'])
+
+    if not sales_orders:
+        return "No active rental orders found."
+
+    items_status = []
+    for order in sales_orders:
+        # Fetch all items in the Sales Order
+        items = frappe.get_all('Sales Order Item', filters={
+            'parent': order.name
+        }, fields=['item_code'])
+        
+        for item in items:
+            # Fetch the status of the item using item_code
+            item_doc = frappe.get_doc('Item', item.item_code)
+            item_status = item_doc.get('status', 'Unknown')  # Replace 'status' with the actual field name if different
+            
+            if item_status == 'Available':
+                items_status.append(f"Sales Order: {order.name}, Item: {item.item_code}, Item Status: {item_status}, Sales Order Status: {order.status}")
+
+    if not items_status:
+        return "No available items found for the specified sales orders."
+
+    # Join the list into a single string with HTML line breaks
+    return "<br>".join(items_status)
+
