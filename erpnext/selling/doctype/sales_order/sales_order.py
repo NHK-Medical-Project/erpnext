@@ -593,9 +593,30 @@ class SalesOrder(SellingController):
 
 
     def item_status_change_cancel(self):
-        
         for item in self.get("items"):
             item_code = item.item_code
+            # Initialize a list to store information about other orders
+            other_order_info = []
+            # Check if the item_code is present in any other sales order
+            other_orders = frappe.get_all("Sales Order",
+                                        filters={"docstatus": 1,  # Only consider submitted sales orders
+                                                "name": ("!=", self.name),
+                                                "status": ("not in", ["Submitted to Office"])},
+                                        fields=["name", "status"])
+            for order in other_orders:
+                sales_order = frappe.get_doc("Sales Order", order.name)
+                for order_item in sales_order.items:
+                    if order_item.item_code == item_code:
+                        other_order_info.append((sales_order.name, sales_order.status))
+                        break  # No need to check other items in this order if the item is already found
+            if other_order_info:
+                # Construct a message with order IDs and statuses
+                orders_info = ", ".join(["{} ({})".format(order[0], order[1]) for order in other_order_info])
+                current_item_status = frappe.get_value("Item", item_code, "status")
+                # If other orders exist, show alert and prevent cancellation
+                frappe.throw(_("Item {} (current status: {}) is present in other sales orders ({}) . Cancel those orders before cancelling this one.".format(item_code, current_item_status, orders_info)))
+
+            # If not present in any other order, update item status
             item_doc = frappe.get_doc("Item", item_code)
             if item_doc.status in ["Rented Out", "Reserved"]:
                 item_doc.status = "Available"
@@ -605,6 +626,8 @@ class SalesOrder(SellingController):
                 item_doc.save()
 
         frappe.db.commit()
+
+
 
     def on_trash(self):
         pass
@@ -4406,14 +4429,61 @@ def get_bin_data(item_codes):
     print(items_data)
  
     return {'items_data':items_data,'warehouse':warehouse}
+
+#cancel status
+
+# @frappe.whitelist()
+# def check_item_status(sales_order_name):
+#     sales_order = frappe.get_doc("Sales Order", sales_order_name)
+#     item_status_info = []
+
+#     for item in sales_order.items:
+#         item_code = item.item_code
+#         current_item_status = frappe.get_value("Item", item_code, "status")
+#         other_orders = frappe.get_all("Sales Order",
+#                                       filters={"docstatus": 1,  # Only consider submitted sales orders
+#                                                "name": ("!=", sales_order_name),
+#                                                "status": ("not in", ["Submitted to Office"])},
+#                                       fields=["name", "status"])
+#         for order in other_orders:
+#             sales_order_doc = frappe.get_doc("Sales Order", order.name)
+#             for order_item in sales_order_doc.items:
+#                 if order_item.item_code == item_code:
+#                     item_status_info.append(f"Item {item_code} (current status: {current_item_status}) is present in Sales Order {sales_order_doc.name} ({sales_order_doc.status})")
+#                     break  # No need to check other items in this order if the item is already found
+
+#     return item_status_info
+
+
+# @frappe.whitelist()
+# def cancel_sales_order(sales_order_name):
+#     sales_order = frappe.get_doc("Sales Order", sales_order_name)
+#     sales_order.cancel()
     
-    
-    
-    
-    
-# to show the item wrong status 
-    
-import frappe
+#     for item in sales_order.items:
+#         item_code = item.item_code
+#         item_doc = frappe.get_doc("Item", item_code)
+#         if item_doc.status in ["Rented Out", "Reserved"]:
+#             item_doc.status = "Available"
+#             item_doc.customer_name = ""
+#             item_doc.customer_n = ""
+#             item_doc.save()
+
+#     frappe.db.commit()
+#     return True
+
+
+
+@frappe.whitelist()
+def check_sales_order_items(item_code):
+    # Query Sales Order Items with item_code
+    sales_order_items = frappe.get_all('Sales Order Item',
+                                        filters={'item_code': item_code},
+                                        fields=['parent'])
+
+    return sales_order_items
+
+
 
 @frappe.whitelist()
 def get_rental_order_items_status():
@@ -4447,4 +4517,3 @@ def get_rental_order_items_status():
 
     # Join the list into a single string with HTML line breaks
     return "<br>".join(items_status)
-

@@ -199,6 +199,38 @@ class JournalEntry(AccountsController):
 		self.unlink_inter_company_jv()
 		self.unlink_asset_adjustment_entry()
 		self.update_invoice_discounting()
+		# if self.security_deposite_type == "SD Amount Received From Client":
+		# 	self.update_security_deposit_status_sales_order()
+ 
+ 
+	def update_security_deposit_status_sales_order(self):
+		if self.sales_order_id and self.total_debit:
+			# Fetch the Sales Order
+			sales_order = frappe.get_doc("Sales Order", self.sales_order_id)
+
+			# Ensure paid_security_deposite_amount and total_debit are floats
+			paid_security_deposite_amount = float(sales_order.paid_security_deposite_amount or 0)
+			total_debit = float(self.total_debit or 0)
+
+			# Subtract total_debit from paid_security_deposite_amount
+			paid_security_deposite_amount -= total_debit
+			sales_order.paid_security_deposite_amount = paid_security_deposite_amount
+
+			# Calculate the balance_amount
+			security_deposit = float(sales_order.security_deposit or 0)
+			balance_amount = security_deposit - paid_security_deposite_amount
+			sales_order.outstanding_security_deposit_amount = balance_amount
+
+			# Update the security_deposit_status based on balance_amount
+			if balance_amount <= 0:
+				sales_order.security_deposit_status = 'Paid'
+			elif balance_amount >= security_deposit:
+				sales_order.security_deposit_status = 'Unpaid'
+			else:
+				sales_order.security_deposit_status = 'Partially Paid'
+
+			# Save the Sales Order
+			sales_order.save()
 
 	def get_title(self):
 		return self.pay_to_recd_from or self.accounts[0].account
