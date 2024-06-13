@@ -2513,7 +2513,7 @@ def sales_order_for_html(sales_order_id):
 
 
 @frappe.whitelist()
-def update_status_to_ready_for_pickup(item_code, pickup_datetime, docname, child_name,pickupReason,pickupRemark,technician_name,technician_mobile):
+def update_status_to_ready_for_pickup(item_code, pickup_datetime, docname, child_name,pickupReason,pickupRemark,technician_name=None,technician_mobile=None):
     # Retrieve Rental Orders based on the item_code field in the items child table
     sales_order_items = frappe.get_all("Sales Order Item", filters={"parent": docname}, fields=["name"])
 
@@ -4509,7 +4509,7 @@ def get_rental_order_items_status():
             item_doc = frappe.get_doc('Item', item.item_code)
             item_status = item_doc.get('status', 'Unknown')  # Replace 'status' with the actual field name if different
             
-            if item_status == 'Available':
+            if item_status != 'Rented Out':
                 items_status.append(f"Sales Order: {order.name}, Item: {item.item_code}, Item Status: {item_status}, Sales Order Status: {order.status}")
 
     if not items_status:
