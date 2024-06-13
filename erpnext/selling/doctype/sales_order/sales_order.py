@@ -565,7 +565,8 @@ class SalesOrder(SellingController):
                 item.child_status = "Active"
 
             sales_order_renewal.save()
-        if not self.previous_order_id:
+        # if not self.previous_order_id:
+        if self.order_type == 'Rental':
             self.item_status_change_cancel()
 
         self.ignore_linked_doctypes = ("GL Entry", "Stock Ledger Entry", "Payment Ledger Entry")
@@ -4520,5 +4521,3 @@ def get_rental_order_items_status():
 
 
 
-
-#rrrrrrrrrrrrrrrrrrrrrrjjjjjjjjj
