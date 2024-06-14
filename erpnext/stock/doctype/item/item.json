@@ -1011,8 +1011,7 @@
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Customer",
-   "options": "Customer",
-   "read_only": 1
+   "options": "Customer"
   },
   {
    "fieldname": "internal_serial_no",
@@ -1031,7 +1030,7 @@
  "index_web_pages_for_search": 1,
  "links": [],
  "make_attachments_public": 1,
- "modified": "2024-06-03 16:33:46.407080",
+ "modified": "2024-06-13 17:31:06.345160",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Item",

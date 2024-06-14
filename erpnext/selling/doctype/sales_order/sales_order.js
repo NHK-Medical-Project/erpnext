@@ -1934,7 +1934,7 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 						// Handle other object structures or errors
 						frappe.msgprint({
 							title: __('Error'),
-							message: __('Failed to create Sales Invoice and Delivery Note.'),
+							message: __('Sales Invoice and Delivery Note is Already Created. Check in Connection'),
 							indicator: 'red'
 						});
 					}
