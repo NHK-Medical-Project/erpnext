@@ -82,6 +82,7 @@ class SalesOrderItem(Document):
 		quotation_item: DF.Data | None
 		rate: DF.Currency
 		rate_with_margin: DF.Currency
+		read_only: DF.Check
 		rental_delivery_date: DF.Datetime | None
 		rental_tax_rate: DF.Currency
 		replaced_datetime: DF.Datetime | None

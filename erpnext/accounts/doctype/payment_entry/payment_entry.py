@@ -118,6 +118,7 @@ class PaymentEntry(AccountsController):
 		reference_no: DF.Data | None
 		references: DF.Table[PaymentEntryReference]
 		remarks: DF.SmallText | None
+		sales_order_adjustment: DF.Check
 		sales_order_id: DF.Link | None
 		sales_taxes_and_charges_template: DF.Link | None
 		source_exchange_rate: DF.Float
@@ -182,6 +183,7 @@ class PaymentEntry(AccountsController):
 		if self.difference_amount:
 			frappe.throw(_("Difference Amount must be zero"))
 		self.make_gl_entries()
+		self.update_advance_paid_custom_submit()
 		self.update_outstanding_amounts()
 		self.update_advance_paid()
 		self.update_payment_schedule()
@@ -249,7 +251,7 @@ class PaymentEntry(AccountsController):
 		self.make_gl_entries(cancel=1)
 		self.update_outstanding_amounts()
 		self.update_advance_paid()
-		# self.update_advance_paid_custom()
+		self.update_advance_paid_custom()
 		self.delink_advance_entry_references()
 		self.update_payment_schedule(cancel=1)
 		self.set_payment_req_status()
@@ -258,7 +260,31 @@ class PaymentEntry(AccountsController):
 
 
 	#mohan script
- 
+	
+	def update_advance_paid_custom_submit(self):
+		
+		if self.sales_order_id and self.paid_amount:
+			# Fetch the Sales Order
+			sales_order = frappe.get_doc("Sales Order", self.sales_order_id)
+
+			# Subtract self.paid_amount from sales_order.received_amount
+			sales_order.received_amount += self.paid_amount
+
+			# Calculate the balance_amount
+			balance_amount = sales_order.rounded_total - sales_order.received_amount
+			sales_order.balance_amount = balance_amount
+			# Update the payment_status based on balance_amount
+			if balance_amount <= 0:
+				sales_order.payment_status = 'Paid'
+			elif balance_amount >= sales_order.rounded_total:
+				sales_order.payment_status = 'UnPaid'
+			else:
+				sales_order.payment_status = 'Partially Paid'
+
+			# Save the Sales Order
+			sales_order.save()
+
+
 	def update_advance_paid_custom(self):
 		if self.sales_order_id and self.paid_amount:
 			# Fetch the Sales Order

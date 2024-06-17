@@ -692,6 +692,7 @@
    "oldfieldname": "sales_order_details",
    "oldfieldtype": "Table",
    "options": "Sales Order Item",
+   "read_only_depends_on": "read_only",
    "reqd": 1
   },
   {
@@ -1362,6 +1363,7 @@
    "oldfieldtype": "Select",
    "options": "Draft\nPending\nApproved\nRental Device Assigned\nReady for Delivery\nDISPATCHED\nDELIVERED\nActive\nReady for Pickup\nPicked Up\nSubmitted to Office\nOn Hold\nOverdue\nRENEWED\nTo Pay\nTo Deliver and Bill\nTo Bill\nTo Deliver\nCompleted\nCancelled\nClosed\nPartially Closed\nOrder\nSales Completed",
    "print_hide": 1,
+   "read_only": 1,
    "reqd": 1,
    "search_index": 1,
    "width": "100px"
@@ -1667,6 +1669,7 @@
   {
    "fieldname": "connections_tab",
    "fieldtype": "Tab Break",
+   "hidden": 1,
    "label": "Connections",
    "show_dashboard": 1
   },
@@ -2232,7 +2235,7 @@
  "idx": 105,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-06-14 10:56:07.053008",
+ "modified": "2024-06-17 20:15:13.178092",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order",

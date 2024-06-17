@@ -76,6 +76,7 @@ class JournalEntry(AccountsController):
 		naming_series: DF.Literal["ACC-JV-.YYYY.-"]
 		paid_loan: DF.Data | None
 		pay_to_recd_from: DF.Data | None
+		payment_entry_id_for_so_adjustment: DF.Link | None
 		payment_order: DF.Link | None
 		posting_date: DF.Date
 		process_deferred_accounting: DF.Link | None
@@ -164,10 +165,58 @@ class JournalEntry(AccountsController):
 		self.validate_cheque_info()
 		self.check_credit_limit()
 		self.make_gl_entries()
+		self.validate_sales_order()
 		self.update_advance_paid()
 		self.update_asset_value()
 		self.update_inter_company_jv()
 		self.update_invoice_discounting()
+
+	
+
+	# def validate_sales_order(self):
+	# 	if self.master_order_id:
+	# 		sales_order = frappe.get_doc('Sales Order', self.master_order_id)
+			
+	# 		# Convert the values to float to ensure correct arithmetic operations
+	# 		security_deposit = float(sales_order.security_deposit or 0)
+	# 		total_debit = float(self.total_debit or 0)
+	# 		paid_security_deposite_amount = float(sales_order.paid_security_deposite_amount or 0)
+	# 		refundable_security_deposit = float(sales_order.refundable_security_deposit or 0)
+	# 		adjustment_amount = float(sales_order.adjustment_amount or 0)
+
+	# 		if self.security_deposite_type == 'SD Amount Received From Client':
+	# 			# Add the amount to the paid_security_deposite_amount
+	# 			paid_security_deposite_amount += total_debit
+	# 			refundable_security_deposit += total_debit
+			
+	# 		elif self.security_deposite_type == 'Adjusted Device Damage Charges':
+	# 			# Subtract the amount from refundable_security_deposit and add to adjustment_amount
+	# 			refundable_security_deposit -= total_debit
+	# 			adjustment_amount += total_debit
+
+	# 		# Calculate outstanding_security_deposit_amount
+	# 		outstanding_security_deposit_amount = security_deposit - paid_security_deposite_amount
+
+	# 		# Update security_deposit_status
+	# 		if outstanding_security_deposit_amount <= 0:
+	# 			sales_order.security_deposit_status = 'Paid'
+	# 		elif paid_security_deposite_amount == 0:
+	# 			sales_order.security_deposit_status = 'Unpaid'
+	# 		else:
+	# 			sales_order.security_deposit_status = 'Partially Paid'
+
+	# 		# Update the fields in the Sales Order
+	# 		sales_order.paid_security_deposite_amount = paid_security_deposite_amount
+	# 		sales_order.refundable_security_deposit = refundable_security_deposit
+	# 		sales_order.adjustment_amount = adjustment_amount
+	# 		sales_order.outstanding_security_deposit_amount = outstanding_security_deposit_amount
+
+	# 		# Save the updated Sales Order
+	# 		sales_order.save()
+
+	# 		frappe.msgprint(f"Security deposit updated for Sales Order {self.master_order_id}")
+
+		
 
 	def on_update_after_submit(self):
 		if hasattr(self, "repost_required"):
@@ -201,10 +250,81 @@ class JournalEntry(AccountsController):
 		self.update_invoice_discounting()
 		# if self.security_deposite_type == "SD Amount Received From Client":
 		# 	self.update_security_deposit_status_sales_order()
+		self.validate_sales_order()
  
- 
+	# mohan code
+	def validate_sales_order(self):
+		if self.master_order_id:
+			sales_order = frappe.get_doc('Sales Order', self.master_order_id)
+			journal_entries = frappe.get_all("Journal Entry",
+											filters={"master_order_id": self.master_order_id,
+													"security_deposite_type": "SD Amount Received From Client","docstatus":1},
+											fields=["name", "total_debit"])
+			journal_entries_outstanding = frappe.get_all("Journal Entry",
+											filters={"master_order_id": self.master_order_id,
+													"security_deposite_type": "Booking as Outstanding SD From Client","docstatus":1},
+											fields=["name", "total_debit"])
+
+			# Query Journal Entry records for damage and refund
+			journal_entries_damage = frappe.get_all("Journal Entry",
+													filters={"master_order_id": self.master_order_id,"docstatus":1,
+															"security_deposite_type": ["in", ["Adjusted Device Damage Charges", "Adjusted Against Sales Order Rental Charges"]]},
+													fields=["name", "total_debit"])
+
+			journal_entries_refund = frappe.get_all("Journal Entry",
+													filters={"master_order_id": self.master_order_id,"docstatus":1,
+															"security_deposite_type": "Refunding SD to Client"},
+													fields=["name", "total_debit"])
+
+			# Calculate total debit amounts
+			total_debit_amount = sum(journal_entry.total_debit for journal_entry in journal_entries)
+			total_debit_amount_damage = sum(journal_entry.total_debit for journal_entry in journal_entries_damage)
+			total_debit_amount_refund = sum(journal_entry.total_debit for journal_entry in journal_entries_refund)
+			# outstanding_amt = sum(journal_entry.total_debit for journal_entry in journal_entries_outstanding)
+			
+			# Update paid security deposit amount and adjustment amount fields
+			sales_order.paid_security_deposite_amount = total_debit_amount
+			sales_order.adjustment_amount = total_debit_amount_damage
+			# sales_order.outstanding_security_deposit_amount = outstanding_amt
+			security_deposit = float(sales_order.security_deposit)
+			# Calculate outstanding security deposit amount
+			outstanding_security_deposit_amount = float(sales_order.security_deposit) - total_debit_amount
+
+			# Update outstanding security deposit amount field
+			sales_order.outstanding_security_deposit_amount = outstanding_security_deposit_amount
+
+			# Update security deposit amount return to client field
+			sales_order.security_deposit_amount_return_to_client = total_debit_amount_refund
+
+			# Calculate refundable security deposit
+			# refundable_security_deposit = sales_order.paid_security_deposite_amount - sales_order.adjustment_amount - total_debit_amount_refund
+
+			# Update refundable security deposit field
+			sales_order.refundable_security_deposit = sales_order.paid_security_deposite_amount - sales_order.adjustment_amount - total_debit_amount_refund
+
+			# Determine security deposit status based on outstanding amount
+			if outstanding_security_deposit_amount == 0:
+				sales_order.security_deposit_status = 'Paid'
+			elif outstanding_security_deposit_amount == security_deposit:
+				sales_order.security_deposit_status = 'Unpaid'
+			else:
+				sales_order.security_deposit_status = 'Partially Paid'
+		# Convert strings to floats
+			security_deposit = float(sales_order.security_deposit)
+			rounded_total = float(sales_order.rounded_total)
+
+		# Perform addition
+		#total_rental_amount = security_deposit + rounded_total
+		# if sales_order.is_renewed == 0:
+			sales_order.total_rental_amount = float(sales_order.security_deposit) + float(sales_order.rounded_total)
+		else:
+			sales_order.total_rental_amount = float(sales_order.rounded_total)
+		# Assign the result back to sales_order.total_rental_amount
+		#sales_order.total_rental_amount = total_rental_amount        # Save changes to the document
+		sales_order.save()
+
 	def update_security_deposit_status_sales_order(self):
-		if self.sales_order_id and self.total_debit:
+		if self.sales_order_id and self.total_debit and self.security_deposite_type:
 			# Fetch the Sales Order
 			sales_order = frappe.get_doc("Sales Order", self.sales_order_id)
 
@@ -212,9 +332,22 @@ class JournalEntry(AccountsController):
 			paid_security_deposite_amount = float(sales_order.paid_security_deposite_amount or 0)
 			total_debit = float(self.total_debit or 0)
 
-			# Subtract total_debit from paid_security_deposite_amount
-			paid_security_deposite_amount -= total_debit
-			sales_order.paid_security_deposite_amount = paid_security_deposite_amount
+			if self.security_deposite_type == 'Adjusted Device Damage Charges':
+				# Add total_debit to adjustment_amount
+				adjustment_amount = float(sales_order.adjustment_amount or 0)
+				adjustment_amount += total_debit
+				sales_order.adjustment_amount = adjustment_amount
+
+				# Subtract total_debit from refundable_security_deposit
+				refundable_security_deposit = float(sales_order.refundable_security_deposit or 0)
+				refundable_security_deposit -= total_debit
+				sales_order.refundable_security_deposit = refundable_security_deposit
+
+			else:
+				# Subtract total_debit from paid_security_deposite_amount and refundable_security_deposit
+				paid_security_deposite_amount -= total_debit
+				sales_order.paid_security_deposite_amount = paid_security_deposite_amount
+				sales_order.refundable_security_deposit = paid_security_deposite_amount
 
 			# Calculate the balance_amount
 			security_deposit = float(sales_order.security_deposit or 0)
@@ -231,6 +364,38 @@ class JournalEntry(AccountsController):
 
 			# Save the Sales Order
 			sales_order.save()
+
+
+
+	# def update_security_deposit_status_sales_order(self):
+	# 	if self.sales_order_id and self.total_debit:
+	# 		# Fetch the Sales Order
+	# 		sales_order = frappe.get_doc("Sales Order", self.sales_order_id)
+
+	# 		# Ensure paid_security_deposite_amount and total_debit are floats
+	# 		paid_security_deposite_amount = float(sales_order.paid_security_deposite_amount or 0)
+	# 		total_debit = float(self.total_debit or 0)
+
+	# 		# Subtract total_debit from paid_security_deposite_amount
+	# 		paid_security_deposite_amount -= total_debit
+	# 		sales_order.paid_security_deposite_amount = paid_security_deposite_amount
+	# 		sales_order.refundable_security_deposit = paid_security_deposite_amount
+
+	# 		# Calculate the balance_amount
+	# 		security_deposit = float(sales_order.security_deposit or 0)
+	# 		balance_amount = security_deposit - paid_security_deposite_amount
+	# 		sales_order.outstanding_security_deposit_amount = balance_amount
+
+	# 		# Update the security_deposit_status based on balance_amount
+	# 		if balance_amount <= 0:
+	# 			sales_order.security_deposit_status = 'Paid'
+	# 		elif balance_amount >= security_deposit:
+	# 			sales_order.security_deposit_status = 'Unpaid'
+	# 		else:
+	# 			sales_order.security_deposit_status = 'Partially Paid'
+
+	# 		# Save the Sales Order
+	# 		sales_order.save()
 
 	def get_title(self):
 		return self.pay_to_recd_from or self.accounts[0].account

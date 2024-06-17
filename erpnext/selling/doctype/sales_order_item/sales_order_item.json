@@ -24,6 +24,7 @@
   "line_total",
   "rental_tax_rate",
   "serial_no",
+  "read_only",
   "picked_up_from_client_place_section",
   "item_tax_template",
   "picked_up",
@@ -141,6 +142,7 @@
    "oldfieldtype": "Link",
    "options": "Item",
    "print_width": "150px",
+   "read_only_depends_on": "read_only",
    "reqd": 1,
    "width": "150px"
   },
@@ -602,7 +604,8 @@
    "oldfieldname": "item_group",
    "oldfieldtype": "Link",
    "options": "Item Group",
-   "print_hide": 1
+   "print_hide": 1,
+   "read_only_depends_on": "read_only"
   },
   {
    "fieldname": "billed_amt",
@@ -952,7 +955,8 @@
    "fieldtype": "Currency",
    "in_list_view": 1,
    "in_standard_filter": 1,
-   "label": "Tax Amount"
+   "label": "Tax Amount",
+   "read_only": 1
   },
   {
    "columns": 1,
@@ -960,7 +964,8 @@
    "fieldtype": "Currency",
    "in_list_view": 1,
    "in_standard_filter": 1,
-   "label": "Rental Tax Rate"
+   "label": "Rental Tax Rate",
+   "read_only": 1
   },
   {
    "columns": 1,
@@ -1082,12 +1087,20 @@
    "fieldname": "serial_no",
    "fieldtype": "Small Text",
    "label": "Serial No."
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "0",
+   "fieldname": "read_only",
+   "fieldtype": "Check",
+   "label": "Read Only",
+   "permlevel": 2
   }
  ],
  "idx": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-06-13 17:38:22.879486",
+ "modified": "2024-06-17 20:05:56.896027",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order Item",

@@ -148,7 +148,7 @@ class Item(Document):
         shelf_life_in_days: DF.Int
         sr_no: DF.Data | None
         standard_rate: DF.Currency
-        status: DF.Literal["Available", "Reserved", "Rented Out", "Sold", "Damaged", "Repair Required", "Repair In Progress", "Retired", "Under Service", "Disabled"]
+        status: DF.Literal["Available", "Pre Reserved", "Reserved", "Rented Out", "Sold", "Damaged", "Repair Required", "Repair In Progress", "Retired", "Under Service", "Disabled"]
         stock_uom: DF.Link
         supplier_items: DF.Table[ItemSupplier]
         tax_rate: DF.Link

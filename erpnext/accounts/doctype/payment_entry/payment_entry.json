@@ -18,6 +18,7 @@
   "mode_of_payment",
   "master_order_id",
   "sales_order_id",
+  "sales_order_adjustment",
   "party_section",
   "party_type",
   "party",
@@ -782,6 +783,12 @@
    "label": "Sales Order Id",
    "options": "Sales Order",
    "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "sales_order_adjustment",
+   "fieldtype": "Check",
+   "label": "Sales Order Adjustment"
   }
  ],
  "index_web_pages_for_search": 1,
@@ -795,7 +802,7 @@
    "table_fieldname": "payment_entries"
   }
  ],
- "modified": "2024-04-22 10:53:58.950503",
+ "modified": "2024-06-14 20:15:03.518956",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Payment Entry",

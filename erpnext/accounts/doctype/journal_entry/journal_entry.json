@@ -32,6 +32,7 @@
   "column_break_lcwp",
   "journal_entry_type",
   "security_deposite_type",
+  "payment_entry_id_for_so_adjustment",
   "2_add_edit_gl_entries",
   "accounts",
   "section_break99",
@@ -620,6 +621,12 @@
    "fieldtype": "Select",
    "label": "Transactional Effect",
    "options": "NA\nPlus\nMinus"
+  },
+  {
+   "fieldname": "payment_entry_id_for_so_adjustment",
+   "fieldtype": "Link",
+   "label": "Payment Entry ID For So Adjustment",
+   "options": "Payment Entry"
   }
  ],
  "icon": "fa fa-file-text",
@@ -634,7 +641,7 @@
    "table_fieldname": "payment_entries"
   }
  ],
- "modified": "2024-04-20 17:40:34.286647",
+ "modified": "2024-06-14 20:16:21.632873",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Journal Entry",

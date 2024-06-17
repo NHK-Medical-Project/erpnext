@@ -133,11 +133,11 @@
    "report_hide": 1
   },
   {
-   "default": "Rental",
    "fieldname": "device_type",
    "fieldtype": "Select",
    "label": "Device Type",
-   "options": "\nSales\nRental\nService"
+   "options": "\nSales\nRental\nService",
+   "reqd": 1
   },
   {
    "default": "GOODS",
@@ -166,7 +166,7 @@
  "is_tree": 1,
  "links": [],
  "max_attachments": 3,
- "modified": "2024-05-30 15:36:12.239516",
+ "modified": "2024-06-15 15:26:30.376913",
  "modified_by": "Administrator",
  "module": "Setup",
  "name": "Item Group",
