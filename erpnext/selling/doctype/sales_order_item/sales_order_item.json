@@ -1093,14 +1093,14 @@
    "default": "0",
    "fieldname": "read_only",
    "fieldtype": "Check",
-   "label": "Read Only",
+   "label": "Item Read Only",
    "permlevel": 2
   }
  ],
  "idx": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-06-17 20:05:56.896027",
+ "modified": "2024-06-17 20:54:53.072816",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order Item",
