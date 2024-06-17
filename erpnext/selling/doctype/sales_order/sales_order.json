@@ -692,7 +692,6 @@
    "oldfieldname": "sales_order_details",
    "oldfieldtype": "Table",
    "options": "Sales Order Item",
-   "read_only_depends_on": "read_only",
    "reqd": 1
   },
   {
@@ -2235,7 +2234,7 @@
  "idx": 105,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-06-17 20:15:13.178092",
+ "modified": "2024-06-17 20:44:42.660934",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order",
