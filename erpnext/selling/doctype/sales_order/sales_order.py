@@ -518,7 +518,11 @@ class SalesOrder(SellingController):
 
     def update_read_only_as_one(self):
         sales_order = frappe.get_doc('Sales Order', self.name)
-
+        if self.is_renewed == 1 and self.previous_order_id:
+            for item in sales_order.items:
+                item_sales_order_update = frappe.get_doc('Item',item.item_code)
+                item_sales_order_update.custom_sales_order_id = self.name
+                item_sales_order_update.save()
         # Iterate through each item in the items table
         for item in sales_order.items:
             item.read_only = 1
@@ -616,6 +620,7 @@ class SalesOrder(SellingController):
 
     def update_sales_order_status(self):
         if self.previous_order_id:
+
             # Update status in parent Sales Order
             existing_orders = frappe.get_list("Sales Order", filters={"name": self.previous_order_id})
             for order in existing_orders:
