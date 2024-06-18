@@ -290,22 +290,24 @@ class PaymentEntry(AccountsController):
 			# Fetch the Sales Order
 			sales_order = frappe.get_doc("Sales Order", self.sales_order_id)
 
-			# Subtract self.paid_amount from sales_order.received_amount
-			sales_order.received_amount -= self.paid_amount
 
-			# Calculate the balance_amount
-			balance_amount = sales_order.rounded_total - sales_order.received_amount
-			sales_order.balance_amount = balance_amount
-			# Update the payment_status based on balance_amount
-			if balance_amount <= 0:
-				sales_order.payment_status = 'Paid'
-			elif balance_amount >= sales_order.rounded_total:
-				sales_order.payment_status = 'UnPaid'
-			else:
-				sales_order.payment_status = 'Partially Paid'
+			if sales_order.docstatus == 1:
+				# Subtract self.paid_amount from sales_order.received_amount
+				sales_order.received_amount -= self.paid_amount
 
-			# Save the Sales Order
-			sales_order.save()
+				# Calculate the balance_amount
+				balance_amount = sales_order.rounded_total - sales_order.received_amount
+				sales_order.balance_amount = balance_amount
+				# Update the payment_status based on balance_amount
+				if balance_amount <= 0:
+					sales_order.payment_status = 'Paid'
+				elif balance_amount >= sales_order.rounded_total:
+					sales_order.payment_status = 'UnPaid'
+				else:
+					sales_order.payment_status = 'Partially Paid'
+
+				# Save the Sales Order
+				sales_order.save()
 
 	def set_payment_req_status(self):
 		from erpnext.accounts.doctype.payment_request.payment_request import update_payment_req_status
