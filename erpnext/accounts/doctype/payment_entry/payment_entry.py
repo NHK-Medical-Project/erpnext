@@ -262,18 +262,26 @@ class PaymentEntry(AccountsController):
 	#mohan script
 	
 	def update_advance_paid_custom_submit(self):
-		
 		if self.sales_order_id and self.paid_amount:
 			# Fetch the Sales Order
 			sales_order = frappe.get_doc("Sales Order", self.sales_order_id)
 
-			# Subtract self.paid_amount from sales_order.received_amount
+			# Calculate the balance amount before updating
+			current_balance_amount = sales_order.rounded_total - sales_order.received_amount
+
+			# Check if the paid amount exceeds the current balance amount
+			if self.paid_amount > current_balance_amount:
+				# Throw an error message if the paid amount is greater than the remaining balance
+				frappe.throw(_("Paid amount {0} exceeds the remaining balance of {1}.").format(self.paid_amount, current_balance_amount))
+
+			# Update the received_amount in the Sales Order
 			sales_order.received_amount += self.paid_amount
 
-			# Calculate the balance_amount
+			# Calculate the new balance_amount
 			balance_amount = sales_order.rounded_total - sales_order.received_amount
 			sales_order.balance_amount = balance_amount
-			# Update the payment_status based on balance_amount
+
+			# Update the payment_status based on the new balance_amount
 			if balance_amount <= 0:
 				sales_order.payment_status = 'Paid'
 			elif balance_amount >= sales_order.rounded_total:
@@ -283,6 +291,7 @@ class PaymentEntry(AccountsController):
 
 			# Save the Sales Order
 			sales_order.save()
+
 
 
 	def update_advance_paid_custom(self):

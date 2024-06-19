@@ -473,7 +473,10 @@ class SalesOrder(SellingController):
                 frappe.throw(_("Row #{0}: Set Supplier for item {1}").format(d.idx, d.item_code))
 
     def on_submit(self):
-        
+        if self.rounded_total == 0:
+            self.payment_status = 'Paid'
+        if self.security_deposit == 0:
+            self.security_deposit_status == 'Paid'
         # if self.order_type == 'Rental' and not self.previous_order_id and self.is_renewed == 0:
 
         #     all_items_pre_reserved = True
@@ -3926,9 +3929,9 @@ def create_journal_entry_and_payment_entry(adjust_against, adjust_amount, sales_
                         "credit_in_account_currency": amount_to_return,
                     }
                 ],
-                "remarks": f"Adjusted Security Deposit Against Sales Order {sales_order_name}. Remark: {item_remark}",
+                "remarks": f"Adjusted Security Deposit Against Sales Order {sales_order}. Remark: {item_remark}",
                 "master_order_id": master_order_id,
-                "sales_order_id": sales_order_name,
+                "sales_order_id": sales_order,
                 "journal_entry_type": "Security Deposit",
                 "security_deposite_type": "Adjusted Against Sales Order Rental Charges",
                 "transactional_effect": "Minus",
