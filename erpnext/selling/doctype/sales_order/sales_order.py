@@ -475,8 +475,8 @@ class SalesOrder(SellingController):
     def on_submit(self):
         if self.rounded_total == 0:
             self.payment_status = 'Paid'
-        else:
-            self.payment_status = 'UnPaid'
+        # else:
+        #     self.payment_status = 'UnPaid'
         if self.security_deposit == 0:
             self.security_deposit_status == 'Paid'
         # if self.order_type == 'Rental' and not self.previous_order_id and self.is_renewed == 0:
@@ -3066,6 +3066,8 @@ def create_renewal_order(sales_order_name):
     new_sales_order.advance_paid = 0
     new_sales_order.is_renewed = 1
     new_sales_order.security_deposit = 0
+    new_sales_order.received_amount = 0
+    new_sales_order.payment_status = 'UnPaid'
     new_sales_order.outstanding_security_deposit_amount = 0
     for item in new_sales_order.items:
         item.read_only = 1
