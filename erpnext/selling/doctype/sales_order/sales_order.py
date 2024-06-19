@@ -518,12 +518,6 @@ class SalesOrder(SellingController):
 
     def update_read_only_as_one(self):
         sales_order = frappe.get_doc('Sales Order', self.name)
-        if sales_order.rounded_total == 0:
-            sales_order.payment_status = 'Paid'
-        # else:
-        #     self.payment_status = 'UnPaid'
-        if sales_order.security_deposit == 0:
-            sales_order.security_deposit_status == 'Paid'
         if self.is_renewed == 1 and self.previous_order_id:
             for item in sales_order.items:
                 item_sales_order_update = frappe.get_doc('Item',item.item_code)
