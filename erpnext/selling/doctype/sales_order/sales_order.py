@@ -614,7 +614,15 @@ class SalesOrder(SellingController):
     
     def before_submit(self):
         if self.previous_order_id:
+            # existing_renewal_orders = frappe.get_all("Sales Order", filters={"previous_order_id": self.previous_order_id})
+
+            # if existing_renewal_orders:
+            #     existing_order_id = existing_renewal_orders[0].name
+            #     order_link = frappe.utils.get_url_to_form("Sales Order", existing_order_id)
+            #     frappe.throw(_("A renewal order already exists for this sales order in Draft. <a href='{0}'>{1}</a>").format(order_link, existing_order_id))
+
             overlap = check_overlap(self)
+
             if overlap:
                 frappe.throw("Current start and end dates overlap with the previous order.")	
 
@@ -2551,11 +2559,14 @@ def make_submitted_to_office(docname, item_code, submitted_date):
         # Update status of items to "Available"
         for item_code in item_codes:
             item_doc = frappe.get_doc("Item", item_code)
-            item_doc.status = "Available"
-            item_doc.customer_n = ""
-            item_doc.customer_name = ""
-            item_doc.custom_sales_order_id = ""
-            item_doc.save()
+            if item_doc.status == 'Rented Out':
+                item_doc.status = "Available"
+                item_doc.customer_n = ""
+                item_doc.customer_name = ""
+                item_doc.custom_sales_order_id = ""
+                item_doc.save()
+            else:
+                frappe.throw('Current item Status is Not Rented Out')
 
         # Set values for submission to office and update status
         doc.submitted_date = submitted_date
@@ -2821,12 +2832,15 @@ def update_status_to_submitted_to_office(item_code, submission_datetime, docname
     try:
         # Retrieve the item document
         item = frappe.get_doc("Item", item_code)
-        if item:
+        print(item.status)
+        if item.status == 'Rented Out':
             item.status = "Available"
             item.customer_n = ""
             item.customer_name = ""
             item.custom_sales_order_id = ""
             item.save(ignore_permissions=True)
+        else:
+            frappe.throw("Item Status is Not Rented Out")
 
         sales_order_items = frappe.get_all("Sales Order Item", filters={"parent": docname}, fields=["name","item_code"])
 
@@ -3053,6 +3067,13 @@ from frappe.utils import add_days
 @frappe.whitelist()
 def create_renewal_order(sales_order_name):
     # Get original sales order
+    existing_renewal_orders = frappe.get_all("Sales Order", filters={"previous_order_id": sales_order_name})
+
+    if existing_renewal_orders:
+        existing_order_id = existing_renewal_orders[0].name
+        order_link = frappe.utils.get_url_to_form("Sales Order", existing_order_id)
+        frappe.throw(_("A renewal order already exists for this sales order in Draft. <a href='{0}'>{1}</a>").format(order_link, existing_order_id))
+
     original_sales_order = frappe.get_doc("Sales Order", sales_order_name)
 
     # Create a new sales order based on the original one
