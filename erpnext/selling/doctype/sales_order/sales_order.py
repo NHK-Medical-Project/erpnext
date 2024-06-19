@@ -473,12 +473,7 @@ class SalesOrder(SellingController):
                 frappe.throw(_("Row #{0}: Set Supplier for item {1}").format(d.idx, d.item_code))
 
     def on_submit(self):
-        if self.rounded_total == 0:
-            self.payment_status = 'Paid'
-        # else:
-        #     self.payment_status = 'UnPaid'
-        if self.security_deposit == 0:
-            self.security_deposit_status == 'Paid'
+        
         # if self.order_type == 'Rental' and not self.previous_order_id and self.is_renewed == 0:
 
         #     all_items_pre_reserved = True
@@ -523,6 +518,12 @@ class SalesOrder(SellingController):
 
     def update_read_only_as_one(self):
         sales_order = frappe.get_doc('Sales Order', self.name)
+        if self.rounded_total == 0:
+            self.payment_status = 'Paid'
+        # else:
+        #     self.payment_status = 'UnPaid'
+        if self.security_deposit == 0:
+            self.security_deposit_status == 'Paid'
         if self.is_renewed == 1 and self.previous_order_id:
             for item in sales_order.items:
                 item_sales_order_update = frappe.get_doc('Item',item.item_code)
