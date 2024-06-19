@@ -475,6 +475,8 @@ class SalesOrder(SellingController):
     def on_submit(self):
         if self.rounded_total == 0:
             self.payment_status = 'Paid'
+        else:
+            self.payment_status = 'UnPaid'
         if self.security_deposit == 0:
             self.security_deposit_status == 'Paid'
         # if self.order_type == 'Rental' and not self.previous_order_id and self.is_renewed == 0:
