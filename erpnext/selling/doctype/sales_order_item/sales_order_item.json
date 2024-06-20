@@ -165,6 +165,7 @@
    "fieldtype": "Column Break"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "item_name",
    "fieldtype": "Data",
    "in_global_search": 1,
@@ -1097,7 +1098,7 @@
  "idx": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-06-19 17:46:02.096252",
+ "modified": "2024-06-20 11:57:35.621708",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order Item",

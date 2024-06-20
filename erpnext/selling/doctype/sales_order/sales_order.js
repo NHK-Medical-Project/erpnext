@@ -54,6 +54,7 @@ frappe.ui.form.on("Sales Order", {
 	},
 
 	refresh: function (frm) {
+		
 		if (frm.doc.docstatus === 1) {
 			if (
 				frm.doc.status !== "Closed" &&

@@ -3420,6 +3420,8 @@ def item_replacement(item_code,customer, new_item,new_item_group, replacement_da
                     sales_order_item.old_item_code = item_code
                     sales_order_item.item_group = new_item_group
                     sales_order_item.item_code = new_item
+                    new_item_name = frappe.get_doc('Item',new_item)
+                    sales_order_item.item_name = new_item_name.item_name
                     sales_order_item.save()
 
                     new_item_doc = frappe.get_doc("Item", new_item)
@@ -3435,6 +3437,8 @@ def item_replacement(item_code,customer, new_item,new_item_group, replacement_da
                     sales_order_item.old_item_code = item_code
                     sales_order_item.item_group = new_item_group
                     sales_order_item.item_code = new_item
+                    new_item_name = frappe.get_doc('Item',new_item)
+                    sales_order_item.item_name = new_item_name.item_name
                     sales_order_item.save()
 
                     new_item_doc = frappe.get_doc("Item", new_item)
