@@ -658,6 +658,9 @@ class SalesOrder(SellingController):
 
             for item in sales_order_renewal.items:
                 item.child_status = "Active"
+                item_sales_order_update = frappe.get_doc('Item',item.item_code)
+                item_sales_order_update.custom_sales_order_id = self.previous_order_id
+                item_sales_order_update.save()
 
             sales_order_renewal.save()
         # if not self.previous_order_id:
