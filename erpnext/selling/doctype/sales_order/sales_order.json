@@ -2131,7 +2131,6 @@
    "label": "Customer Email Id"
   },
   {
-   "allow_on_submit": 1,
    "fieldname": "total_rental_amount",
    "fieldtype": "Currency",
    "label": "Tota Amount",
@@ -2234,7 +2233,7 @@
  "idx": 105,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-06-20 15:18:09.566238",
+ "modified": "2024-06-21 11:15:49.659353",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order",
