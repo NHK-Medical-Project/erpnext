@@ -652,6 +652,9 @@ class SalesOrder(SellingController):
 
 
     def on_cancel(self):
+
+        self.status = "Cancelled"
+
         if self.previous_order_id:
             sales_order_renewal = frappe.get_doc("Sales Order", self.previous_order_id)
             sales_order_renewal.status = "Active"
@@ -736,7 +739,7 @@ class SalesOrder(SellingController):
             other_orders = frappe.get_all("Sales Order",
                                         filters={"docstatus": 1,  # Only consider submitted sales orders
                                                 "name": ("!=", self.name),
-                                                "status": ("not in", ["Submitted to Office"])},
+                                                "status": ("not in", ["Submitted to Office","RENEWED"])},
                                         fields=["name", "status"])
             
             for order in other_orders:
