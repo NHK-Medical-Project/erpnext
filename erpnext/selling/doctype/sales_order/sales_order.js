@@ -671,31 +671,79 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 
 					// Approved
 
-                    if (flt(doc.per_billed, 2) < 100 && doc.status === 'Pending' && doc.order_type === 'Rental') {
-                        this.frm.add_custom_button(__('Approved'), () => {
-                            frappe.confirm(
-                                __('Are you sure you want to approve. It will Reserve the Item?'),
-                                () => {
-                                    me.make_approved(); // Call the JavaScript method
-                                },
-                                () => {
-                                    // Do nothing on cancel
-                                }
-                            );
-                        }, __('Action'));
-                    }
+					if (flt(doc.per_billed, 2) < 100 && doc.status === 'Pending' && doc.order_type === 'Rental') {
+						this.frm.add_custom_button(__('Approved'), () => {
+							frappe.confirm(
+								__('Are you sure you want to approve? It will Reserve the Item.'),
+								() => {
+									// User confirmed, now ask if they want to share the payment link
+									frappe.confirm(
+										__('Do you want to share the payment link?'),
+										() => {
+											// User confirmed to share the payment link
+											// Call your new function here
+											me.make_approved_with_payment_link();
+										},
+										() => {
+											// User canceled sharing the payment link
+											me.make_approved(false); // Call the original function with false flag
+										}
+									);
+								},
+								() => {
+									// Do nothing on cancel
+								}
+							);
+						}, __('Action'));
+					}
+
+
+                    // if (flt(doc.per_billed, 2) < 100 && doc.status === 'Pending' && doc.order_type === 'Rental') {
+                    //     this.frm.add_custom_button(__('Approved'), () => {
+                    //         frappe.confirm(
+                    //             __('Are you sure you want to approve. It will Reserve the Item?'),
+                    //             () => {
+                    //                 me.make_approved(); // Call the JavaScript method
+                    //             },
+                    //             () => {
+                    //                 // Do nothing on cancel
+                    //             }
+                    //         );
+                    //     }, __('Action'));
+                    // }
 
 					if (flt(doc.per_billed, 2) < 100 && doc.status === 'Pending' && (doc.order_type === 'Sales' || doc.order_type === 'Service')) {
                         this.frm.add_custom_button(__('Approved'), () => {
-                            frappe.confirm(
-                                __('Are you sure you want to approve?'),
-                                () => {
-                                    me.make_sales_approved(); // Call the JavaScript method
-                                },
-                                () => {
-                                    // Do nothing on cancel
-                                }
-                            );
+							frappe.confirm(
+								__('Are you sure you want to approve? It will Reserve the Item.'),
+								() => {
+									// User confirmed, now ask if they want to share the payment link
+									frappe.confirm(
+										__('Do you want to share the payment link?'),
+										() => {
+											// User confirmed to share the payment link
+											// Call your new function here
+											me.make_sales_approved_with_payment_link();
+										},
+										() => {
+											// User canceled sharing the payment link
+											me.make_sales_approved(false); // Call the original function with false flag
+										}
+									);
+								},
+								() => {
+									// Do nothing on cancel
+								}
+							);
+                            // frappe.confirm(
+                            //     __('Are you sure you want to approve?'),
+                            //     () => {
+                            //         me.make_sales_approved(); // Call the JavaScript method
+                            //     },
+                            //     () => {
+                            //         // Do nothing on cancel
+                            //     }
+                            // );
                         }, __('Action'));
                     }
 
@@ -1283,39 +1331,192 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 			frm: this.frm,
 		});
 	}
-
-	make_approved() {
-        frappe.call({
-            method: 'erpnext.selling.doctype.sales_order.sales_order.make_approved',
-            args: {
-                docname: this.frm.doc.name,
-            },
-            callback: (response) => {
-                // Handle the response
-                if (response.message === true) {
-                    // Log the result to the console
-                    console.log(response.message);
+	make_approved_with_payment_link() {
+		// Check if custom_razorpay_payment_url is present in the form data
+		const paymentUrl = this.frm.doc.custom_razorpay_payment_url;
+		if (!paymentUrl) {
+			// If custom_razorpay_payment_url is not set, show an error message
+			frappe.throw({
+				title: __('Error'),
+				message: __('Please generate the payment link first.'),
+				indicator: 'red'
+			});
+			return;
+		}
+	
+		// Prompt to show the payment link and get customer_email_id
+		frappe.prompt([
+			{
+				label: __('Payment Link'),
+				fieldname: 'show_payment_link',
+				fieldtype: 'Data',
+				reqd: 1,
+				read_only: 1,
+				default: paymentUrl
+			},
+			{
+				label: __('Customer Email ID:'),
+				fieldname: 'customer_email_id',
+				fieldtype: 'Data',
+				reqd: 1,
+				default: this.frm.doc.customer_email_id || ''
+			}
+		], (values) => {
+			// Values will contain the user's input from the prompt
+			if (values.show_payment_link) {
+				console.log('Showing payment link:', paymentUrl);
+	
+				// Call make_approved and send email on success
+				this.make_approved(() => {
+					// Send approval email
+					this.send_approval_email(this.frm.doc.name, values.customer_email_id, values.show_payment_link);
+				});
+			} else {
+				console.log('User declined to show the payment link.');
+			}
+		}, __('Payment Link Confirmation'));
+	}
+	
+	make_approved(callback) {
+		frappe.call({
+			method: 'erpnext.selling.doctype.sales_order.sales_order.make_approved',
+			args: {
+				docname: this.frm.doc.name,
+			},
+			callback: (response) => {
+				if (response.message === true) {
+					console.log(response.message);
+	
+					frappe.msgprint({
+						title: __('Success'),
+						message: __('Rental Sales Order Approved successfully.'),
+						indicator: 'green'
+					});
+	
+					// Reload the page after a short delay
+					setTimeout(() => {
+						window.location.reload();
+					}, 1000);
+	
+					// Call the callback function if approval is successful
+					if (callback) callback();
+				} else {
+					console.error('Unexpected response:', response);
+					frappe.msgprint({
+						title: __('Error'),
+						message: __('Failed to approve Rental Sales Order.'),
+						indicator: 'red'
+					});
+				}
+			}
+		});
+	}
+	
+	send_approval_email(docname, customerEmailId, payment_link) {
+		frappe.call({
+			method: 'erpnext.selling.doctype.sales_order.sales_order.send_approval_email',
+			args: {
+				docname: docname,
+				customer_email_id: customerEmailId,
+				payment_link: payment_link
+			},
+			callback: (response) => {
+				if (response.message === true) {
+					console.log('Approval email sent successfully.');
+				} else {
+					console.error('Failed to send approval email:', response);
+					frappe.msgprint({
+						title: __('Error'),
+						message: __('Failed to send approval email.'),
+						indicator: 'red'
+					});
+				}
+			}
+		});
+	}
+	
+	
+	
+	// make_approved() {
+    //     frappe.call({
+    //         method: 'erpnext.selling.doctype.sales_order.sales_order.make_approved',
+    //         args: {
+    //             docname: this.frm.doc.name,
+    //         },
+    //         callback: (response) => {
+    //             // Handle the response
+    //             if (response.message === true) {
+    //                 // Log the result to the console
+    //                 console.log(response.message);
     
-                    // Display a success message
-                    frappe.msgprint({
-                        title: __('Success'),
-                        message: __('Rental Sales Order Approved successfully.'),
-                        indicator: 'green'
-                    });
+    //                 // Display a success message
+    //                 frappe.msgprint({
+    //                     title: __('Success'),
+    //                     message: __('Rental Sales Order Approved successfully.'),
+    //                     indicator: 'green'
+    //                 });
     
-                    // Reload the entire page after a short delay (adjust as needed)
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 1000); // 1000 milliseconds = 1 second
-                } else {
-                    // Handle the case where the response does not contain a message
-                    console.error('Unexpected response:', response);
-                }
-            }
-        });
-    }
+    //                 // Reload the entire page after a short delay (adjust as needed)
+    //                 setTimeout(() => {
+    //                     window.location.reload();
+    //                 }, 1000); // 1000 milliseconds = 1 second
+    //             } else {
+    //                 // Handle the case where the response does not contain a message
+    //                 console.error('Unexpected response:', response);
+    //             }
+    //         }
+    //     });
+    // }
 
-	make_sales_approved() {
+
+	make_sales_approved_with_payment_link() {
+		// Check if custom_razorpay_payment_url is present in the form data
+		const paymentUrl = this.frm.doc.custom_razorpay_payment_url;
+		if (!paymentUrl) {
+			// If custom_razorpay_payment_url is not set, show an error message
+			frappe.throw({
+				title: __('Error'),
+				message: __('Please generate the payment link first.'),
+				indicator: 'red'
+			});
+			return;
+		}
+	
+		// Prompt to show the payment link and get customer_email_id
+		frappe.prompt([
+			{
+				label: __('Payment Link'),
+				fieldname: 'show_payment_link',
+				fieldtype: 'Data',
+				reqd: 1,
+				read_only: 1,
+				default: paymentUrl
+			},
+			{
+				label: __('Customer Email ID:'),
+				fieldname: 'customer_email_id',
+				fieldtype: 'Data',
+				reqd: 1,
+				default: this.frm.doc.customer_email_id || ''
+			}
+		], (values) => {
+			// Values will contain the user's input from the prompt
+			if (values.show_payment_link) {
+				console.log('Showing payment link:', paymentUrl);
+	
+				// Call make_approved and send email on success
+				this.make_sales_approved(() => {
+					// Send approval email
+					this.send_approval_email(this.frm.doc.name, values.customer_email_id, values.show_payment_link);
+				});
+			} else {
+				console.log('User declined to show the payment link.');
+			}
+		}, __('Payment Link Confirmation'));
+	}
+
+
+	make_sales_approved(callback) {
         frappe.call({
             method: 'erpnext.selling.doctype.sales_order.sales_order.make_sales_approved',
             args: {
@@ -1338,6 +1539,7 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
                     setTimeout(() => {
                         window.location.reload();
                     }, 1000); // 1000 milliseconds = 1 second
+					if (callback) callback();
                 } else {
                     // Handle the case where the response does not contain a message
                     console.error('Unexpected response:', response);
@@ -1345,6 +1547,9 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
             }
         });
     }
+
+
+	
 
 
 	close_rental_sales_order() {
