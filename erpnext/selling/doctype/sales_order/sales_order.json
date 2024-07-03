@@ -1362,7 +1362,6 @@
    "oldfieldtype": "Select",
    "options": "Draft\nPending\nApproved\nRental Device Assigned\nReady for Delivery\nDISPATCHED\nDELIVERED\nActive\nReady for Pickup\nPicked Up\nSubmitted to Office\nOn Hold\nOverdue\nRENEWED\nTo Pay\nTo Deliver and Bill\nTo Bill\nTo Deliver\nCompleted\nCancelled\nClosed\nPartially Closed\nOrder\nSales Completed",
    "print_hide": 1,
-   "read_only": 1,
    "reqd": 1,
    "search_index": 1,
    "width": "100px"
@@ -2233,6 +2232,7 @@
  "idx": 105,
  "is_submittable": 1,
  "links": [],
+
  "modified": "2024-07-03 14:44:09.363097",
  "modified_by": "Administrator",
  "module": "Selling",
