@@ -2241,7 +2241,87 @@ def make_approved(docname):
         # Reraise the exception to propagate it
         raise
     
-    
+
+
+# nhk.py (or your custom script file)
+
+import frappe
+from frappe import _
+
+@frappe.whitelist()
+def send_approval_email(docname, customer_email_id, payment_link):
+    try:
+        # Fetch the document based on docname (e.g., Sales Order)
+        doc = frappe.get_doc('Sales Order', docname)
+
+        # Customize your email subject and content as needed
+        subject = _("Sales Order {0} Approved").format(docname)
+        message = _(
+            """
+            <p>Dear {3},</p>
+            <p>Your sales order has been approved. You can proceed to make payment using the following link:</p>
+            <table border="1" cellpadding="5" cellspacing="0">
+                <tr>
+                    <th>Sales Order Id</th>
+                    <td>{0}</td>
+                </tr>
+                <tr>
+                    <th>Total Amount</th>
+                    <td>{1}</td>
+                </tr>
+                <tr>
+                    <th>Order Date</th>
+                    <td>{4}</td>
+                </tr>
+                 <tr>
+                        <td colspan="2" style="text-align: center; padding-top: 20px;">
+                            <a href="{2}" style="background-color: #4CAF50; /* Green */
+                                               border: none;
+                                               color: white;
+                                               padding: 10px 10px;
+                                               text-align: center;
+                                               text-decoration: none;
+                                               display: inline-block;
+                                               font-size: 14px;
+                                               margin-top: 10px;
+                                               cursor: pointer;">Make Payment</a>
+                        </td>
+                    </tr>
+            </table>
+            
+            <p>Please review and approve at your earliest convenience.</p>
+            <p>Best regards,<br>NHK MEDICAL PRIVATE LIMITED</p>
+            """
+        ).format(docname, doc.grand_total, payment_link,doc.customer_name,doc.transaction_date)
+        pdf_url = f"http://13.202.3.66/api/method/frappe.utils.print_format.download_pdf?doctype=Sales%20Order&name=SAL-ORD-2024-01035&format=Nhk%20Rental%20Order&no_letterhead=1&letterhead=No%20Letterhead&settings=%7B%7D&_lang=en"
+        # pdf_content = frappe.utils.file_manager.download_file(pdf_url)
+        
+        # Fetch the PDF content using requests library
+        pdf_response = requests.get(pdf_url)
+        pdf_content = pdf_response.content
+
+        # Send the email using Frappe's email API
+        frappe.sendmail(
+            recipients=customer_email_id,
+            sender=None,  # Use default sender configured in Frappe
+            subject=subject,
+            message=message,
+            attachments=[{
+                'fname': f'Sales_Order_{docname}.pdf',
+                'fcontent': pdf_content
+            }]
+        )
+
+        # Return True indicating email sent successfully
+        return True
+
+    except Exception as e:
+        # Handle any exceptions and log them if necessary
+        frappe.log_error(f"Error sending approval email for Sales Order {docname}: {e}")
+        return False
+
+
+
     
 @frappe.whitelist()
 def make_sales_approved(docname):
@@ -4279,7 +4359,7 @@ def create_razorpay_payment_link_sales_order(amount, invoice_name, customer, cus
         "description": f"Sales order type {order_type}",
         "notes": {"invoice_name": invoice_name},
         "reference_id": invoice_name,
-        "callback_url": f"http://13.202.3.66/api/method/erpnext.selling.doctype.sales_order.sales_order.get_razorpay_payment_details?razorpay_payment_link_reference_id={invoice_name}&customer={customer}&actual_amount={actual_amount}",
+        "callback_url": f"http://192.168.1.177:8000/api/method/erpnext.selling.doctype.sales_order.sales_order.get_razorpay_payment_details?razorpay_payment_link_reference_id={invoice_name}&customer={customer}&actual_amount={actual_amount}&final_amount={amount}",
         "callback_method": "get"
     }
     
@@ -4326,13 +4406,13 @@ def create_razorpay_payment_link_sales_order(amount, invoice_name, customer, cus
 
 
 @frappe.whitelist(allow_guest=True)
-def get_razorpay_payment_details(razorpay_payment_link_reference_id, customer, actual_amount):
+def get_razorpay_payment_details(razorpay_payment_link_reference_id, customer, actual_amount,final_amount):
     try:
         frappe.msgprint("Payment Details Function Called")
         payment_link = frappe.get_all("Payment Link Log", filters={
             "customer_id": customer,
             "sales_order": razorpay_payment_link_reference_id[:18],
-            "total_amount": actual_amount,
+            "total_amount": final_amount,
             "enabled": 1
         }, fields=["link_id"])
         
@@ -4388,7 +4468,9 @@ def render_payment_success_page(final_amount, razorpay_payment_link_id):
 
 @frappe.whitelist(allow_guest=True)
 def create_payment_entry(final_amount, razorpay_payment_link_reference_id, customer, razorpay_payment_link_id, actual_amount):
+    
     try:
+        print('sssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss',final_amount, razorpay_payment_link_reference_id, customer, razorpay_payment_link_id, actual_amount)
         frappe.msgprint("Payment Entry Function Called")
         frappe.set_user("Administrator")
         
@@ -4408,6 +4490,8 @@ def create_payment_entry(final_amount, razorpay_payment_link_reference_id, custo
                 "reference_name": razorpay_payment_link_reference_id,
                 "allocated_amount": int(actual_amount)
             }],
+            "sales_order_id":razorpay_payment_link_reference_id,
+            "custom_system_generator_from_razorpay":1,
             "reference_date": frappe.utils.today(),
             "account": "Accounts Receivable",
             "party_type": "Customer",
