@@ -2264,7 +2264,7 @@ def send_approval_email(docname, customer_email_id, payment_link):
         elif doc.order_type == "Rental":
             pdf_url = f"http://192.168.1.177:8000/api/method/frappe.utils.print_format.download_pdf?doctype=Sales%20Order&name={docname}&format=Nhk%20Rental%20Order&no_letterhead=1&letterhead=No%20Letterhead&settings=%7B%7D&_lang=en"
         else:
-            pdf_url = f"http://13.202.3.66/api/method/frappe.utils.print_format.download_pdf?doctype=Sales%20Order&name={docname}&format=Nhk%20Rental%20Order&no_letterhead=1&letterhead=No%20Letterhead&settings=%7B%7D&_lang=en"
+            pdf_url = f"http://192.168.1.177:8000/api/method/frappe.utils.print_format.download_pdf?doctype=Sales%20Order&name={docname}&format=Nhk%20Rental%20Order&no_letterhead=1&letterhead=No%20Letterhead&settings=%7B%7D&_lang=en"
 
         # Customize your email subject and content as needed
         subject = _("Sales Order {0} Approved").format(docname)
