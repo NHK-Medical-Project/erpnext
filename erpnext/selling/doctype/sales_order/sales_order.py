@@ -3256,6 +3256,7 @@ def create_renewal_order(sales_order_name):
     new_sales_order.received_amount = 0
     new_sales_order.payment_status = 'UnPaid'
     new_sales_order.outstanding_security_deposit_amount = 0
+    new_sales_order.custom_razorpay_payment_url = ''
     for item in new_sales_order.items:
         item.read_only = 1
     # Increment the renewal_order_count of the new sales order
@@ -4554,6 +4555,7 @@ def get_razorpay_payment_details(razorpay_payment_link_reference_id, customer, a
                 order_type = sales_order.order_type
                 razorpay_link_so = sales_order.custom_razorpay_payment_url
                 rounded_total = sales_order.rounded_total
+                master_order_id = sales_order.master_order_id
                 journal_entry = None  # Initialize journal_entry to None
 
                 if order_type == "Rental":
@@ -4561,11 +4563,11 @@ def get_razorpay_payment_details(razorpay_payment_link_reference_id, customer, a
                     if isinstance(security_deposit, str):
                         security_deposit = float(security_deposit) if '.' in security_deposit else int(security_deposit)
 
-                    payment_entry = create_payment_entry(rounded_total, razorpay_payment_link_reference_id[:18], customer, razorpay_payment_link_id, actual_amount)
+                    payment_entry = create_payment_entry(rounded_total, razorpay_payment_link_reference_id[:18], customer, razorpay_payment_link_id, actual_amount,master_order_id)
                     
                     if security_deposit > 0:
                         frappe.set_user("Administrator")
-                        journal_entry = create_journal_entry_razorpay(security_deposit, razorpay_payment_link_reference_id, customer, razorpay_payment_link_id)
+                        journal_entry = create_journal_entry_razorpay(security_deposit, razorpay_payment_link_reference_id, customer, razorpay_payment_link_id,master_order_id)
                         frappe.set_user("Guest")
                     
                     create_razorpay_payment_details(payment_entry, journal_entry, razorpay_payment_link_reference_id, order_type, customer, razorpay_payment_link_id, razorpay_link_so)
@@ -4574,7 +4576,7 @@ def get_razorpay_payment_details(razorpay_payment_link_reference_id, customer, a
                 
                 else:
                     frappe.msgprint("Order type is not Rental. Proceeding with standard payment entry.")
-                    payment_entry = create_payment_entry(rounded_total, razorpay_payment_link_reference_id[:18], customer, razorpay_payment_link_id, actual_amount)
+                    payment_entry = create_payment_entry(rounded_total, razorpay_payment_link_reference_id[:18], customer, razorpay_payment_link_id, actual_amount,master_order_id)
                     create_razorpay_payment_details(payment_entry, journal_entry, razorpay_payment_link_reference_id, order_type, customer, razorpay_payment_link_id, razorpay_link_so)
                     return render_payment_success_page(final_amount, razorpay_payment_link_reference_id)
             else:
@@ -4658,7 +4660,7 @@ def get_razorpay_payment_details(razorpay_payment_link_reference_id, customer, a
 #         frappe.msgprint(f'Error: {e}')
 #         frappe.log_error(f'Error: {e}')
 
-def create_journal_entry_razorpay(security_deposit, razorpay_payment_link_reference_id, customer,razorpay_payment_link_id):
+def create_journal_entry_razorpay(security_deposit, razorpay_payment_link_reference_id, customer,razorpay_payment_link_id,master_order_id):
     try:
         # frappe.set_user("Administrator")
         if is_journal_entry_exists(razorpay_payment_link_reference_id):
@@ -4674,7 +4676,7 @@ def create_journal_entry_razorpay(security_deposit, razorpay_payment_link_refere
         journal_entry.posting_date = today
         journal_entry.journal_entry_type = "Security Deposit"
         journal_entry.security_deposite_type = "SD Amount Received From Client"
-        journal_entry.master_order_id = razorpay_payment_link_reference_id
+        journal_entry.master_order_id = master_order_id
         journal_entry.cheque_no = razorpay_payment_link_id
         journal_entry.cheque_date = today
         journal_entry.user_remark = f"Security Deposit Payment Against Sales Order {razorpay_payment_link_reference_id}. Remark: System Generated From RazorPay"
@@ -4707,7 +4709,7 @@ def create_journal_entry_razorpay(security_deposit, razorpay_payment_link_refere
         frappe.throw(_("Failed to create Security Deposit Journal Entry. Please try again later."))
 
 
-def create_payment_entry(rounded_total, razorpay_payment_link_reference_id, customer, razorpay_payment_link_id, actual_amount):
+def create_payment_entry(rounded_total, razorpay_payment_link_reference_id, customer, razorpay_payment_link_id, actual_amount,master_order_id):
     try:
         frappe.msgprint("Payment Entry Function Called")
         frappe.set_user("Administrator")
@@ -4735,6 +4737,7 @@ def create_payment_entry(rounded_total, razorpay_payment_link_reference_id, cust
             "party_type": "Customer",
             "party": customer,
             "custom_from_razorpay": 1,
+            "master_order_id":master_order_id,
             "mode_of_payment": "Razorpay",
             "reference_no": razorpay_payment_link_id
         }, ignore_permissions=True)
