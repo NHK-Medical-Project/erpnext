@@ -2308,6 +2308,7 @@ def send_approval_email(docname, customer_email_id, payment_link):
         # Fetch the PDF content using requests library
         pdf_response = requests.get(pdf_url)
         pdf_content = pdf_response.content
+        # cc_list = ["srikanth.p_cse2019@svec.edu.in", "vatsalkanojiyaprofessional@gmail.com"]
 
         # Send the email using Frappe's email API
         frappe.sendmail(
@@ -2318,7 +2319,8 @@ def send_approval_email(docname, customer_email_id, payment_link):
             attachments=[{
                 'fname': f'Sales_Order_{docname}.pdf',
                 'fcontent': pdf_content
-            }]
+            }],
+            # cc=cc_list
         )
 
         # Return True indicating email sent successfully

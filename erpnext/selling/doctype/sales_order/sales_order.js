@@ -777,24 +777,73 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 							frappe.confirm(
 								__('Are you sure you want to approve? It will Reserve the Item.'),
 								() => {
-									// User confirmed, now ask if they want to share the payment link
-									frappe.confirm(
-										__('Do you want to share the payment link?'),
-										() => {
-											// User confirmed to share the payment link
-											// Call your new function here
-											me.make_sales_approved_with_payment_link();
-										},
-										() => {
-											// User canceled sharing the payment link
-											me.make_sales_approved(false); // Call the original function with false flag
-										}
-									);
+									// User confirmed the first dialog
+									// Create a custom dialog for further actions
+									let d = new frappe.ui.Dialog({
+										title: __('Select an Option'),
+										fields: [
+											{
+												label: __('Share Payment Link and Approve'),
+												fieldname: 'share_payment_link',
+												fieldtype: 'Button'
+											},
+											{
+												label: __('Approve Without Sharing the Payment Link'),
+												fieldname: 'without_payment_link',
+												fieldtype: 'Button'
+											},
+											{
+												label: __('Cancel'),
+												fieldname: 'cancel',
+												fieldtype: 'Button'
+											}
+										]
+									});
+					
+									d.fields_dict.share_payment_link.$input.click(() => {
+										d.hide();
+										// me.make_approved_with_payment_link();
+										me.make_sales_approved_with_payment_link();
+									});
+					
+									d.fields_dict.without_payment_link.$input.click(() => {
+										d.hide();
+										me.make_sales_approved(false);
+									});
+					
+									d.fields_dict.cancel.$input.click(() => {
+										d.hide();
+										// Do nothing on cancel
+									});
+					
+									d.show();
 								},
 								() => {
-									// Do nothing on cancel
+									// User explicitly canceled the first dialog
+									// Do nothing here
 								}
 							);
+							// frappe.confirm(
+							// 	__('Are you sure you want to approve? It will Reserve the Item.'),
+							// 	() => {
+							// 		// User confirmed, now ask if they want to share the payment link
+							// 		frappe.confirm(
+							// 			__('Do you want to share the payment link?'),
+							// 			() => {
+							// 				// User confirmed to share the payment link
+							// 				// Call your new function here
+							// 				me.make_sales_approved_with_payment_link();
+							// 			},
+							// 			() => {
+							// 				// User canceled sharing the payment link
+							// 				me.make_sales_approved(false); // Call the original function with false flag
+							// 			}
+							// 		);
+							// 	},
+							// 	() => {
+							// 		// Do nothing on cancel
+							// 	}
+							// );
                             // frappe.confirm(
                             //     __('Are you sure you want to approve?'),
                             //     () => {
