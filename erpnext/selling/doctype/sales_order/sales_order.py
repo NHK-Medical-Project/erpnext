@@ -2243,12 +2243,12 @@ def make_approved(docname):
     
 
 
-# nhk.py (or your custom script file)
-
 import frappe
-from frappe import _
-
-
+import smtplib
+import requests
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.application import MIMEApplication
 
 @frappe.whitelist()
 def send_approval_email(docname, customer_email_id, payment_link):
@@ -2256,6 +2256,11 @@ def send_approval_email(docname, customer_email_id, payment_link):
         # Fetch the document based on docname (e.g., Sales Order)
         doc = frappe.get_doc('Sales Order', docname)
         
+        # Fetch CC email addresses from Admin Settings
+        admin_settings = frappe.get_doc('Admin Settings')
+        cc_email_entries = admin_settings.sales_order_email_notification_cc
+        cc_email_list = [entry.user for entry in cc_email_entries] if cc_email_entries else []
+        print('cc_email_listttttttttttttttttttttttt',cc_email_list)
         # Determine the URL based on the order type
         if doc.order_type == "Sales":
             pdf_url = frappe.utils.get_url(f"/api/method/frappe.utils.print_format.download_pdf?doctype=Sales%20Order&name={docname}&format=Nhk%20Sales%20Order&no_letterhead=1&letterhead=No%20Letterhead&settings=%7B%7D&_lang=en")
@@ -2267,70 +2272,106 @@ def send_approval_email(docname, customer_email_id, payment_link):
             pdf_url = frappe.utils.get_url(f"/api/method/frappe.utils.print_format.download_pdf?doctype=Sales%20Order&name={docname}&format=Nhk%20Rental%20Order&no_letterhead=1&letterhead=No%20Letterhead&settings=%7B%7D&_lang=en")
 
         # Customize your email subject and content as needed
-        subject = _("Sales Order {0} Approved").format(docname)
-        message = _(
-            """
-            <p>Dear {3},</p>
+        subject = f"Sales Order {docname} Approved"
+
+        # Prepare the common part of the message
+        message = f"""
+            <p>Dear {doc.customer_name},</p>
             <p>Your sales order has been approved. You can proceed to make payment using the following link:</p>
             <table border="1" cellpadding="5" cellspacing="0">
                 <tr>
                     <th>Sales Order Id</th>
-                    <td>{0}</td>
+                    <td>{docname}</td>
                 </tr>
                 <tr>
-                    <th>Total Amount</th>
-                    <td>{1}</td>
+                    <th>Order Type</th>
+                    <td>{doc.order_type}</td>
                 </tr>
                 <tr>
                     <th>Order Date</th>
-                    <td>{4}</td>
+                    <td>{doc.transaction_date}</td>
                 </tr>
+            """
+
+        # Add specific rows based on order_type
+        if doc.order_type == "Rental":
+            message += f"""
+                <tr>
+                    <th>Security Deposit</th>
+                    <td>{doc.security_deposit}</td>
+                </tr>
+                <tr>
+                    <th>Rental Amount</th>
+                    <td>{doc.rounded_total}</td>
+                </tr>
+                """
+        else:
+            message += f"""
+                <tr>
+                    <th>Total Amount</th>
+                    <td>{doc.grand_total}</td>
+                </tr>
+                """
+        
+        # Append the payment link row and closing message
+        message += f"""
                  <tr>
-                        <td colspan="2" style="text-align: center; padding-top: 20px;">
-                            <a href="{2}" style="background-color: #4CAF50; /* Green */
-                                               border: none;
-                                               color: white;
-                                               padding: 10px 10px;
-                                               text-align: center;
-                                               text-decoration: none;
-                                               display: inline-block;
-                                               font-size: 14px;
-                                               margin-top: 10px;
-                                               cursor: pointer;">Make Payment</a>
-                        </td>
-                    </tr>
+                    <td colspan="2" style="text-align: center; padding-top: 20px;">
+                        <a href="{payment_link}" style="background-color: #4CAF50; /* Green */
+                                           border: none;
+                                           color: white;
+                                           padding: 10px 10px;
+                                           text-align: center;
+                                           text-decoration: none;
+                                           display: inline-block;
+                                           font-size: 14px;
+                                           margin-top: 10px;
+                                           cursor: pointer;">Make Payment</a>
+                    </td>
+                </tr>
             </table>
             
             <p>Best regards,<br>NHK MEDICAL PRIVATE LIMITED</p>
             """
-        ).format(docname, doc.grand_total, payment_link, doc.customer_name, doc.transaction_date)
 
         # Fetch the PDF content using requests library
         pdf_response = requests.get(pdf_url)
         pdf_content = pdf_response.content
-        # cc_list = ["srikanth.p_cse2019@svec.edu.in", "vatsalkanojiyaprofessional@gmail.com"]
 
-        # Send the email using Frappe's email API
-        frappe.sendmail(
-            recipients=customer_email_id,
-            sender=None,  # Use default sender configured in Frappe
-            subject=subject,
-            message=message,
-            attachments=[{
-                'fname': f'Sales_Order_{docname}.pdf',
-                'fcontent': pdf_content
-            }],
-            # cc=cc_list
-        )
+        # Create email message container
+        msg = MIMEMultipart()
+        msg['From'] = "support@nhkmedical.com"
+        msg['To'] = customer_email_id
+        msg['Cc'] = ", ".join(cc_email_list)
+        msg['Subject'] = subject
+        
+        # Attach body of email
+        msg.attach(MIMEText(message, 'html'))
+        
+        # Attach the PDF file
+        attachment = MIMEApplication(pdf_content, _subtype="pdf")
+        attachment.add_header('Content-Disposition', 'attachment', filename=f'Sales_Order_{docname}.pdf')
+        msg.attach(attachment)
 
-        # Return True indicating email sent successfully
+        # SMTP setup
+        smtp_server = 'smtp.gmail.com'
+        smtp_port = 587
+        smtp_username = 'support@nhkmedical.com'
+        smtp_password = 'ucye beoi mrvg uctz'
+        
+        # Send email
+        server = smtplib.SMTP(smtp_server, smtp_port)
+        server.starttls()  # Secure the connection
+        server.login(smtp_username, smtp_password)
+        text = msg.as_string()
+        server.sendmail(smtp_username, [customer_email_id] + cc_email_list, text)
+        server.quit()
+        print("Email sent successfully!")
+        
         return True
-
     except Exception as e:
-        # Handle any exceptions and log them if necessary
         frappe.log_error(f"Error sending approval email for Sales Order {docname}: {e}")
         return False
-
 
 
 
@@ -2340,52 +2381,88 @@ def send_approval_email(docname, customer_email_id, payment_link):
 #     try:
 #         # Fetch the document based on docname (e.g., Sales Order)
 #         doc = frappe.get_doc('Sales Order', docname)
+        
+#         # Determine the URL based on the order type
+#         if doc.order_type == "Sales":
+#             pdf_url = frappe.utils.get_url(f"/api/method/frappe.utils.print_format.download_pdf?doctype=Sales%20Order&name={docname}&format=Nhk%20Sales%20Order&no_letterhead=1&letterhead=No%20Letterhead&settings=%7B%7D&_lang=en")
+#         elif doc.order_type == "Service":
+#             pdf_url = frappe.utils.get_url(f"/api/method/frappe.utils.print_format.download_pdf?doctype=Sales%20Order&name={docname}&format=Nhk%20Service%20Order&no_letterhead=1&letterhead=No%20Letterhead&settings=%7B%7D&_lang=en")
+#         elif doc.order_type == "Rental":
+#             pdf_url = frappe.utils.get_url(f"/api/method/frappe.utils.print_format.download_pdf?doctype=Sales%20Order&name={docname}&format=Nhk%20Rental%20Order&no_letterhead=1&letterhead=No%20Letterhead&settings=%7B%7D&_lang=en")
+#         else:
+#             pdf_url = frappe.utils.get_url(f"/api/method/frappe.utils.print_format.download_pdf?doctype=Sales%20Order&name={docname}&format=Nhk%20Rental%20Order&no_letterhead=1&letterhead=No%20Letterhead&settings=%7B%7D&_lang=en")
 
 #         # Customize your email subject and content as needed
 #         subject = _("Sales Order {0} Approved").format(docname)
-#         message = _(
-#             """
-#             <p>Dear {3},</p>
-#             <p>Your sales order has been approved. You can proceed to make payment using the following link:</p>
-#             <table border="1" cellpadding="5" cellspacing="0">
-#                 <tr>
-#                     <th>Sales Order Id</th>
-#                     <td>{0}</td>
-#                 </tr>
-#                 <tr>
-#                     <th>Total Amount</th>
-#                     <td>{1}</td>
-#                 </tr>
-#                 <tr>
-#                     <th>Order Date</th>
-#                     <td>{4}</td>
-#                 </tr>
-#                  <tr>
-#                         <td colspan="2" style="text-align: center; padding-top: 20px;">
-#                             <a href="{2}" style="background-color: #4CAF50; /* Green */
-#                                                border: none;
-#                                                color: white;
-#                                                padding: 10px 10px;
-#                                                text-align: center;
-#                                                text-decoration: none;
-#                                                display: inline-block;
-#                                                font-size: 14px;
-#                                                margin-top: 10px;
-#                                                cursor: pointer;">Make Payment</a>
-#                         </td>
-#                     </tr>
-#             </table>
-            
-#             <p>Please review and approve at your earliest convenience.</p>
-#             <p>Best regards,<br>NHK MEDICAL PRIVATE LIMITED</p>
-#             """
-#         ).format(docname, doc.grand_total, payment_link,doc.customer_name,doc.transaction_date)
-#         pdf_url = f"http://13.202.3.66/api/method/frappe.utils.print_format.download_pdf?doctype=Sales%20Order&name={docname}&format=Nhk%20Rental%20Order&no_letterhead=1&letterhead=No%20Letterhead&settings=%7B%7D&_lang=en"
-#         # pdf_content = frappe.utils.file_manager.download_file(pdf_url)
+
+#         # Prepare the common part of the message
+        # message = _(
+        #     """
+        #     <p>Dear {3},</p>
+        #     <p>Your sales order has been approved. You can proceed to make payment using the following link:</p>
+        #     <table border="1" cellpadding="5" cellspacing="0">
+        #         <tr>
+        #             <th>Sales Order Id</th>
+        #             <td>{0}</td>
+        #         </tr>
+        #         <tr>
+        #             <th>Order Date</th>
+        #             <td>{4}</td>
+        #         </tr>
+        #     """
+        # ).format(docname, doc.grand_total, payment_link, doc.customer_name, doc.transaction_date)
         
+        # # Add specific rows based on order_type
+        # if doc.order_type == "Rental":
+        #     message += _(
+        #         """
+        #         <tr>
+        #             <th>Security Deposit</th>
+        #             <td>{1}</td>
+        #         </tr>
+        #         <tr>
+        #             <th>Rounded Total</th>
+        #             <td>{2}</td>
+        #         </tr>
+        #         """
+        #     ).format(docname, doc.security_deposit, doc.rounded_total, payment_link, doc.customer_name, doc.transaction_date)
+        # else:
+        #     message += _(
+        #         """
+        #         <tr>
+        #             <th>Total Amount</th>
+        #             <td>{1}</td>
+        #         </tr>
+        #         """
+        #     ).format(docname, doc.grand_total, payment_link, doc.customer_name, doc.transaction_date)
+        
+        # # Append the payment link row and closing message
+        # message += _(
+        #     """
+        #          <tr>
+        #             <td colspan="2" style="text-align: center; padding-top: 20px;">
+        #                 <a href="{2}" style="background-color: #4CAF50; /* Green */
+        #                                    border: none;
+        #                                    color: white;
+        #                                    padding: 10px 10px;
+        #                                    text-align: center;
+        #                                    text-decoration: none;
+        #                                    display: inline-block;
+        #                                    font-size: 14px;
+        #                                    margin-top: 10px;
+        #                                    cursor: pointer;">Make Payment</a>
+        #             </td>
+        #         </tr>
+        #     </table>
+            
+        #     <p>Best regards,<br>NHK MEDICAL PRIVATE LIMITED</p>
+        #     """
+        # ).format(docname, doc.grand_total, payment_link, doc.customer_name, doc.transaction_date)
+
 #         # Fetch the PDF content using requests library
 #         pdf_response = requests.get(pdf_url)
 #         pdf_content = pdf_response.content
+#         # cc_list = ["srikanth.p_cse2019@svec.edu.in", "vatsalkanojiyaprofessional@gmail.com"]
 
 #         # Send the email using Frappe's email API
 #         frappe.sendmail(
@@ -2396,7 +2473,8 @@ def send_approval_email(docname, customer_email_id, payment_link):
 #             attachments=[{
 #                 'fname': f'Sales_Order_{docname}.pdf',
 #                 'fcontent': pdf_content
-#             }]
+#             }],
+#             # cc=cc_list
 #         )
 
 #         # Return True indicating email sent successfully
@@ -2406,6 +2484,7 @@ def send_approval_email(docname, customer_email_id, payment_link):
 #         # Handle any exceptions and log them if necessary
 #         frappe.log_error(f"Error sending approval email for Sales Order {docname}: {e}")
 #         return False
+
 
 
 
@@ -4444,8 +4523,11 @@ def create_razorpay_payment_link_sales_order(amount, invoice_name, customer, cus
     order_params = {
         "amount": amount_in_paise,
         "currency": "INR",
-        "description": f"Sales order type {order_type}",
-        "notes": {"invoice_name": invoice_name},
+        "description": f"Sales order type {order_type} NHK Medical Pvt Ltd",
+        "notes": {
+            "invoice_name": invoice_name,
+            "company": "NHK Medical Pvt Ltd"
+        },
         "reference_id": invoice_name,
         "callback_url": frappe.utils.get_url(f"/api/method/erpnext.selling.doctype.sales_order.sales_order.get_razorpay_payment_details?razorpay_payment_link_reference_id={invoice_name}&customer={customer}&actual_amount={actual_amount}&final_amount={amount}"),
         "callback_method": "get"
