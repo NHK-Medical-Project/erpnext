@@ -338,7 +338,6 @@
   {
    "fieldname": "amended_from",
    "fieldtype": "Link",
-   "hidden": 1,
    "hide_days": 1,
    "hide_seconds": 1,
    "ignore_user_permissions": 1,
@@ -2232,9 +2231,7 @@
  "idx": 105,
  "is_submittable": 1,
  "links": [],
-
- "modified": "2024-07-03 14:44:09.363097",
-
+ "modified": "2024-07-15 08:52:55.757557",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order",
