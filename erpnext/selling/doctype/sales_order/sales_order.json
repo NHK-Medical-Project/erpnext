@@ -2231,7 +2231,7 @@
  "idx": 105,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-07-15 08:52:55.757557",
+ "modified": "2024-07-16 17:57:35.576244",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order",
@@ -2298,6 +2298,12 @@
    "read": 1,
    "role": "Sales Manager",
    "write": 1
+  },
+  {
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "Guest"
   }
  ],
  "search_fields": "status,transaction_date,customer,customer_name, territory,order_type,company",
