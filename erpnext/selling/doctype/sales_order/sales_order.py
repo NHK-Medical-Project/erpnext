@@ -2260,7 +2260,7 @@ def send_approval_email(docname, customer_email_id, payment_link):
         admin_settings = frappe.get_doc('Admin Settings')
         cc_email_entries = admin_settings.sales_order_email_notification_cc
         cc_email_list = [entry.user for entry in cc_email_entries] if cc_email_entries else []
-        print('cc_email_listttttttttttttttttttttttt',cc_email_list)
+        # print('cc_email_listttttttttttttttttttttttt',cc_email_list)
         # Determine the URL based on the order type
         if doc.order_type == "Sales":
             pdf_url = frappe.utils.get_url(f"/api/method/frappe.utils.print_format.download_pdf?doctype=Sales%20Order&name={docname}&format=Nhk%20Sales%20Order&no_letterhead=1&letterhead=No%20Letterhead&settings=%7B%7D&_lang=en")
@@ -2340,7 +2340,7 @@ def send_approval_email(docname, customer_email_id, payment_link):
 
         # Create email message container
         msg = MIMEMultipart()
-        msg['From'] = "support@nhkmedical.com"
+        msg['From'] = "NHK MEDICAL PRIVATE LIMITED"
         msg['To'] = customer_email_id
         msg['Cc'] = ", ".join(cc_email_list)
         msg['Subject'] = subject
@@ -3084,7 +3084,7 @@ def update_status_to_submitted_to_office(item_code, submission_datetime, docname
     try:
         # Retrieve the item document
         item = frappe.get_doc("Item", item_code)
-        print(item.status)
+        # print(item.status)
         if item.status == 'Rented Out':
             item.status = "Available"
             item.customer_n = ""
