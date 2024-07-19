@@ -2804,7 +2804,7 @@ def make_submitted_to_office(docname, item_code, submitted_date):
     try:
         # Convert the string representation of the list to an actual list
         item_codes = ast.literal_eval(item_code)
-
+        print('asdddddddddddddddddddddddddddddddddddddddddddd',item_codes)
         # Get the 'Sales Order' document
         doc = frappe.get_doc('Sales Order', docname)
 
@@ -2885,6 +2885,48 @@ def close_rental_order(docname):
 
     frappe.msgprint(_('Rental Order Closed successfully.'))
     return True
+
+
+
+
+
+# In sales_order.py
+
+@frappe.whitelist()
+def get_sales_order_items_status():
+    sales_orders = frappe.db.get_all('Sales Order', filters={'status': ['in', ['Active', 'Ready for Pickup', 'Picked Up']]}, fields=['name'])
+
+    if not sales_orders:
+        return {'message': 'No Sales Orders found with the specified statuses.'}
+
+    item_code_map = {}
+    results = []
+
+    # Collect item codes and their corresponding sales order IDs
+    for so in sales_orders:
+        items = frappe.get_all('Sales Order Item', filters={'parent': so.name}, fields=['item_code'])
+        for item in items:
+            if item.item_code not in item_code_map:
+                item_code_map[item.item_code] = []
+            item_code_map[item.item_code].append(so.name)
+
+    # Identify repeated item codes
+    repeated_items = {item_code: so_ids for item_code, so_ids in item_code_map.items() if len(so_ids) > 1}
+
+    if not repeated_items:
+        return {'message': 'No repeated items found.'}
+
+    # Fetch item status from Item doctype for repeated item codes
+    for item_code, so_ids in repeated_items.items():
+        item_status = frappe.db.get_value('Item', item_code, 'status')
+        for so_id in so_ids:
+            results.append({'sales_order': so_id, 'item_code': item_code, 'status': item_status})
+
+    # Format results as a string
+    formatted_results = "\n".join([f"Sales Order: {r['sales_order']}, Item Code: {r['item_code']}, Status: {r['status']}" for r in results])
+    return {'message': formatted_results}
+
+
 
 
 # custom_script_path/nhk/nhk/doctype/rental_group_order/rental_group_order.py
