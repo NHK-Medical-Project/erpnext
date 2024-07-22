@@ -2894,7 +2894,7 @@ def close_rental_order(docname):
 
 @frappe.whitelist()
 def get_sales_order_items_status():
-    sales_orders = frappe.db.get_all('Sales Order', filters={'status': ['in', ['Active', 'Ready for Pickup', 'Picked Up']]}, fields=['name'])
+    sales_orders = frappe.db.get_all('Sales Order', filters={'status': ['in', ['Active', 'Ready for Pickup', 'Picked Up']],'docstatus':1}, fields=['name'])
 
     if not sales_orders:
         return {'message': 'No Sales Orders found with the specified statuses.'}
@@ -2927,6 +2927,52 @@ def get_sales_order_items_status():
     return {'message': formatted_results}
 
 
+
+
+@frappe.whitelist()
+def get_repeated_sales_orders():
+    # Define the item statuses to filter
+    item_statuses = ['Rented Out', 'Reserved', 'Pre Reserved']
+    
+    # Create a string for the IN clause in SQL
+    status_list = "', '".join(item_statuses)
+    
+    # Construct the SQL query
+    query = f"""
+        SELECT 
+            so.name AS sales_order,
+            soi.item_code,
+            i.status
+        FROM
+            `tabSales Order` AS so
+        JOIN
+            `tabSales Order Item` AS soi ON so.name = soi.parent
+        JOIN
+            `tabItem` AS i ON soi.item_code = i.name
+        WHERE
+            so.status = 'Active'
+            AND so.docstatus = 1
+            AND i.status IN ('{status_list}')
+        ORDER BY 
+            soi.item_code, so.name
+    """
+
+    results = frappe.db.sql(query, as_dict=True)
+
+    # Find repeated sales orders
+    repeated_orders = {}
+    for row in results:
+        if row['item_code'] not in repeated_orders:
+            repeated_orders[row['item_code']] = set()
+        repeated_orders[row['item_code']].add(row['sales_order'])
+    
+    repeated_sales_orders = []
+    for item_code, orders in repeated_orders.items():
+        if len(orders) > 1:  # If there are more than one sales orders for the item
+            repeated_sales_orders.extend(orders)
+
+    # Return results in the expected format
+    return {'message': repeated_sales_orders}
 
 
 # custom_script_path/nhk/nhk/doctype/rental_group_order/rental_group_order.py
@@ -4571,7 +4617,7 @@ def create_razorpay_payment_link_sales_order(amount, invoice_name, customer, cus
             "company": "NHK Medical Pvt Ltd"
         },
         "reference_id": invoice_name,
-        "callback_url": frappe.utils.get_url(f"/api/method/erpnext.selling.doctype.sales_order.sales_order.get_razorpay_payment_details?razorpay_payment_link_reference_id={invoice_name}&customer={customer}&actual_amount={actual_amount}&final_amount={amount}"),
+        "callback_url": frappe.utils.get_url(f"/api/method/erpnext.selling.doctype.sales_order.sales_order.get_razorpay_payment_details?sales_order_id={invoice_name}&customer={customer}&actual_amount={actual_amount}&final_amount={amount}"),
         "callback_method": "get"
     }
     
@@ -4619,29 +4665,29 @@ def create_razorpay_payment_link_sales_order(amount, invoice_name, customer, cus
 
 
 # @frappe.whitelist(allow_guest=True)
-# def get_razorpay_payment_details(razorpay_payment_link_reference_id, customer, actual_amount, final_amount):
+# def get_razorpay_payment_details(sales_order_id, customer, actual_amount, final_amount):
 #     try:
 #         frappe.msgprint("Payment Details Function Called")
 
 #         # Fetch Sales Order using invoice_name
-        # sales_order = frappe.get_doc("Sales Order", razorpay_payment_link_reference_id)
+        # sales_order = frappe.get_doc("Sales Order", sales_order_id)
         # order_type = sales_order.order_type
         
 #         if order_type == "Rental":
 #             rounded_total = sales_order.rounded_total
 #             security_deposit = sales_order.security_deposit if sales_order.security_deposit else 0
 
-#             create_payment_entry(rounded_total, razorpay_payment_link_reference_id, customer, razorpay_payment_link_reference_id, actual_amount)
+#             create_payment_entry(rounded_total, sales_order_id, customer, sales_order_id, actual_amount)
             
 #             if security_deposit > 0:
-#                 create_journal_entry_razorpay(security_deposit, razorpay_payment_link_reference_id, customer)
+#                 create_journal_entry_razorpay(security_deposit, sales_order_id, customer)
             
-#             return render_payment_success_page(final_amount, razorpay_payment_link_reference_id)
+#             return render_payment_success_page(final_amount, sales_order_id)
         
 #         else:
 #             frappe.msgprint("Order type is not Rental. Proceeding with standard payment entry.")
-#             create_payment_entry(rounded_total, razorpay_payment_link_reference_id, customer, razorpay_payment_link_reference_id, actual_amount)
-#             return render_payment_success_page(final_amount, razorpay_payment_link_reference_id)
+#             create_payment_entry(rounded_total, sales_order_id, customer, sales_order_id, actual_amount)
+#             return render_payment_success_page(final_amount, sales_order_id)
 
 #     except Exception as e:
 #         frappe.msgprint(f'Error: {e}')
@@ -4651,12 +4697,12 @@ def create_razorpay_payment_link_sales_order(amount, invoice_name, customer, cus
 
 
 @frappe.whitelist(allow_guest=True)
-def get_razorpay_payment_details(razorpay_payment_link_reference_id, customer, actual_amount, final_amount):
+def get_razorpay_payment_details(sales_order_id, customer, actual_amount, final_amount):
     try:
         frappe.msgprint("Payment Details Function Called")
         payment_link = frappe.get_all("Payment Link Log", filters={
             "customer_id": customer,
-            "sales_order": razorpay_payment_link_reference_id[:18],
+            "sales_order": sales_order_id[:18],
             "total_amount": final_amount,
             "enabled": 1
         }, fields=["link_id"])
@@ -4677,7 +4723,7 @@ def get_razorpay_payment_details(razorpay_payment_link_reference_id, customer, a
                 most_recent_payment = max(payments, key=lambda x: x['created_at'])
                 payment_amount = most_recent_payment.get('amount')
                 final_amount = int(float(payment_amount) / 100)
-                sales_order = frappe.get_doc("Sales Order", razorpay_payment_link_reference_id)
+                sales_order = frappe.get_doc("Sales Order", sales_order_id)
                 order_type = sales_order.order_type
                 razorpay_link_so = sales_order.custom_razorpay_payment_url
                 rounded_total = sales_order.rounded_total
@@ -4689,22 +4735,22 @@ def get_razorpay_payment_details(razorpay_payment_link_reference_id, customer, a
                     if isinstance(security_deposit, str):
                         security_deposit = float(security_deposit) if '.' in security_deposit else int(security_deposit)
 
-                    payment_entry = create_payment_entry(rounded_total, razorpay_payment_link_reference_id[:18], customer, razorpay_payment_link_id, actual_amount,master_order_id)
+                    payment_entry = create_payment_entry(rounded_total, sales_order_id[:18], customer, razorpay_payment_link_id, actual_amount,master_order_id)
                     
                     if security_deposit > 0:
                         frappe.set_user("Administrator")
-                        journal_entry = create_journal_entry_razorpay(security_deposit, razorpay_payment_link_reference_id, customer, razorpay_payment_link_id,master_order_id)
+                        journal_entry = create_journal_entry_razorpay(security_deposit, sales_order_id, customer, razorpay_payment_link_id,master_order_id)
                         frappe.set_user("Guest")
                     
-                    create_razorpay_payment_details(payment_entry, journal_entry, razorpay_payment_link_reference_id, order_type, customer, razorpay_payment_link_id, razorpay_link_so)
+                    create_razorpay_payment_details(payment_entry, journal_entry, sales_order_id, order_type, customer, razorpay_payment_link_id, razorpay_link_so)
 
-                    return render_payment_success_page(final_amount, razorpay_payment_link_reference_id)
+                    return render_payment_success_page(final_amount, sales_order_id)
                 
                 else:
                     frappe.msgprint("Order type is not Rental. Proceeding with standard payment entry.")
-                    payment_entry = create_payment_entry(rounded_total, razorpay_payment_link_reference_id[:18], customer, razorpay_payment_link_id, actual_amount,master_order_id)
-                    create_razorpay_payment_details(payment_entry, journal_entry, razorpay_payment_link_reference_id, order_type, customer, razorpay_payment_link_id, razorpay_link_so)
-                    return render_payment_success_page(final_amount, razorpay_payment_link_reference_id)
+                    payment_entry = create_payment_entry(rounded_total, sales_order_id[:18], customer, razorpay_payment_link_id, actual_amount,master_order_id)
+                    create_razorpay_payment_details(payment_entry, journal_entry, sales_order_id, order_type, customer, razorpay_payment_link_id, razorpay_link_so)
+                    return render_payment_success_page(final_amount, sales_order_id)
             else:
                 frappe.msgprint('Amount Paid not found in the response.')
                 frappe.log_error('Amount Paid not found in the response.')
@@ -4725,12 +4771,12 @@ def get_razorpay_payment_details(razorpay_payment_link_reference_id, customer, a
 
 
 # @frappe.whitelist(allow_guest=True)
-# def get_razorpay_payment_details(razorpay_payment_link_reference_id, customer, actual_amount, final_amount):
+# def get_razorpay_payment_details(sales_order_id, customer, actual_amount, final_amount):
 #     try:
 #         frappe.msgprint("Payment Details Function Called")
 #         payment_link = frappe.get_all("Payment Link Log", filters={
 #             "customer_id": customer,
-#             "sales_order": razorpay_payment_link_reference_id[:18],
+#             "sales_order": sales_order_id[:18],
 #             "total_amount": final_amount,
 #             "enabled": 1
 #         }, fields=["link_id"])
@@ -4751,7 +4797,7 @@ def get_razorpay_payment_details(razorpay_payment_link_reference_id, customer, a
 #                 most_recent_payment = max(payments, key=lambda x: x['created_at'])
 #                 payment_amount = most_recent_payment.get('amount')
 #                 final_amount = int(float(payment_amount) / 100)
-#                 sales_order = frappe.get_doc("Sales Order", razorpay_payment_link_reference_id)
+#                 sales_order = frappe.get_doc("Sales Order", sales_order_id)
 #                 order_type = sales_order.order_type
 #                 razorpay_link_so = sales_order.custom_razorpay_payment_url
 #                 rounded_total = sales_order.rounded_total
@@ -4760,22 +4806,22 @@ def get_razorpay_payment_details(razorpay_payment_link_reference_id, customer, a
 #                     if isinstance(security_deposit, str):
 #                         security_deposit = float(security_deposit) if '.' in security_deposit else int(security_deposit)
 
-#                     payment_entry = create_payment_entry(rounded_total, razorpay_payment_link_reference_id[:18], customer, razorpay_payment_link_id, actual_amount)
+#                     payment_entry = create_payment_entry(rounded_total, sales_order_id[:18], customer, razorpay_payment_link_id, actual_amount)
                     
 #                     if security_deposit > 0:
 #                         frappe.set_user("Administrator")
-#                         journal_entry = create_journal_entry_razorpay(security_deposit, razorpay_payment_link_reference_id, customer, razorpay_payment_link_id)
+#                         journal_entry = create_journal_entry_razorpay(security_deposit, sales_order_id, customer, razorpay_payment_link_id)
 #                         frappe.set_user("Guest")
                     
-#                     create_razorpay_payment_details(payment_entry, journal_entry, razorpay_payment_link_reference_id, order_type, customer, razorpay_payment_link_id,razorpay_link_so)
+#                     create_razorpay_payment_details(payment_entry, journal_entry, sales_order_id, order_type, customer, razorpay_payment_link_id,razorpay_link_so)
 
-#                     return render_payment_success_page(final_amount, razorpay_payment_link_reference_id)
+#                     return render_payment_success_page(final_amount, sales_order_id)
                 
 #                 else:
 #                     frappe.msgprint("Order type is not Rental. Proceeding with standard payment entry.")
-#                     payment_entry = create_payment_entry(rounded_total, razorpay_payment_link_reference_id[:18], customer, razorpay_payment_link_id, actual_amount)
-#                     create_razorpay_payment_details(payment_entry, None, razorpay_payment_link_reference_id, order_type, customer, razorpay_payment_link_id,razorpay_link_so)
-#                     return render_payment_success_page(final_amount, razorpay_payment_link_reference_id)
+#                     payment_entry = create_payment_entry(rounded_total, sales_order_id[:18], customer, razorpay_payment_link_id, actual_amount)
+#                     create_razorpay_payment_details(payment_entry, None, sales_order_id, order_type, customer, razorpay_payment_link_id,razorpay_link_so)
+#                     return render_payment_success_page(final_amount, sales_order_id)
 #             else:
 #                 frappe.msgprint('Amount Paid not found in the response.')
 #                 frappe.log_error('Amount Paid not found in the response.')
@@ -4786,10 +4832,10 @@ def get_razorpay_payment_details(razorpay_payment_link_reference_id, customer, a
 #         frappe.msgprint(f'Error: {e}')
 #         frappe.log_error(f'Error: {e}')
 
-def create_journal_entry_razorpay(security_deposit, razorpay_payment_link_reference_id, customer,razorpay_payment_link_id,master_order_id):
+def create_journal_entry_razorpay(security_deposit, sales_order_id, customer,razorpay_payment_link_id,master_order_id):
     try:
         # frappe.set_user("Administrator")
-        if is_journal_entry_exists(razorpay_payment_link_reference_id):
+        if is_journal_entry_exists(sales_order_id):
             frappe.msgprint('Journal Entry already exists. Skipping creation.')
             return
 
@@ -4798,14 +4844,14 @@ def create_journal_entry_razorpay(security_deposit, razorpay_payment_link_refere
         # Create a new Journal Entry document
         journal_entry = frappe.new_doc("Journal Entry")
         journal_entry.voucher_type = "Journal Entry"
-        journal_entry.sales_order_id = razorpay_payment_link_reference_id
+        journal_entry.sales_order_id = sales_order_id
         journal_entry.posting_date = today
         journal_entry.journal_entry_type = "Security Deposit"
         journal_entry.security_deposite_type = "SD Amount Received From Client"
         journal_entry.master_order_id = master_order_id
         journal_entry.cheque_no = razorpay_payment_link_id
         journal_entry.cheque_date = today
-        journal_entry.user_remark = f"Security Deposit Payment Against Sales Order {razorpay_payment_link_reference_id}. Remark: System Generated From RazorPay"
+        journal_entry.user_remark = f"Security Deposit Payment Against Sales Order {sales_order_id}. Remark: System Generated From RazorPay"
         # journal_entry.customer_id = customer
         journal_entry.mode_of__payment = 'Razorpay'
         journal_entry.transactional_effect = "Plus"
@@ -4835,7 +4881,7 @@ def create_journal_entry_razorpay(security_deposit, razorpay_payment_link_refere
         frappe.throw(_("Failed to create Security Deposit Journal Entry. Please try again later."))
 
 
-def create_payment_entry(rounded_total, razorpay_payment_link_reference_id, customer, razorpay_payment_link_id, actual_amount,master_order_id):
+def create_payment_entry(rounded_total, sales_order_id, customer, razorpay_payment_link_id, actual_amount,master_order_id):
     try:
         frappe.msgprint("Payment Entry Function Called")
         frappe.set_user("Administrator")
@@ -4853,10 +4899,10 @@ def create_payment_entry(rounded_total, razorpay_payment_link_reference_id, cust
             "paid_amount": int(rounded_total),
             "references": [{
                 "reference_doctype": "Sales Order",
-                "reference_name": razorpay_payment_link_reference_id,
+                "reference_name": sales_order_id,
                 "allocated_amount": int(actual_amount)
             }],
-            "sales_order_id": razorpay_payment_link_reference_id,
+            "sales_order_id": sales_order_id,
             "custom_system_generator_from_razorpay": 1,
             "reference_date": frappe.utils.today(),
             "account": "Accounts Receivable",
@@ -4942,12 +4988,12 @@ def render_payment_success_page(final_amount, razorpay_payment_link_id):
 
 
 # @frappe.whitelist(allow_guest=True)
-# def get_razorpay_payment_details(razorpay_payment_link_reference_id, customer, actual_amount, final_amount):
+# def get_razorpay_payment_details(sales_order_id, customer, actual_amount, final_amount):
 #     try:
 #         frappe.msgprint("Payment Details Function Called")
 #         payment_link = frappe.get_all("Payment Link Log", filters={
 #             "customer_id": customer,
-#             "sales_order": razorpay_payment_link_reference_id[:18],
+#             "sales_order": sales_order_id[:18],
 #             "total_amount": final_amount,
 #             "enabled": 1
 #         }, fields=["link_id"])
@@ -4968,7 +5014,7 @@ def render_payment_success_page(final_amount, razorpay_payment_link_id):
 #                 most_recent_payment = max(payments, key=lambda x: x['created_at'])
 #                 payment_amount = most_recent_payment.get('amount')
 #                 final_amount = int(float(payment_amount) / 100)
-#                 sales_order = frappe.get_doc("Sales Order", razorpay_payment_link_reference_id)
+#                 sales_order = frappe.get_doc("Sales Order", sales_order_id)
 #                 order_type = sales_order.order_type
 #                 rounded_total = sales_order.rounded_total
 #                 if order_type == "Rental":
@@ -4978,19 +5024,19 @@ def render_payment_success_page(final_amount, razorpay_payment_link_id):
 #                     if isinstance(security_deposit, str):
 #                         security_deposit = float(security_deposit) if '.' in security_deposit else int(security_deposit)
 
-#                     create_payment_entry(rounded_total, razorpay_payment_link_reference_id[:18], customer, razorpay_payment_link_id, actual_amount)
+#                     create_payment_entry(rounded_total, sales_order_id[:18], customer, razorpay_payment_link_id, actual_amount)
                     
 #                     if security_deposit > 0:
 #                         frappe.set_user("Administrator")  # Switch to an admin user
-#                         create_journal_entry_razorpay(security_deposit, razorpay_payment_link_reference_id, customer,razorpay_payment_link_id)
+#                         create_journal_entry_razorpay(security_deposit, sales_order_id, customer,razorpay_payment_link_id)
 #                         frappe.set_user("Guest")  # Switch back to guest user
                     
-#                     return render_payment_success_page(final_amount, razorpay_payment_link_reference_id)
+#                     return render_payment_success_page(final_amount, sales_order_id)
                 
 #                 else:
 #                     frappe.msgprint("Order type is not Rental. Proceeding with standard payment entry.")
-#                     create_payment_entry(rounded_total, razorpay_payment_link_reference_id[:18], customer, razorpay_payment_link_id, actual_amount)
-#                     return render_payment_success_page(final_amount, razorpay_payment_link_reference_id)
+#                     create_payment_entry(rounded_total, sales_order_id[:18], customer, razorpay_payment_link_id, actual_amount)
+#                     return render_payment_success_page(final_amount, sales_order_id)
 #             else:
 #                 frappe.msgprint('Amount Paid not found in the response.')
 #                 frappe.log_error('Amount Paid not found in the response.')
@@ -5002,10 +5048,10 @@ def render_payment_success_page(final_amount, razorpay_payment_link_id):
 #         frappe.log_error(f'Error: {e}')
 
 
-# def create_journal_entry_razorpay(security_deposit, razorpay_payment_link_reference_id, customer,razorpay_payment_link_id):
+# def create_journal_entry_razorpay(security_deposit, sales_order_id, customer,razorpay_payment_link_id):
 #     try:
 #         # frappe.set_user("Administrator")
-#         if is_journal_entry_exists(razorpay_payment_link_reference_id):
+#         if is_journal_entry_exists(sales_order_id):
 #             frappe.msgprint('Journal Entry already exists. Skipping creation.')
 #             return
 
@@ -5014,14 +5060,14 @@ def render_payment_success_page(final_amount, razorpay_payment_link_id):
 #         # Create a new Journal Entry document
 #         journal_entry = frappe.new_doc("Journal Entry")
 #         journal_entry.voucher_type = "Journal Entry"
-#         journal_entry.sales_order_id = razorpay_payment_link_reference_id
+#         journal_entry.sales_order_id = sales_order_id
 #         journal_entry.posting_date = today
 #         journal_entry.journal_entry_type = "Security Deposit"
 #         journal_entry.security_deposite_type = "SD Amount Received From Client"
-#         journal_entry.master_order_id = razorpay_payment_link_reference_id
+#         journal_entry.master_order_id = sales_order_id
 #         journal_entry.cheque_no = razorpay_payment_link_id
 #         journal_entry.cheque_date = today
-#         journal_entry.user_remark = f"Security Deposit Payment Against Sales Order {razorpay_payment_link_reference_id}. Remark: System Generated From RazorPay"
+#         journal_entry.user_remark = f"Security Deposit Payment Against Sales Order {sales_order_id}. Remark: System Generated From RazorPay"
 #         # journal_entry.customer_id = customer
 #         journal_entry.mode_of__payment = 'Razorpay'
 #         journal_entry.transactional_effect = "Plus"
@@ -5050,7 +5096,7 @@ def render_payment_success_page(final_amount, razorpay_payment_link_id):
 #         frappe.throw(_("Failed to create Security Deposit Journal Entry. Please try again later."))
 
 
-# def create_payment_entry(rounded_total, razorpay_payment_link_reference_id, customer, razorpay_payment_link_id, actual_amount):
+# def create_payment_entry(rounded_total, sales_order_id, customer, razorpay_payment_link_id, actual_amount):
 #     try:
 #         frappe.msgprint("Payment Entry Function Called")
 #         frappe.set_user("Administrator")  # Switch to an admin user
@@ -5068,10 +5114,10 @@ def render_payment_success_page(final_amount, razorpay_payment_link_id):
 #             "paid_amount": int(rounded_total),
 #             "references": [{
 #                 "reference_doctype": "Sales Order",
-#                 "reference_name": razorpay_payment_link_reference_id,
+#                 "reference_name": sales_order_id,
 #                 "allocated_amount": int(actual_amount)
 #             }],
-#             "sales_order_id":razorpay_payment_link_reference_id,
+#             "sales_order_id":sales_order_id,
 #             "custom_system_generator_from_razorpay":1,
 #             "reference_date": frappe.utils.today(),
 #             "account": "Accounts Receivable",
