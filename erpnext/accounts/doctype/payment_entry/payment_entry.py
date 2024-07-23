@@ -256,6 +256,8 @@ class PaymentEntry(AccountsController):
 		self.update_payment_schedule(cancel=1)
 		self.set_payment_req_status()
 		self.set_status()
+		if self.custom_from_razorpay == 1:
+			frappe.throw('System Generated file Not be cancelled ')
 
 
 
