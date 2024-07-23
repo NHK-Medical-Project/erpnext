@@ -739,7 +739,7 @@ class SalesOrder(SellingController):
             other_orders = frappe.get_all("Sales Order",
                                         filters={"docstatus": 1,  # Only consider submitted sales orders
                                                 "name": ("!=", self.name),
-                                                "status": ("not in", ["Submitted to Office","RENEWED"])},
+                                                "status": ("not in", ["Submitted to Office","RENEWED","Partially Closed"])},
                                         fields=["name", "status"])
             
             for order in other_orders:
