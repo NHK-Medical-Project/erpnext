@@ -2357,7 +2357,7 @@ def send_approval_email(docname, customer_email_id, payment_link):
         smtp_server = 'smtp.gmail.com'
         smtp_port = 587
         smtp_username = 'support@nhkmedical.com'
-        smtp_password = 'ucye beoi mrvg uctz'
+        smtp_password = 'zpvr bmkd nqaz qnxe'
         
         # Send email
         server = smtplib.SMTP(smtp_server, smtp_port)
@@ -3407,7 +3407,7 @@ from frappe.utils import add_days
 @frappe.whitelist()
 def create_renewal_order(sales_order_name):
     # Get original sales order
-    existing_renewal_orders = frappe.get_all("Sales Order", filters={"previous_order_id": sales_order_name})
+    existing_renewal_orders = frappe.get_all("Sales Order", filters={"previous_order_id": sales_order_name, "docstatus": ["!=", 2]})
 
     if existing_renewal_orders:
         existing_order_id = existing_renewal_orders[0].name

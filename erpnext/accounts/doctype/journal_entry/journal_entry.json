@@ -587,7 +587,8 @@
    "fieldname": "master_order_id",
    "fieldtype": "Link",
    "label": "Master Order Id",
-   "options": "Sales Order"
+   "options": "Sales Order",
+   "read_only": 1
   },
   {
    "default": "__user",
@@ -641,7 +642,7 @@
    "table_fieldname": "payment_entries"
   }
  ],
- "modified": "2024-06-14 20:16:21.632873",
+ "modified": "2024-07-23 19:12:49.833292",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Journal Entry",
