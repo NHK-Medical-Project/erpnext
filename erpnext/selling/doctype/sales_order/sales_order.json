@@ -2117,6 +2117,7 @@
    "label": "Delivery Address"
   },
   {
+   "allow_on_submit": 1,
    "fetch_from": "customer.mobile_number",
    "fieldname": "customer_mobile_no",
    "fieldtype": "Data",
@@ -2129,6 +2130,7 @@
    "label": "Customer Email Id"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "total_rental_amount",
    "fieldtype": "Currency",
    "label": "Total Amount",
@@ -2231,7 +2233,7 @@
  "idx": 105,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-07-16 19:28:25.207221",
+ "modified": "2024-08-07 10:41:43.826277",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order",
