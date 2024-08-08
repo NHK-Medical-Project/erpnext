@@ -4612,7 +4612,7 @@ def create_razorpay_payment_link_sales_order(amount, invoice_name, customer, cus
         "currency": "INR",
         "description": f"Sales order type {order_type} NHK Medical Pvt Ltd",
         "accept_partial": True,
-        "first_min_partial_amount": 100,
+        "first_min_partial_amount": 1,
         "notes": {
             "invoice_name": invoice_name,
             "company": "NHK Medical Pvt Ltd"
@@ -4825,11 +4825,11 @@ def get_razorpay_payment_details(sales_order_id, customer, actual_amount, final_
 
                 # Proceed if the payment status is 'paid'
                 if payment_link_log_doc.payment_status == 'paid':
-                    print('mohaaaaaaaaaaaaaaaaaaaaa')
+                    # print('mohaaaaaaaaaaaaaaaaaaaaa')
                     payment_link_log_id = payment_link_log_doc.name
                     # Fetch Sales Order details
                     sales_order = frappe.get_doc("Sales Order", sales_order_id[:18])
-                    print('sales_orderrrrrrrrrrrrrrrrrrrrrrr',sales_order.order_type)
+                    # print('sales_orderrrrrrrrrrrrrrrrrrrrrrr',sales_order.order_type)
                     order_type = sales_order.order_type
                     rounded_total = sales_order.rounded_total
                     master_order_id = sales_order.master_order_id
@@ -5330,7 +5330,7 @@ def get_bin_data(item_codes):
             if data['warehouse'] not in warehouse:
                 warehouse.append(data['warehouse'])
         items_data.append(item_data)
-    print(items_data)
+    # print(items_data)
  
     return {'items_data':items_data,'warehouse':warehouse}
 
@@ -5463,7 +5463,7 @@ def get_sales_orders_containing_item(item_code):
         AND
             so.status != 'Submitted to Office'
     """, item_code, as_dict=True)
-    print(sales_orders)
+    # print(sales_orders)
     return {
         'item_status': item_status,
         'item_group': item_group,
