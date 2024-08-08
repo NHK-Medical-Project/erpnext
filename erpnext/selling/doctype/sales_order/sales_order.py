@@ -4612,7 +4612,7 @@ def create_razorpay_payment_link_sales_order(amount, invoice_name, customer, cus
         "currency": "INR",
         "description": f"Sales order type {order_type} NHK Medical Pvt Ltd",
         "accept_partial": True,
-        "first_min_partial_amount": 1,
+        "first_min_partial_amount": 100,
         "notes": {
             "invoice_name": invoice_name,
             "company": "NHK Medical Pvt Ltd"
@@ -5330,7 +5330,7 @@ def get_bin_data(item_codes):
             if data['warehouse'] not in warehouse:
                 warehouse.append(data['warehouse'])
         items_data.append(item_data)
-    # print(items_data)
+    print(items_data)
  
     return {'items_data':items_data,'warehouse':warehouse}
 
@@ -5463,7 +5463,7 @@ def get_sales_orders_containing_item(item_code):
         AND
             so.status != 'Submitted to Office'
     """, item_code, as_dict=True)
-    # print(sales_orders)
+    print(sales_orders)
     return {
         'item_status': item_status,
         'item_group': item_group,
