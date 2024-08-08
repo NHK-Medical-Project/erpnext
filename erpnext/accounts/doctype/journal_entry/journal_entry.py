@@ -55,7 +55,7 @@ class JournalEntry(AccountsController):
 		bill_date: DF.Date | None
 		bill_no: DF.Data | None
 		cheque_date: DF.Date | None
-		cheque_no: DF.Data | None
+		cheque_no: DF.SmallText | None
 		clearance_date: DF.Date | None
 		company: DF.Link
 		created_by: DF.Link | None

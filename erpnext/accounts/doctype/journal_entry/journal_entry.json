@@ -174,15 +174,14 @@
   },
   {
    "fieldname": "cheque_no",
-   "fieldtype": "Data",
+   "fieldtype": "Small Text",
    "in_global_search": 1,
    "in_list_view": 1,
    "label": "Reference Number",
    "mandatory_depends_on": "eval:doc.voucher_type == \"Bank Entry\"",
    "no_copy": 1,
    "oldfieldname": "cheque_no",
-   "oldfieldtype": "Data",
-   "search_index": 1
+   "oldfieldtype": "Data"
   },
   {
    "fieldname": "cheque_date",
@@ -642,7 +641,7 @@
    "table_fieldname": "payment_entries"
   }
  ],
- "modified": "2024-07-23 19:12:49.833292",
+ "modified": "2024-08-08 11:25:34.725750",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Journal Entry",
