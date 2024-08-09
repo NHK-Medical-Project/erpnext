@@ -76,7 +76,7 @@ class JournalEntry(AccountsController):
 		naming_series: DF.Literal["ACC-JV-.YYYY.-"]
 		paid_loan: DF.Data | None
 		pay_to_recd_from: DF.Data | None
-		payment_entry_id_for_so_adjustment: DF.Link | None
+		payment_entry_id_for_so_adjustment: DF.Data | None
 		payment_order: DF.Link | None
 		posting_date: DF.Date
 		process_deferred_accounting: DF.Link | None

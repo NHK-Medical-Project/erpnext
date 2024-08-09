@@ -564,10 +564,12 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "sales_order_id",
    "fieldtype": "Link",
    "label": "Sales Order ID",
-   "options": "Sales Order"
+   "options": "Sales Order",
+   "read_only": 1
   },
   {
    "fieldname": "journal_entry_type",
@@ -624,9 +626,9 @@
   },
   {
    "fieldname": "payment_entry_id_for_so_adjustment",
-   "fieldtype": "Link",
+   "fieldtype": "Data",
    "label": "Payment Entry ID For So Adjustment",
-   "options": "Payment Entry"
+   "read_only": 1
   }
  ],
  "icon": "fa fa-file-text",
@@ -641,7 +643,7 @@
    "table_fieldname": "payment_entries"
   }
  ],
- "modified": "2024-08-08 11:25:34.725750",
+ "modified": "2024-08-09 11:50:42.230652",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Journal Entry",
