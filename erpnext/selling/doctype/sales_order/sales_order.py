@@ -4782,8 +4782,10 @@ def get_razorpay_payment_details(sales_order_id, customer, actual_amount, final_
             # frappe.log_error(f'Razorpay response: {razorpay_response}')  # Debug log
             
             payment_link_log = frappe.get_all("Payment Link Log", filters={"link_id": razorpay_payment_link_id})
+            
             if payment_link_log:
                 payment_link_log_doc = frappe.get_doc("Payment Link Log", payment_link_log[0].name)
+                payment_link_log_id = payment_link_log_doc.name
                 # print('payment_link_log_doc:', payment_link_log_doc)
                 # frappe.log_error(f'payment_link_log_doc: {payment_link_log_doc}')  # Debug log
                 raz_amount_paid = int(float(razorpay_response.get('amount_paid', 0)) / 100)
@@ -4826,7 +4828,7 @@ def get_razorpay_payment_details(sales_order_id, customer, actual_amount, final_
                 # Proceed if the payment status is 'paid'
                 if payment_link_log_doc.payment_status == 'paid':
                     # print('mohaaaaaaaaaaaaaaaaaaaaa')
-                    payment_link_log_id = payment_link_log_doc.name
+                    # payment_link_log_id = payment_link_log_doc.name
                     # Fetch Sales Order details
                     sales_order = frappe.get_doc("Sales Order", sales_order_id[:18])
                     # print('sales_orderrrrrrrrrrrrrrrrrrrrrrr',sales_order.order_type)
