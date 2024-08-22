@@ -2378,115 +2378,6 @@ def send_approval_email(docname, customer_email_id, payment_link):
 
 
 
-# @frappe.whitelist()
-# def send_approval_email(docname, customer_email_id, payment_link):
-#     try:
-#         # Fetch the document based on docname (e.g., Sales Order)
-#         doc = frappe.get_doc('Sales Order', docname)
-        
-#         # Determine the URL based on the order type
-#         if doc.order_type == "Sales":
-#             pdf_url = frappe.utils.get_url(f"/api/method/frappe.utils.print_format.download_pdf?doctype=Sales%20Order&name={docname}&format=Nhk%20Sales%20Order&no_letterhead=1&letterhead=No%20Letterhead&settings=%7B%7D&_lang=en")
-#         elif doc.order_type == "Service":
-#             pdf_url = frappe.utils.get_url(f"/api/method/frappe.utils.print_format.download_pdf?doctype=Sales%20Order&name={docname}&format=Nhk%20Service%20Order&no_letterhead=1&letterhead=No%20Letterhead&settings=%7B%7D&_lang=en")
-#         elif doc.order_type == "Rental":
-#             pdf_url = frappe.utils.get_url(f"/api/method/frappe.utils.print_format.download_pdf?doctype=Sales%20Order&name={docname}&format=Nhk%20Rental%20Order&no_letterhead=1&letterhead=No%20Letterhead&settings=%7B%7D&_lang=en")
-#         else:
-#             pdf_url = frappe.utils.get_url(f"/api/method/frappe.utils.print_format.download_pdf?doctype=Sales%20Order&name={docname}&format=Nhk%20Rental%20Order&no_letterhead=1&letterhead=No%20Letterhead&settings=%7B%7D&_lang=en")
-
-#         # Customize your email subject and content as needed
-#         subject = _("Sales Order {0} Approved").format(docname)
-
-#         # Prepare the common part of the message
-        # message = _(
-        #     """
-        #     <p>Dear {3},</p>
-        #     <p>Your sales order has been approved. You can proceed to make payment using the following link:</p>
-        #     <table border="1" cellpadding="5" cellspacing="0">
-        #         <tr>
-        #             <th>Sales Order Id</th>
-        #             <td>{0}</td>
-        #         </tr>
-        #         <tr>
-        #             <th>Order Date</th>
-        #             <td>{4}</td>
-        #         </tr>
-        #     """
-        # ).format(docname, doc.grand_total, payment_link, doc.customer_name, doc.transaction_date)
-        
-        # # Add specific rows based on order_type
-        # if doc.order_type == "Rental":
-        #     message += _(
-        #         """
-        #         <tr>
-        #             <th>Security Deposit</th>
-        #             <td>{1}</td>
-        #         </tr>
-        #         <tr>
-        #             <th>Rounded Total</th>
-        #             <td>{2}</td>
-        #         </tr>
-        #         """
-        #     ).format(docname, doc.security_deposit, doc.rounded_total, payment_link, doc.customer_name, doc.transaction_date)
-        # else:
-        #     message += _(
-        #         """
-        #         <tr>
-        #             <th>Total Amount</th>
-        #             <td>{1}</td>
-        #         </tr>
-        #         """
-        #     ).format(docname, doc.grand_total, payment_link, doc.customer_name, doc.transaction_date)
-        
-        # # Append the payment link row and closing message
-        # message += _(
-        #     """
-        #          <tr>
-        #             <td colspan="2" style="text-align: center; padding-top: 20px;">
-        #                 <a href="{2}" style="background-color: #4CAF50; /* Green */
-        #                                    border: none;
-        #                                    color: white;
-        #                                    padding: 10px 10px;
-        #                                    text-align: center;
-        #                                    text-decoration: none;
-        #                                    display: inline-block;
-        #                                    font-size: 14px;
-        #                                    margin-top: 10px;
-        #                                    cursor: pointer;">Make Payment</a>
-        #             </td>
-        #         </tr>
-        #     </table>
-            
-        #     <p>Best regards,<br>NHK MEDICAL PRIVATE LIMITED</p>
-        #     """
-        # ).format(docname, doc.grand_total, payment_link, doc.customer_name, doc.transaction_date)
-
-#         # Fetch the PDF content using requests library
-#         pdf_response = requests.get(pdf_url)
-#         pdf_content = pdf_response.content
-#         # cc_list = ["srikanth.p_cse2019@svec.edu.in", "vatsalkanojiyaprofessional@gmail.com"]
-
-#         # Send the email using Frappe's email API
-#         frappe.sendmail(
-#             recipients=customer_email_id,
-#             sender=None,  # Use default sender configured in Frappe
-#             subject=subject,
-#             message=message,
-#             attachments=[{
-#                 'fname': f'Sales_Order_{docname}.pdf',
-#                 'fcontent': pdf_content
-#             }],
-#             # cc=cc_list
-#         )
-
-#         # Return True indicating email sent successfully
-#         return True
-
-#     except Exception as e:
-#         # Handle any exceptions and log them if necessary
-#         frappe.log_error(f"Error sending approval email for Sales Order {docname}: {e}")
-#         return False
-
 
 
 
@@ -2539,40 +2430,6 @@ def make_rental_device_assign(docname, item_group, item_code):
         frappe.log_error(f"Error in make_rental_device_assign: {e}")
         frappe.throw("An error occurred while processing the request. Please try again.")
 
-
-# @frappe.whitelist()
-# def get_item_groups():
-#     item_groups = frappe.get_all('Sales Order Item', filters={'docstatus': 1}, distinct=True, pluck='item_group')
-#     return item_groups
-
-
-
-
-# @frappe.whitelist()
-# def make_ready_for_delivery(docname):
-#     # Your logic here
-#     # Get the 'Sales Order' document
-#     rental_group_order = frappe.get_doc('Sales Order', docname)
-    
-#     # Update the status of the 'Sales Order'
-#     rental_group_order.status = 'Ready for Delivery'
-#     rental_group_order.save()
-
-# 	sales_order_items = frappe.get_all("Sales Order Item", filters={"parent": docname}, fields=["name"])
-
-#     # Iterate through the fetched Sales Order Items and update their child_status to "Approved"
-#     for item in sales_order_items:
-#         sales_order_item = frappe.get_doc("Sales Order Item", item.name)
-#         sales_order_item.child_status = "Ready for Delivery"
-#         sales_order_item.save()
-
-#     # Iterate through related 'Rental Order' documents and update their status
-#     # for rental_order in frappe.get_all('Rental Order', filters={'sales_order_id': docname}):
-#     #     rental_order_doc = frappe.get_doc('Rental Order', rental_order.name)
-#     #     rental_order_doc.status = 'Ready for Delivery'
-#     #     rental_order_doc.save()
-
-#     return "Ready for Delivery Success"
 
 
 @frappe.whitelist()
@@ -2806,7 +2663,7 @@ def make_submitted_to_office(docname, item_code, submitted_date):
     try:
         # Convert the string representation of the list to an actual list
         item_codes = ast.literal_eval(item_code)
-        print('asdddddddddddddddddddddddddddddddddddddddddddd',item_codes)
+        # print('asdddddddddddddddddddddddddddddddddddddddddddd',item_codes)
         # Get the 'Sales Order' document
         doc = frappe.get_doc('Sales Order', docname)
 
@@ -2977,51 +2834,6 @@ def get_repeated_sales_orders():
     return {'message': repeated_sales_orders}
 
 
-# custom_script_path/nhk/nhk/doctype/rental_group_order/rental_group_order.py
-
-# import frappe
-
-# @frappe.whitelist()
-# def update_item_status_code(itemCode1, docname):
-#     item = frappe.get_doc("Item", {"item_code": itemCode1})
-#     if item:
-#         item.status = "Available"
-#         item.save(ignore_permissions=True)
-#         update_rental_order_status(itemCode1)
-
-#         # Check if all related Rental Orders are closed
-#         rental_orders = frappe.get_all("Rental Order", filters={"rental_group_id": docname}, fields=["status"])
-#         all_orders_closed = all(order.get("status") == "Closed" for order in rental_orders)
-
-#         doc = frappe.get_doc("Sales Order", docname)
-#         doc.status = "Closed" if all_orders_closed else "Partially Closed"
-#         doc.save(ignore_permissions=True)
-
-#         return True
-#     else:
-#         return False
-
-
-
-# import frappe
-
-# @frappe.whitelist()
-# def update_rental_order_status(itemCode1):
-#     # Retrieve Rental Orders based on the item_code field in the items child table
-#     rental_orders = frappe.get_all("Rental Order", filters={"item_code": itemCode1}, fields=["name"])
-
-#     if rental_orders:
-#         for rental_order in rental_orders:
-#             # Retrieve each rental order document
-#             rental_order_doc = frappe.get_doc("Rental Order", rental_order.name)
-
-#             # Set status to "Closed" for each rental order
-#             rental_order_doc.status = "Closed"
-#             rental_order_doc.save(ignore_permissions=True)
-
-#         return True
-#     else:
-#         return False
 
 import frappe
 
@@ -3133,41 +2945,7 @@ def update_status_to_picked_up(item_code, docname, child_name,picked_up_datetime
         return False
 
 
-# import frappe
 
-# @frappe.whitelist()
-# def update_status_to_submitted_to_office(item_code, submission_datetime, docname):
-#     try:
-#         # Retrieve the item document
-#         item = frappe.get_doc("Item", {"item_code": item_code})
-#         if item:
-#             item.status = "Available"
-#             item.save(ignore_permissions=True)
-#             update_rental_order_status(item_code)
-
-#             # Check if all related Rental Orders are closed
-#             rental_orders = frappe.get_all("Rental Order", filters={"item_code": item_code, "rental_group_id": docname}, fields=["status"])
-#             all_orders_closed = all(order.get("status") == "Closed" for order in rental_orders)
-#             # print(all_orders_closed)
-#             # Update the status of the Sales Order only if all orders are closed
-#             if all_orders_closed:
-#                 doc = frappe.get_doc("Sales Order", docname)
-#                 doc.status = "Closed"
-#                 doc.save(ignore_permissions=True)
-#             else:
-#                 doc = frappe.get_doc("Sales Order", docname)
-#                 doc.status = "Partially Closed"
-#                 doc.save(ignore_permissions=True)
-                
-#             return True
-#         else:
-#             return False
-#     except Exception as e:
-#         frappe.log_error(f"Error updating status to Submitted to Office: {e}", "Sales Order")
-#         return False
-
-
-import frappe
 
 @frappe.whitelist()
 def update_status_to_submitted_to_office(item_code, submission_datetime, docname, child_name):
@@ -3428,6 +3206,7 @@ def create_renewal_order(sales_order_name):
     new_sales_order.payment_status = 'UnPaid'
     new_sales_order.outstanding_security_deposit_amount = 0
     new_sales_order.custom_razorpay_payment_url = ''
+    new_sales_order.custom_razorpay_payment_link_log_id = ''
     for item in new_sales_order.items:
         item.read_only = 1
     # Increment the renewal_order_count of the new sales order
@@ -3661,66 +3440,7 @@ def validate_and_update_payment_and_security_deposit_status(docname,master_order
         frappe.log_error(frappe.get_traceback(), _("Failed to update payment status"))
         frappe.throw(_("Failed to update payment status. Error: {0}".format(str(e))))
 
-# @frappe.whitelist()
-# def security_deposit_status(docname):
-#     try:
-#         sales_order = frappe.get_doc("Sales Order", docname)
-#         # Query Journal Entry records based on sales_order_id and security_deposit_type
-#         journal_entries = frappe.get_all("Journal Entry", 
-#                                           filters={"sales_order_id": docname, 
-#                                                    "security_deposite_type": "SD Amount Received From Client"},
-#                                           fields=["name", "total_debit"])
-        
-#         # Calculate total debit amount from the filtered journal entries
-#         total_debit_amount = sum(journal_entry.total_debit for journal_entry in journal_entries)
-        
-#         # Print total debit amount for debugging
-#         # print("Total Debit Amount:", total_debit_amount)
-        
-#         # Convert sales_order.security_deposit to float
-#         security_deposit = float(sales_order.security_deposit)
 
-#         # Update the paid_security_deposit_amount field
-#         sales_order.paid_security_deposite_amount = total_debit_amount
-
-#         outstanding_security_deposit_amount = security_deposit - total_debit_amount
-
-#         # Update the outstanding_security_deposit_amount field
-#         sales_order.outstanding_security_deposit_amount = outstanding_security_deposit_amount
-
-#         # Determine the security deposit status based on the outstanding amount
-#         if outstanding_security_deposit_amount == 0:
-#             # If outstanding amount is zero, set security_deposit_status to 'Paid'
-#             sales_order.security_deposit_status = 'Paid'
-#         elif outstanding_security_deposit_amount == security_deposit:
-#             # If outstanding amount is equal to total security deposit, set security_deposit_status to 'Unpaid'
-#             sales_order.security_deposit_status = 'Unpaid'
-#         else:
-#             # If outstanding amount is not zero and not equal to total security deposit, set security_deposit_status to 'Partially Paid'
-#             sales_order.security_deposit_status = 'Partially Paid'
-        
-#         # Save the changes to the document
-#         sales_order.save()
-        
-#         # Return True to indicate successful update
-#         return True
-
-#     except Exception as e:
-#         # Log and raise any exceptions for debugging
-#         frappe.log_error(frappe.get_traceback(), _("Failed to update payment status"))
-#         frappe.throw(_("Failed to update payment status. Error: {0}".format(str(e))))
-
-
-
-# import frappe
-
-# @frappe.whitelist()
-# def validateOverlap(docname):
-#     previous_order = frappe.get_doc("Sales Order", docname)
-#     return {
-#         "start_date": previous_order.start_date,
-#         "end_date": previous_order.end_date
-#     }
 
 
 def check_overlap(self):
@@ -3878,36 +3598,8 @@ def get_payment_entry_records(sales_order_id):
         return None
 
 
-# Method to delete journal entry
-# import frappe
-# @frappe.whitelist()
-# def cancel_and_delete_journal_entry(journal_entry_id):
-#     # Get the journal entry
-#     journal_entry = frappe.get_doc("Journal Entry", journal_entry_id)
 
-#     # Check if the journal entry is submitted
-#     if journal_entry.docstatus == 1:
-#         # Cancel the journal entry
-#         journal_entry.cancel()
 
-#         # Commit the changes
-#         frappe.db.commit()
-
-#         # # Delete the journal entry
-#         # frappe.delete_doc("Journal Entry", journal_entry_id)
-
-#         # # Commit the deletion
-#         # frappe.db.commit()
-
-#         return True, "Journal entry cancelled and deleted successfully."
-#     else:
-#         return False, "Journal entry is not submitted."
-
-# import frappe
-# from frappe import _
-
-import frappe
-from frappe import _
 
 @frappe.whitelist()
 def cancel_and_delete_journal_entry(journal_entry_id):
@@ -4319,14 +4011,7 @@ def create_journal_entry_and_payment_entry(adjust_against, adjust_amount, sales_
 
 def create_journal_entry_adjustment(adjust_against, adjust_amount, sales_order_name, master_order_id, customer,item=None,item_remark=None):
     try:
-        # print("adjust_against:", adjust_against)
-        # print("adjust_amount:", adjust_amount)
-        # print("refundable_security_deposit:", refundable_security_deposit)
-        # print("sales_order_name:", sales_order_name)
-        # print("master_order_id:", master_order_id)
-        # print("customer:", customer)
-        # print("item:", item)
-        # print("item_remark:", item_remark)
+        
         amount_to_return = adjust_amount
         if adjust_against == 'Product Damaged':
             amount_to_return = 0
@@ -4462,10 +4147,7 @@ def update_security_deposit(master_order_id, remark, updated_security_deposit,am
         # Fetch the Sales Order document
         sales_order = frappe.get_doc("Sales Order", master_order_id)
         
-        # Log debug information
-        # print(f"Updating security deposit for Sales Order: {remark}")
-        # print(f"Previous security deposit: {sales_order.security_deposit}")
-        # print(f"Updated security deposit: {updated_security_deposit}")
+       
         
         # Update the security deposit field
         sales_order.security_deposit = updated_security_deposit
@@ -4667,81 +4349,6 @@ def create_razorpay_payment_link_sales_order(amount, invoice_name, customer, cus
 ####################################with razorpay payment details################################################
 
 
-# @frappe.whitelist(allow_guest=True)
-# def get_razorpay_payment_details(sales_order_id, customer, actual_amount, final_amount):
-#     try:
-#         frappe.msgprint("Payment Details Function Called")
-#         payment_link = frappe.get_all("Payment Link Log", filters={
-#             "customer_id": customer,
-#             "sales_order": sales_order_id[:18],
-#             "total_amount": final_amount,
-#             "enabled": 1
-#         }, fields=["link_id"])
-        
-#         if not payment_link:
-#             frappe.msgprint("Payment link not found.")
-#             return
-        
-#         razorpay_payment_link_id = payment_link[0].link_id
-#         # razorpay_api = frappe.get_doc('Razorpay Api')
-#         # custom_razorpay_api_url = f'https://api.razorpay.com/v1/payment_links/{razorpay_payment_link_id}'
-#         admin_settings = frappe.get_doc('Admin Settings')
-#         razorpay_base_url = admin_settings.razorpay_base_url
-#         razorpay_key_id = admin_settings.razorpay_api_key
-#         razorpay_key_secret = admin_settings.razorpay_secret
-#         razorpay_api_url = razorpay_base_url + "payment_links/" + razorpay_payment_link_id
-#         response = requests.get(razorpay_api_url, auth=(razorpay_key_id, razorpay_key_secret))
-
-
-#         if response.status_code == 200:
-#             razorpay_response = response.json()
-#             print('razorpay_responseeeeeeeeeeeeeeeeeeeeeeeee',razorpay_response)
-#             payments = razorpay_response.get('payments')
-#             amount_paid = razorpay_response.get('amount_paid')
-#             razorpay_payment_id = razorpay_response.get('payment_id')
-#             print('razorpay_payment_iddddddddd',razorpay_payment_id)
-#             if payments:
-#                 most_recent_payment = max(payments, key=lambda x: x['created_at'])
-#                 payment_amount = most_recent_payment.get('amount')
-#                 amount_paid_razorpay = int(float(amount_paid) / 100)
-#                 sales_order = frappe.get_doc("Sales Order", sales_order_id)
-#                 order_type = sales_order.order_type
-#                 razorpay_link_so = sales_order.custom_razorpay_payment_url
-#                 rounded_total = sales_order.rounded_total
-#                 master_order_id = sales_order.master_order_id
-#                 journal_entry = None  # Initialize journal_entry to None
-
-#                 if order_type == "Rental":
-#                     security_deposit = sales_order.security_deposit if sales_order.security_deposit else 0
-#                     if isinstance(security_deposit, str):
-#                         security_deposit = float(security_deposit) if '.' in security_deposit else int(security_deposit)
-
-#                     payment_entry = create_payment_entry(rounded_total, sales_order_id[:18], customer, razorpay_payment_link_id, amount_paid_razorpay,master_order_id)
-                    
-#                     if security_deposit > 0:
-#                         frappe.set_user("Administrator")
-#                         journal_entry = create_journal_entry_razorpay(security_deposit, sales_order_id, customer, razorpay_payment_link_id,master_order_id)
-#                         frappe.set_user("Guest")
-                    
-#                     create_razorpay_payment_details(payment_entry, journal_entry, sales_order_id, order_type, customer, razorpay_payment_link_id, razorpay_link_so)
-
-#                     return render_payment_success_page(final_amount, sales_order_id)
-                
-#                 else:
-#                     frappe.msgprint("Order type is not Rental. Proceeding with standard payment entry.")
-#                     payment_entry = create_payment_entry(rounded_total, sales_order_id[:18], customer, razorpay_payment_link_id, actual_amount,master_order_id)
-#                     create_razorpay_payment_details(payment_entry, journal_entry, sales_order_id, order_type, customer, razorpay_payment_link_id, razorpay_link_so)
-#                     return render_payment_success_page(final_amount, sales_order_id)
-#             else:
-#                 frappe.msgprint('Amount Paid not found in the response.')
-#                 frappe.log_error('Amount Paid not found in the response.')
-#         else:
-#             frappe.msgprint(f'Request failed with status code: {response.status_code}')
-#             frappe.log_error(f'Request failed with status code: {response.status_code}; Response text: {response.text}')
-#     except Exception as e:
-#         frappe.msgprint(f'Error: {e}')
-#         frappe.log_error(f'Error: {e}')
-import frappe
 import requests
 from frappe.utils import nowdate
 
@@ -4890,6 +4497,7 @@ def get_razorpay_payment_details(sales_order_id, customer, actual_amount, final_
                             razorpay_response,
                             razorpay_payment_ids
                         )
+                        frappe.set_user("Administrator")
                         create_razorpay_payment_details(
                             payment_entry, 
                             None,  # No journal entry for non-rental orders
@@ -4900,6 +4508,7 @@ def get_razorpay_payment_details(sales_order_id, customer, actual_amount, final_
                             razorpay_link_so,
                             payment_link_log_id
                         )
+                        frappe.set_user("Guest")
                         return render_payment_success_page(raz_amount_paid, sales_order_id[:18])
             else:
                 frappe.msgprint(f'Payment Link Log not found for link_id: {razorpay_payment_link_id}')
@@ -5019,7 +4628,7 @@ def create_payment_entry(rounded_total, sales_order_id, customer, razorpay_payme
         payment_entry.submit()
         frappe.db.commit()
 
-        frappe.set_user("Guest")
+        # frappe.set_user("Guest")
         return payment_entry.name
     except frappe.exceptions.ValidationError as e:
         frappe.log_error(f"Error creating Payment Entry: {e}")
@@ -5332,51 +4941,11 @@ def get_bin_data(item_codes):
             if data['warehouse'] not in warehouse:
                 warehouse.append(data['warehouse'])
         items_data.append(item_data)
-    print(items_data)
+    # print(items_data)
  
     return {'items_data':items_data,'warehouse':warehouse}
 
-#cancel status
 
-# @frappe.whitelist()
-# def check_item_status(sales_order_name):
-#     sales_order = frappe.get_doc("Sales Order", sales_order_name)
-#     item_status_info = []
-
-#     for item in sales_order.items:
-#         item_code = item.item_code
-#         current_item_status = frappe.get_value("Item", item_code, "status")
-#         other_orders = frappe.get_all("Sales Order",
-#                                       filters={"docstatus": 1,  # Only consider submitted sales orders
-#                                                "name": ("!=", sales_order_name),
-#                                                "status": ("not in", ["Submitted to Office"])},
-#                                       fields=["name", "status"])
-#         for order in other_orders:
-#             sales_order_doc = frappe.get_doc("Sales Order", order.name)
-#             for order_item in sales_order_doc.items:
-#                 if order_item.item_code == item_code:
-#                     item_status_info.append(f"Item {item_code} (current status: {current_item_status}) is present in Sales Order {sales_order_doc.name} ({sales_order_doc.status})")
-#                     break  # No need to check other items in this order if the item is already found
-
-#     return item_status_info
-
-
-# @frappe.whitelist()
-# def cancel_sales_order(sales_order_name):
-#     sales_order = frappe.get_doc("Sales Order", sales_order_name)
-#     sales_order.cancel()
-    
-#     for item in sales_order.items:
-#         item_code = item.item_code
-#         item_doc = frappe.get_doc("Item", item_code)
-#         if item_doc.status in ["Rented Out", "Reserved"]:
-#             item_doc.status = "Available"
-#             item_doc.customer_name = ""
-#             item_doc.customer_n = ""
-#             item_doc.save()
-
-#     frappe.db.commit()
-#     return True
 
 
 
@@ -5465,7 +5034,7 @@ def get_sales_orders_containing_item(item_code):
         AND
             so.status != 'Submitted to Office'
     """, item_code, as_dict=True)
-    print(sales_orders)
+    # print(sales_orders)
     return {
         'item_status': item_status,
         'item_group': item_group,
@@ -5499,37 +5068,6 @@ def update_item_status(item_code, status):
     # Commit the transaction
     frappe.db.commit()
     return f"Item {item_code} updated to status {status}"
-
-
-# @frappe.whitelist()
-# def get_draft_orders_containing_item(item_code):
-#     """
-#     Fetches draft sales orders (docstatus == 0) containing the specified item code in their items.
-#     """
-#     draft_orders = frappe.get_all(
-#         'Sales Order',
-#         filters={
-#             'docstatus': 0  # Draft orders have docstatus 0
-#         },
-#         fields=['name', 'customer_name', 'status']
-#     )
-
-#     orders_with_item = []
-
-#     for order in draft_orders:
-#         items = frappe.get_all(
-#             'Sales Order Item',
-#             filters={
-#                 'parent': order.name,
-#                 'item_code': item_code
-#             },
-#             fields=['name']
-#         )
-
-#         if items:
-#             orders_with_item.append(order)
-
-#     return orders_with_item
 
 
 
@@ -5601,28 +5139,6 @@ def get_rental_orders_details_batch(item_codes):
 
 
 
-
-# def get_sales_orders_containing_item(item_code):
-#     """
-#     Fetches sales orders containing the specified item code in their items.
-#     """
-#     sales_orders = frappe.get_all(
-#         'Sales Order',
-#         filters={
-#             'docstatus': 1  # Submitted orders have docstatus 1
-#         },
-#         fields=['name', 'customer_name'],
-#         joins={
-#             'Sales Order Item': {
-#                 'table': 'tabSales Order Item',
-#                 'condition': 'tabSales Order.name = tabSales Order Item.parent'
-#             }
-#         },
-#         group_by='tabSales Order.name',
-#         having=f"SUM(IF(tabSales Order Item.item_code = '{item_code}', 1, 0)) > 0"
-#     )
-    
-#     return sales_orders
 
 
 
