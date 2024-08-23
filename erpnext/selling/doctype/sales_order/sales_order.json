@@ -2193,6 +2193,7 @@
    "fieldtype": "Column Break"
   },
   {
+   "allow_on_submit": 1,
    "fetch_from": "customer.sales_person",
    "fieldname": "sales_person",
    "fieldtype": "Link",
@@ -2233,7 +2234,7 @@
  "idx": 105,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-08-09 11:52:42.720939",
+ "modified": "2024-08-23 13:08:23.973533",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order",
