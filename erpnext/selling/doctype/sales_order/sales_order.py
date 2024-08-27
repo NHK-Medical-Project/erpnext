@@ -651,23 +651,56 @@ class SalesOrder(SellingController):
         # self.save()
     
 
-
-
-    def on_cancel(self):
-
-        self.status = "Cancelled"
-
+    def before_cancel(self):
         if self.previous_order_id:
+            # if self.status == 'Submitted to Office':
+            #     frappe.throw('Submitted to Office Record cannot be canceled')
+            
             sales_order_renewal = frappe.get_doc("Sales Order", self.previous_order_id)
-            sales_order_renewal.status = "Active"
+            sales_order_renewal.status = self.status
+
+            # Create a dictionary for current form items for quick lookup
+            current_form_items = {item.item_code: item.child_status for item in self.items}
 
             for item in sales_order_renewal.items:
-                item.child_status = "Active"
-                item_sales_order_update = frappe.get_doc('Item',item.item_code)
-                item_sales_order_update.custom_sales_order_id = self.previous_order_id
-                item_sales_order_update.save()
-
+                # Set child_status from current form items
+                if item.item_code in current_form_items:
+                    item.child_status = current_form_items[item.item_code]
+                else:
+                    item.child_status = "Active"  # Default value if not found in current form items
+                
+                # Update item in Item doctype
+                item_sales_order_update = frappe.get_doc('Item', item.item_code)
+                if self.status != 'Submitted to Office':
+                    item_sales_order_update.custom_sales_order_id = self.previous_order_id
+                    item_sales_order_update.save()
+            
+            # Save the updated Sales Order
             sales_order_renewal.save()
+        return super().before_cancel()
+
+    def on_cancel(self):
+        if self.status == 'RENEWED':
+            frappe.throw(
+            'Cannot cancel this record because it has been RENEWED'
+        )
+        # if self.status == 'Submitted to Office' and self.is_renewed == 1:
+        #         frappe.throw(
+        #     'Cannot cancel this record because it has been submitted to office and is marked as renewed.'
+        # )
+        self.status = "Cancelled"
+
+        # if self.previous_order_id:
+        #     sales_order_renewal = frappe.get_doc("Sales Order", self.previous_order_id)
+        #     sales_order_renewal.status = "Active"
+
+        #     for item in sales_order_renewal.items:
+        #         item.child_status = "Active"
+        #         item_sales_order_update = frappe.get_doc('Item',item.item_code)
+        #         item_sales_order_update.custom_sales_order_id = self.previous_order_id
+        #         item_sales_order_update.save()
+
+        #     sales_order_renewal.save()
         # if not self.previous_order_id:
         if self.order_type == 'Rental' and not self.previous_order_id and self.is_renewed == 0:
             self.item_status_change_cancel()
