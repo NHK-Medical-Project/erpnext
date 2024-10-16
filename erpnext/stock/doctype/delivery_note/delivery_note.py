@@ -499,15 +499,16 @@ class DeliveryNote(SellingController):
 
     def update_sales_order_with_serial_numbers123(self):
         for item in self.items:
-            item_name = item.item_name
-            qty = item.qty
-            serial_and_batch_bundle = item.serial_and_batch_bundle
-            against_sales_order = item.against_sales_order
-            bundle = frappe.get_doc("Serial and Batch Bundle", item.serial_and_batch_bundle)
-            serial_numbers = ', '.join([entry.serial_no for entry in bundle.entries])
-            # print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!",item.item_code,serial_numbers)
-            if against_sales_order:
-                self.update_sales_order_with_serial_numbers(against_sales_order, item.item_code,serial_numbers)
+            if item.use_serial_batch_fields == 1:
+                item_name = item.item_name
+                qty = item.qty
+                serial_and_batch_bundle = item.serial_and_batch_bundle
+                against_sales_order = item.against_sales_order
+                bundle = frappe.get_doc("Serial and Batch Bundle", item.serial_and_batch_bundle)
+                serial_numbers = ', '.join([entry.serial_no for entry in bundle.entries])
+                # print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!",item.item_code,serial_numbers)
+                if against_sales_order:
+                    self.update_sales_order_with_serial_numbers(against_sales_order, item.item_code,serial_numbers)
 
     @frappe.whitelist()
     def update_sales_order_with_serial_numbers(self, sales_order_name, item_code,serial_numbers):
