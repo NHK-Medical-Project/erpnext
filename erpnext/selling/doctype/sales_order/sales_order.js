@@ -973,6 +973,21 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
                             );
                         }, __('Action'));
                     }
+
+
+					if (flt(doc.per_billed, 2) < 100 && doc.status === 'Submitted to Office' && doc.order_type === 'Rental') {
+						this.frm.add_custom_button(__('Order Completed'), () => {
+							frappe.confirm(
+								__('Are you sure you want to make the status as Order Closed?'),
+								() => {
+									this.make_order_completed(); // Call the JavaScript method
+								},
+								() => {
+									// Do nothing on cancel
+								}
+							);
+						}, __('Action'));
+					}
 					// delivery note
 					if (
 						flt(doc.per_delivered, 2) < 100 &&
@@ -999,7 +1014,64 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 							__("Action")
 						);
 					}
-
+					 // Check the status of the sales order
+					 if (this.frm.doc.status === "Rental SO Completed") {
+						// Lock all fields by making them read-only
+						Object.keys(this.frm.fields_dict).forEach(fieldname => {
+							if (!this.frm.fields_dict[fieldname].df.hidden && 
+								this.frm.fields_dict[fieldname].df.fieldtype !== 'Button') {
+								this.frm.set_df_property(fieldname, 'read_only', 1);
+							}
+						});
+				
+						// Hide primary action button if it exists
+						if (this.frm.page.btn_primary) {
+							this.frm.page.btn_primary.hide();
+						}
+				
+						// Clear the secondary button menu
+						this.frm.page.clear_menu(); // This clears all secondary buttons
+				
+						// Hide specific buttons using their class names or data-labels
+						const buttonsToHide = [
+							'Generate Payment Link',
+							'Action',
+							'Make Payment',
+							'Adjust Deposit',
+							'Return Security Deposit',
+							'Update Current SD',
+							'Order Option'
+						];
+				
+						buttonsToHide.forEach(label => {
+							// Hide button by data-label attribute
+							const button = document.querySelector(`[data-label="${encodeURIComponent(label)}"]`);
+							if (button) {
+								button.style.display = 'none'; // Hide the button
+							}
+						});
+				
+						// If you want to hide the dropdown items in the menu
+						const dropdownItems = document.querySelectorAll('.dropdown-menu a.dropdown-item');
+						dropdownItems.forEach(item => {
+							const itemLabel = decodeURIComponent(item.getAttribute('data-label'));
+							if (buttonsToHide.includes(itemLabel)) {
+								item.style.display = 'none'; // Hide the dropdown item
+							}
+						});
+					} else {
+						// If the status is not "Rental SO Completed", unlock fields and show buttons if needed
+						Object.keys(this.frm.fields_dict).forEach(fieldname => {
+							this.frm.set_df_property(fieldname, 'read_only', 0);
+						});
+				
+						// Show primary action button again if needed
+						this.frm.page.set_primary_action(__('Save'), () => {
+							// Define what happens when the primary action is clicked
+						});
+				
+						// Optionally re-add secondary buttons or custom buttons if needed
+					}
 					// material request
 					// if (
 					// 	!doc.order_type ||
@@ -1843,35 +1915,35 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 
     make_ready_for_delivery() {
 		const me = this; // Preserve reference to 'this' object
-		var role_profile = [
-			{ role_profile: "NHK Technician" }, // Example data, replace with actual data
-			{ role_profile: "Other Role" }
-		];
+		// var role_profile = [
+		// 	{ role_profile: "NHK Technician" }, // Example data, replace with actual data
+		// 	{ role_profile: "Other Role" }
+		// ];
 		frappe.prompt([
 			{
 				fieldname: 'technician_name',
 				fieldtype: 'Link',
-				options: 'NHK User',
-				label: 'Technician Name',
+				options: 'Technician Details',
+				label: 'Technician Id',
 				reqd: 1,
-				get_query: function() {
-					// Fetch NHK Technicians based on their role profile
-					var role_profiles = [];
+				// get_query: function() {
+				// 	// Fetch NHK Technicians based on their role profile
+				// 	var role_profiles = [];
 		
-					// Iterate over the role profiles and extract the role_profile value for NHK Technicians
-					for (var i = 0; i < role_profile.length; i++) {
-						if (role_profile[i].role_profile === 'NHK Technician') {
-							role_profiles.push(role_profile[i].role_profile);
-						}
-					}
+				// 	// Iterate over the role profiles and extract the role_profile value for NHK Technicians
+				// 	for (var i = 0; i < role_profile.length; i++) {
+				// 		if (role_profile[i].role_profile === 'NHK Technician') {
+				// 			role_profiles.push(role_profile[i].role_profile);
+				// 		}
+				// 	}
 		
-					// Return filters to load NHK Users who are NHK Technicians
-					return {
-						filters: {
-							'role_profile': ['in', role_profiles]
-						}
-					};
-				},
+				// 	// Return filters to load NHK Users who are NHK Technicians
+				// 	return {
+				// 		filters: {
+				// 			'role_profile': ['in', role_profiles]
+				// 		}
+				// 	};
+				// },
 				onchange: function() {
 					// Function to dynamically update technician mobile based on selected technician
 					var technicianName = this.value;
@@ -1879,14 +1951,17 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 						frappe.call({
 							method: 'frappe.client.get_value',
 							args: {
-								doctype: 'NHK User',
+								doctype: 'Technician Details',
 								filters: { 'name': technicianName },
-								fieldname: ['mobile_no']
+								fieldname: ['mobile_number','name','name1']
 							},
 							callback: function(response) {
-								if (response.message && response.message.mobile_no) {
+								// console.log(response)
+								if (response.message && response.message.mobile_number && response.message.name) {
 									// Set the value of technician mobile
-									cur_dialog.fields_dict.technician_mobile.set_input(response.message.mobile_no);
+									cur_dialog.fields_dict.technician_mobile.set_input(response.message.mobile_number);
+									cur_dialog.fields_dict.technician_id.set_input(response.message.name);
+									cur_dialog.fields_dict.technician_name1.set_input(response.message.name1);
 								}
 							}
 						});
@@ -1894,13 +1969,29 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 				}
 			},
 			{
+				fieldname: 'technician_name1',
+				fieldtype: 'Data',
+				label: 'Technician Name',
+				reqd: 1
+			},
+			{
 				fieldname: 'technician_mobile',
 				fieldtype: 'Data',
 				label: 'Technician Mobile Number',
 				reqd: 1
+			},
+			
+			{
+				fieldname: 'technician_id',
+				fieldtype: 'Data',
+				label: 'Technician Id',
+				hidden:1,
+				// reqd: 1
 			}
+
 		], function(values) {
 			var technicianName = values.technician_name;
+			var technicianid = values.technician_name;
 			var technicianMobile = values.technician_mobile;
 	
 			// Call the Python function passing the technician details
@@ -1909,7 +2000,9 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 				args: {
 					docname: me.frm.doc.name, // Use me.frm.doc.name instead of this.frm.doc.name
 					technician_name: technicianName,
-					technician_mobile: technicianMobile
+					technician_mobile: technicianMobile,
+					technician_id: technicianid,
+
 				},
 				callback: function(response) {
 					// Handle the response
@@ -1937,238 +2030,6 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 	}
 
 
-	// make_sales_invoice_delivery_note() {
-	// 	const me = this; // Preserve reference to 'this' object
-		
-	// 	// Call the Python function to create Sales Invoice and Delivery Note
-	// 	frappe.call({
-	// 		method: 'erpnext.selling.doctype.sales_order.sales_order.create_sales_invoice_and_delivery_note', // Change to your actual module, doctype, and file name
-	// 		args: {
-	// 			docname: me.frm.doc.name, // Use me.frm.doc.name instead of this.frm.doc.name
-	// 		},
-	// 		callback: function(response) {
-	// 			// Handle the response
-	// 			if (response.message) {
-	// 				// Log the result to the console
-	// 				console.log(response.message);
-	
-	// 				// Display a success message
-	// 				frappe.msgprint({
-	// 					title: __('Success'),
-	// 					message: __('Sales Invoice and Delivery Note have been created.'),
-	// 					indicator: 'green'
-	// 				});
-	// 				// Reload the entire page after a short delay (adjust as needed)
-	// 				// setTimeout(() => {
-	// 				// 	window.location.reload();
-	// 				// }, 1000); // 1000 milliseconds = 1 second
-	// 			} else {
-	// 				// Handle the case where the response does not contain a message
-	// 				console.error('Unexpected response:', response);
-	// 				frappe.msgprint({
-	// 					title: __('Error'),
-	// 					message: __('Failed to create Sales Invoice and Delivery Note.'),
-	// 					indicator: 'red'
-	// 				});
-	// 			}
-	// 		}
-	// 	});
-	// }
-
-
-
-	// make_sales_invoice_delivery_note() {
-	// 	const me = this; // Preserve reference to 'this' object
-	
-	// 	// Call the Python function to create Sales Invoice and Delivery Note
-	// 	frappe.call({
-	// 		method: 'erpnext.selling.doctype.sales_order.sales_order.create_sales_invoice_and_delivery_note',
-	// 		args: {
-	// 			docname: me.frm.doc.name, // Use me.frm.doc.name instead of this.frm.doc.name
-	// 		},
-	// 		callback: function(response) {
-	// 			// Handle the response
-	// 			if (response.message) {
-	// 				console.log(response.message);
-	
-	// 				if (response.message.delivery_note) {
-	// 					const delivery_note_name = response.message.delivery_note;
-	
-	// 					// Fetch the Delivery Note details
-	// 					frappe.call({
-	// 						method: 'frappe.client.get',
-	// 						args: {
-	// 							doctype: 'Delivery Note',
-	// 							name: delivery_note_name
-	// 						},
-	// 						callback: function(r) {
-	// 							if (r.message) {
-	// 								const delivery_note = r.message;
-	// 								const items = delivery_note.items.map(item => {
-	// 									return {
-	// 										'fieldtype': 'Select',
-	// 										'fieldname': item.item_code + '_serial_number',
-	// 										'label': `${item.item_code} - Serial Number`,
-	// 										'options': getSerialNumbers(item.item_code) // Fetch serial numbers for the item
-	// 									};
-	// 								});
-	
-	// 								frappe.prompt(items,
-	// 									function(values) {
-	// 										// Prepare serial numbers
-	// 										let serial_numbers = {};
-	// 										Object.keys(values).forEach(key => {
-	// 											serial_numbers[key] = values[key];
-	// 										});
-	
-	// 										// Update the Delivery Note with the serial numbers
-	// 										frappe.call({
-	// 											method: 'erpnext.selling.doctype.sales_order.sales_order.update_delivery_note_serial_numbers',
-	// 											args: {
-	// 												docname: delivery_note_name,
-	// 												serial_numbers: serial_numbers,
-	// 												item_code: delivery_note.items[0].item_code  // Pass the item_code from the first item
-	// 											},
-	// 											callback: function(r) {
-	// 												if (r.message) {
-	// 													frappe.msgprint({
-	// 														title: __('Success'),
-	// 														message: __('Sales Invoice and Delivery Note have been created and updated.'),
-	// 														indicator: 'green'
-	// 													});
-	// 													// Optionally reload the page
-	// 													setTimeout(() => {
-	// 														window.location.reload();
-	// 													}, 1000); // 1000 milliseconds = 1 second
-	// 												} else {
-	// 													frappe.msgprint({
-	// 														title: __('Error'),
-	// 														message: __('Failed to update Delivery Note with serial numbers.'),
-	// 														indicator: 'red'
-	// 													});
-	// 												}
-	// 											}
-	// 										});
-	// 									},
-	// 									__('Enter Serial Numbers'),
-	// 									__('Update')
-	// 								);
-	// 							}
-	// 						}
-	// 					});
-	// 				} else {
-	// 					frappe.msgprint({
-	// 						title: __('Success'),
-	// 						message: __('Sales Invoice has been created. No Delivery Note was created as no serial number was provided.'),
-	// 						indicator: 'green'
-	// 					});
-	// 				}
-	// 			} else {
-	// 				console.error('Unexpected response:', response);
-	// 				frappe.msgprint({
-	// 					title: __('Error'),
-	// 					message: __('Failed to create Sales Invoice and Delivery Note.'),
-	// 					indicator: 'red'
-	// 				});
-	// 			}
-	// 		}
-	// 	});
-	// }
-	
-	
-	
-	
-	// make_sales_invoice_delivery_note() {
-	// 	const me = this; // Preserve reference to 'this' object
-	
-	// 	// Call the Python function to create Sales Invoice and Delivery Note
-	// 	frappe.call({
-	// 		method: 'erpnext.selling.doctype.sales_order.sales_order.create_sales_invoice_and_delivery_note',
-	// 		args: {
-	// 			docname: me.frm.doc.name, // Use me.frm.doc.name instead of this.frm.doc.name
-	// 		},
-	// 		callback: function(response) {
-	// 			// Handle the response
-	// 			if (response.message) {
-	// 				if (typeof response.message === 'string') {
-	// 					// Handle string message
-	// 					frappe.msgprint({
-	// 						title: __('Message'),
-	// 						message: response.message,
-	// 						indicator: 'orange'
-	// 					});
-	// 				} else if (response.message.sales_invoice && response.message.delivery_note) {
-	// 					const delivery_note_name = response.message.delivery_note;
-	
-	// 					// Confirm if the user wants to select serial numbers
-	// 					frappe.confirm(
-	// 						__('Do you want to select serial numbers for the items in the Delivery Note?'),
-	// 						function() {
-	// 							// If the user confirms, redirect to the Delivery Note
-	// 							frappe.set_route("Form", "Delivery Note", delivery_note_name);
-	// 						},
-	// 						function() {
-	// 							// If the user declines, refresh and submit the Delivery Note automatically
-	// 							frappe.call({
-	// 								method: 'frappe.client.get',
-	// 								args: {
-	// 									doctype: 'Delivery Note',
-	// 									name: delivery_note_name
-	// 								},
-	// 								callback: function(r) {
-	// 									if (r.message) {
-	// 										frappe.call({
-	// 											method: 'erpnext.selling.doctype.sales_order.sales_order.submit_delivery_note',
-	// 											args: {
-	// 												docname: delivery_note_name
-	// 											},
-	// 											callback: function(r) {
-	// 												if (!r.exc) {
-	// 													frappe.msgprint({
-	// 														title: __('Success'),
-	// 														message: __('Delivery Note has been submitted successfully.'),
-	// 														indicator: 'green'
-	// 													});
-	// 												} else {
-	// 													frappe.msgprint({
-	// 														title: __('Error'),
-	// 														message: __('Failed to submit the Delivery Note.'),
-	// 														indicator: 'red'
-	// 													});
-	// 												}
-	// 											}
-	// 										});
-	// 									} else {
-	// 										frappe.msgprint({
-	// 											title: __('Error'),
-	// 											message: __('Failed to refresh the Delivery Note.'),
-	// 											indicator: 'red'
-	// 										});
-	// 									}
-	// 								}
-	// 							});
-	// 						}
-	// 					);
-	// 				} else {
-	// 					// Handle other object structures or errors
-	// 					frappe.msgprint({
-	// 						title: __('Error'),
-	// 						message: __('Failed to create Sales Invoice and Delivery Note.'),
-	// 						indicator: 'red'
-	// 					});
-	// 				}
-	// 			} else {
-	// 				console.error('Unexpected response:', response);
-	// 				frappe.msgprint({
-	// 					title: __('Error'),
-	// 					message: __('Failed to create Sales Invoice and Delivery Note.'),
-	// 					indicator: 'red'
-	// 				});
-	// 			}
-	// 		}
-	// 	});
-	// }
-	
 	
 	make_sales_invoice_delivery_note() {
 		const me = this; // Preserve reference to 'this' object
@@ -2479,27 +2340,27 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 			{
 				fieldname: 'technician_name',
 				fieldtype: 'Link',
-				options: 'NHK User',
-				label: 'Technician Name',
-				// reqd: 1,
-				get_query: function() {
-					// Fetch NHK Technicians based on their role profile
-					var role_profiles = [];
+				options: 'Technician Details',
+				label: 'Technician ID',
+				reqd: 1,
+				// get_query: function() {
+				// 	// Fetch NHK Technicians based on their role profile
+				// 	var role_profiles = [];
 		
-					// Iterate over the role profiles and extract the role_profile value for NHK Technicians
-					for (var i = 0; i < role_profile.length; i++) {
-						if (role_profile[i].role_profile === 'NHK Technician') {
-							role_profiles.push(role_profile[i].role_profile);
-						}
-					}
+				// 	// Iterate over the role profiles and extract the role_profile value for NHK Technicians
+				// 	for (var i = 0; i < role_profile.length; i++) {
+				// 		if (role_profile[i].role_profile === 'NHK Technician') {
+				// 			role_profiles.push(role_profile[i].role_profile);
+				// 		}
+				// 	}
 		
-					// Return filters to load NHK Users who are NHK Technicians
-					return {
-						filters: {
-							'role_profile': ['in', role_profiles]
-						}
-					};
-				},
+				// 	// Return filters to load NHK Users who are NHK Technicians
+				// 	return {
+				// 		filters: {
+				// 			'role_profile': ['in', role_profiles]
+				// 		}
+				// 	};
+				// },
 				onchange: function() {
 					// Function to dynamically update technician mobile based on selected technician
 					var technicianName = this.value;
@@ -2507,14 +2368,17 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 						frappe.call({
 							method: 'frappe.client.get_value',
 							args: {
-								doctype: 'NHK User',
+								doctype: 'Technician Details',
 								filters: { 'name': technicianName },
-								fieldname: ['mobile_no']
+								fieldname: ['mobile_number','name','name1']
 							},
 							callback: function(response) {
-								if (response.message && response.message.mobile_no) {
+								// console.log(response)
+								if (response.message && response.message.mobile_number && response.message.name) {
 									// Set the value of technician mobile
-									cur_dialog.fields_dict.technician_mobile.set_input(response.message.mobile_no);
+									cur_dialog.fields_dict.technician_mobile.set_input(response.message.mobile_number);
+									cur_dialog.fields_dict.technician_id.set_input(response.message.name);
+									cur_dialog.fields_dict.technician_name1.set_input(response.message.name1);
 								}
 							}
 						});
@@ -2522,9 +2386,22 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 				}
 			},
 			{
+				fieldname: 'technician_name1',
+				fieldtype: 'Data',
+				label: 'Technician Name',
+				reqd: 1
+			},
+			{
 				fieldname: 'technician_mobile',
 				fieldtype: 'Data',
 				label: 'Technician Mobile Number',
+				reqd: 1
+			},
+			{
+				fieldname: 'technician_id',
+				fieldtype: 'Data',
+				label: 'Technician Id',
+				hidden:1,
 				// reqd: 1
 			},
 			{
@@ -2551,6 +2428,7 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 			// Update RentalSales Order with the entered values
 			this.frm.doc.technician_name = values.technician_name;
 			this.frm.doc.technician_mobile = values.technician_mobile;
+			this.frm.doc.technician_id = values.technician_id;
 			this.frm.doc.Pickup_Date = values.pickup_date;
 			this.frm.doc.pickup_reason = values.pickup_reason;
 			this.frm.doc.pickup_remark = values.pickup_remark;
@@ -2573,6 +2451,7 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 				docname: this.frm.doc.name,
 				technician_name: values.technician_name,
 				technician_mobile: values.technician_mobile,
+				technician_id: values.technician_id,
 				pickup_date: values.pickup_date,
 				pickup_reason: values.pickup_reason,
 				pickup_remark: values.pickup_remark
@@ -2734,6 +2613,170 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 			}
 		});
 	}
+
+	make_order_completed() {
+		// Check security deposit and payment status before proceeding
+		if (this.frm.doc.security_deposit_status === 'Paid' && this.frm.doc.payment_status === 'Paid') {
+			// Show confirmation dialog
+			frappe.confirm(__('Are you sure you want to complete this order? It Will Lock the entier sales order'), () => {
+				// User confirmed, proceed with creating the Sales Invoice first
+				this.createSalesInvoiceWithAdvance();
+			}, () => {
+				// User cancelled, do nothing
+				frappe.msgprint(__('Order completion cancelled.'));
+			});
+		} else {
+			// Throw an error if either payment or security deposit is not paid
+			frappe.throw(__('Cannot complete order. Ensure both Security Deposit and Rental Payment are fully paid.'));
+		}
+	}
+	
+	createSalesInvoiceWithAdvance() {
+		// Prepare arguments for creating the Sales Invoice
+		const args = {
+			allocate_advances_automatically: 1,
+			source_name: this.frm.doc.name  // Pass the Sales Order name
+		};
+	
+		// Call the server-side method directly to create the Sales Invoice
+		frappe.call({
+			method: "erpnext.selling.doctype.sales_order.sales_order.make_sales_invoice",
+			args: args,
+			callback: (response) => {
+				// After creating the Sales Invoice, redirect to the Sales Order
+				if (response && response.message) {
+					// Lock the Sales Order
+					// this.lockSalesOrder();
+					
+					// Redirect to the Sales Order form
+					const salesOrderName = this.frm.doc.name; // Get the current Sales Order name
+					frappe.set_route('Form', 'Sales Order', salesOrderName);
+	
+					// After the page loads, execute the completion method
+					frappe.after_ajax(() => {
+						this.callServerMethodForOrderCompleted();
+					});
+				} else {
+					frappe.throw(__('Failed to create Sales Invoice.'));
+				}
+			}
+		});
+	}
+	
+	callServerMethodForOrderCompleted() {
+		const itemCodes = this.frm.doc.items.map(item => item.item_code);
+	
+		frappe.call({
+			method: 'erpnext.selling.doctype.sales_order.sales_order.make_order_completed',
+			args: {
+				docname: this.frm.doc.name,
+				item_code: itemCodes,  // Pass the array of item codes
+			},
+			callback: (response) => {
+				if (response.message) {
+					frappe.msgprint(__('Order completed successfully.'));
+					setTimeout(() => {
+						window.location.reload();
+					}, 1000); // 1000 milliseconds = 1 second
+				} else {
+					frappe.throw(__('Failed to complete the order.'));
+				}
+			}
+		});
+	}
+	
+	// lockSalesOrder() {
+	// 	// Lock all fields by making them read-only
+	// 	Object.keys(this.frm.fields_dict).forEach(fieldname => {
+	// 		// Make sure the field is not a button or a hidden field before setting it to read-only
+	// 		if (!this.frm.fields_dict[fieldname].df.hidden && 
+	// 			this.frm.fields_dict[fieldname].df.fieldtype !== 'Button') {
+	// 			this.frm.set_df_property(fieldname, 'read_only', 1);
+	// 		}
+	// 	});
+	
+	// 	// Hide all buttons on the form
+	// 	this.frm.page.set_primary_action(__(''), null); // Remove the primary action button
+	// 	this.frm.page.clear_menu(); // Clears the menu where additional actions are located
+	
+	// 	// Optionally hide custom buttons if they are defined
+	// 	if (this.frm.page.btn_primary) {
+	// 		this.frm.page.btn_primary.hide(); // Hides primary action button
+	// 	}
+		
+	// 	if (this.frm.page.btn_secondary) {
+	// 		this.frm.page.btn_secondary.hide(); // Hides secondary buttons
+	// 	}
+	// }
+	
+	
+	
+	// make_order_completed() {
+	// 	// Check security deposit and payment status before proceeding
+	// 	if (this.frm.doc.security_deposit_status === 'Paid' && this.frm.doc.payment_status === 'Paid') {
+	// 		// Proceed with creating the Sales Invoice first
+	// 		this.createSalesInvoiceWithAdvance();
+	// 	} else {
+	// 		// Throw an error if either payment or security deposit is not paid
+	// 		frappe.throw(__('Cannot complete order. Ensure both Security Deposit and Rental Payment are fully paid.'));
+	// 	}
+	// }
+	
+	// createSalesInvoiceWithAdvance() {
+	// 	// Prepare arguments for creating the Sales Invoice
+	// 	const args = {
+	// 		allocate_advances_automatically: 1,
+	// 		source_name: this.frm.doc.name  // Pass the Sales Order name
+	// 	};
+	
+	// 	// Call the server-side method directly to create the Sales Invoice
+	// 	frappe.call({
+	// 		method: "erpnext.selling.doctype.sales_order.sales_order.make_sales_invoice",
+	// 		args: args,
+	// 		callback: (response) => {
+	// 			// After creating the Sales Invoice, redirect to the Sales Order
+	// 			if (response && response.message) {
+	// 				// Redirect to the Sales Order form
+	// 				const salesOrderName = this.frm.doc.name; // Get the current Sales Order name
+	// 				frappe.set_route('Form', 'Sales Order', salesOrderName);
+					
+	// 				// After the page loads, execute the completion method
+	// 				frappe.after_ajax(() => {
+	// 					this.callServerMethodForOrderCompleted();
+	// 				});
+	// 			} else {
+	// 				frappe.throw(__('Failed to create Sales Invoice.'));
+	// 			}
+	// 		}
+	// 	});
+	// }
+	
+	// callServerMethodForOrderCompleted() {
+	// 	const itemCodes = this.frm.doc.items.map(item => item.item_code);
+	
+	// 	frappe.call({
+	// 		method: 'erpnext.selling.doctype.sales_order.sales_order.make_order_completed',
+	// 		args: {
+	// 			docname: this.frm.doc.name,
+	// 			item_code: itemCodes,  // Pass the array of item codes
+	// 		},
+	// 		callback: (response) => {
+	// 			if (response.message) {
+	// 				frappe.msgprint(__('Order completed successfully.'));
+	// 				setTimeout(() => {
+	// 					window.location.reload();
+	// 				}, 1000); // 1000 milliseconds = 1 second
+	// 			} else {
+	// 				frappe.throw(__('Failed to complete the order.'));
+	// 			}
+	// 		}
+	// 	});
+	// }
+	
+	
+	
+	
+	
 
 	make_maintenance_schedule() {
 		frappe.model.open_mapped_doc({

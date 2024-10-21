@@ -1359,7 +1359,7 @@
    "no_copy": 1,
    "oldfieldname": "status",
    "oldfieldtype": "Select",
-   "options": "Draft\nPending\nApproved\nRental Device Assigned\nReady for Delivery\nDISPATCHED\nDELIVERED\nActive\nReady for Pickup\nPicked Up\nSubmitted to Office\nOn Hold\nOverdue\nRENEWED\nTo Pay\nTo Deliver and Bill\nTo Bill\nTo Deliver\nCompleted\nCancelled\nClosed\nPartially Closed\nOrder\nSales Completed",
+   "options": "Draft\nPending\nApproved\nRental Device Assigned\nReady for Delivery\nDISPATCHED\nDELIVERED\nActive\nReady for Pickup\nPicked Up\nSubmitted to Office\nOn Hold\nOverdue\nRENEWED\nTo Pay\nTo Deliver and Bill\nTo Bill\nTo Deliver\nCompleted\nCancelled\nClosed\nPartially Closed\nOrder\nSales Completed\nRental SO Completed",
    "print_hide": 1,
    "reqd": 1,
    "search_index": 1,
@@ -2235,7 +2235,7 @@
  "idx": 105,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-08-23 15:26:52.751549",
+ "modified": "2024-10-19 14:56:25.072511",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order",
@@ -2378,6 +2378,10 @@
   {
    "color": "Green",
    "title": "Order"
+  },
+  {
+   "color": "Green",
+   "title": "Rental SO Completed"
   }
  ],
  "timeline_field": "customer",

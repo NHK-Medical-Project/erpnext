@@ -31,6 +31,8 @@
   "section_break_phix",
   "technician_mobile_after_delivered",
   "technician_mobile_before_delivered",
+  "technician_id_after_delivered",
+  "technician_id_before_deliverd",
   "technician_name_after_delivered",
   "technician_name_before_delivered",
   "pickup_date",
@@ -980,7 +982,8 @@
    "fieldname": "child_status",
    "fieldtype": "Select",
    "label": "Child Status",
-   "options": "Pending\nApproved\nRental Device Assigned\nReady for Delivery\nDISPATCHED\nDELIVERED\nActive\nReady for Pickup\nPicked Up\nSubmitted to Office\nOn Hold\nOverdue\nRenewed\nCancelled\nClosed\nPartially Closed\nItem Replaced"
+   "options": "Pending\nApproved\nRental Device Assigned\nReady for Delivery\nDISPATCHED\nDELIVERED\nActive\nReady for Pickup\nPicked Up\nSubmitted to Office\nOn Hold\nOverdue\nRenewed\nCancelled\nClosed\nPartially Closed\nItem Replaced\nRental SO Completed",
+   "read_only": 1
   },
   {
    "allow_on_submit": 1,
@@ -1044,6 +1047,7 @@
   },
   {
    "allow_on_submit": 1,
+   "fetch_from": "technician_id_before_deliverd.mobile_number",
    "fieldname": "technician_mobile_before_delivered",
    "fieldtype": "Data",
    "label": "Technician Mobile Before Delivered"
@@ -1052,11 +1056,13 @@
    "allow_on_submit": 1,
    "fieldname": "technician_name_before_delivered",
    "fieldtype": "Link",
+   "hidden": 1,
    "label": "Technician Name Before Deliverd",
    "options": "NHK User"
   },
   {
    "allow_on_submit": 1,
+   "fetch_from": "technician_id_after_delivered.mobile_number",
    "fieldname": "technician_mobile_after_delivered",
    "fieldtype": "Data",
    "label": "Technician Mobile After Delivered"
@@ -1065,6 +1071,7 @@
    "allow_on_submit": 1,
    "fieldname": "technician_name_after_delivered",
    "fieldtype": "Link",
+   "hidden": 1,
    "label": "Technician Name After Delivered",
    "options": "NHK User"
   },
@@ -1093,12 +1100,26 @@
    "fieldname": "read_only",
    "fieldtype": "Check",
    "label": "Item Read Only"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "technician_id_after_delivered",
+   "fieldtype": "Link",
+   "label": "Technician ID After Delivered",
+   "options": "Technician Details"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "technician_id_before_deliverd",
+   "fieldtype": "Link",
+   "label": "Technician Id Before Deliverd",
+   "options": "Technician Details"
   }
  ],
  "idx": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-06-20 11:57:35.621708",
+ "modified": "2024-10-19 14:54:15.997246",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order Item",

@@ -30,7 +30,7 @@ class SalesOrderItem(Document):
 		blanket_order_rate: DF.Currency
 		bom_no: DF.Link | None
 		brand: DF.Link | None
-		child_status: DF.Literal["Pending", "Approved", "Rental Device Assigned", "Ready for Delivery", "DISPATCHED", "DELIVERED", "Active", "Ready for Pickup", "Picked Up", "Submitted to Office", "On Hold", "Overdue", "Renewed", "Cancelled", "Closed", "Partially Closed", "Item Replaced"]
+		child_status: DF.Literal["Pending", "Approved", "Rental Device Assigned", "Ready for Delivery", "DISPATCHED", "DELIVERED", "Active", "Ready for Pickup", "Picked Up", "Submitted to Office", "On Hold", "Overdue", "Renewed", "Cancelled", "Closed", "Partially Closed", "Item Replaced", "Rental SO Completed"]
 		conversion_factor: DF.Float
 		customer_item_code: DF.Data | None
 		delivered_by_supplier: DF.Check
@@ -97,6 +97,8 @@ class SalesOrderItem(Document):
 		supplier: DF.Link | None
 		target_warehouse: DF.Link | None
 		tax_amount: DF.Currency
+		technician_id_after_delivered: DF.Link | None
+		technician_id_before_deliverd: DF.Link | None
 		technician_mobile_after_delivered: DF.Data | None
 		technician_mobile_before_delivered: DF.Data | None
 		technician_name_after_delivered: DF.Link | None
