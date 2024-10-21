@@ -4565,8 +4565,8 @@ def create_razorpay_payment_link_sales_order(amount, invoice_name, customer, cus
         "amount": amount_in_paise,
         "currency": "INR",
         "description": f"Sales order type {order_type} NHK Medical Pvt Ltd",
-        "accept_partial": True,
-        "first_min_partial_amount": 100,
+        "accept_partial": False,
+        # "first_min_partial_amount": 100,
         "notes": {
             "invoice_name": invoice_name,
             "company": "NHK Medical Pvt Ltd"
