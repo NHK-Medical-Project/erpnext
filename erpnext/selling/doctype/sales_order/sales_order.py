@@ -4004,7 +4004,6 @@ def create_security_deposit_journal_entry_payment(customer, payment_date,securit
         journal_entry = frappe.new_doc("Journal Entry")
         journal_entry.voucher_type = "Journal Entry"
         journal_entry.sales_order_id = sales_order_name
-        journal_entry.posting_date = frappe.utils.nowdate()
         journal_entry.journal_entry_type = "Security Deposit"
         journal_entry.security_deposite_type = "SD Amount Received From Client"
         journal_entry.master_order_id = master_order_id
@@ -4033,7 +4032,7 @@ def create_security_deposit_journal_entry_payment(customer, payment_date,securit
         # Save and submit the Journal Entry document
         journal_entry.insert(ignore_permissions=True)
         if not from_technician_portal:
-            journal_entry.submit(ignore_permissions=True)
+            journal_entry.submit()
 
         frappe.msgprint("Security Deposit Journal Entry created successfully.")
     except Exception as e:
@@ -5080,7 +5079,7 @@ def create_sales_invoice_and_delivery_note(docname):
         sales_invoice.allocate_advances_automatically = 1
         sales_invoice.only_include_allocated_payments = 1
         sales_invoice.insert(ignore_permissions=True)
-        # sales_invoice.submit()
+        sales_invoice.submit()
 
         # Create Delivery Note in draft status
         delivery_note_name = None
