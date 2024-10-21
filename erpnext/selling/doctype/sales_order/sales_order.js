@@ -1061,9 +1061,7 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 						});
 					} else {
 						// If the status is not "Rental SO Completed", unlock fields and show buttons if needed
-						Object.keys(this.frm.fields_dict).forEach(fieldname => {
-							this.frm.set_df_property(fieldname, 'read_only', 0);
-						});
+						
 				
 						// Show primary action button again if needed
 						this.frm.page.set_primary_action(__('Save'), () => {
