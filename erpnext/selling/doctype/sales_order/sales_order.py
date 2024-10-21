@@ -1482,7 +1482,7 @@ def make_sales_invoice(source_name, target_doc=None, ignore_permissions=False):
             target.rental_sales_invoice = 1
             target.allocate_advances_automatically = 1
             target.save()
-            # target.submit()
+            target.submit()
 
     def set_missing_values(source, target):
         target.flags.ignore_permissions = True
@@ -5079,7 +5079,7 @@ def create_sales_invoice_and_delivery_note(docname):
         sales_invoice.allocate_advances_automatically = 1
         sales_invoice.only_include_allocated_payments = 1
         sales_invoice.insert(ignore_permissions=True)
-        sales_invoice.submit()
+        # sales_invoice.submit()
 
         # Create Delivery Note in draft status
         delivery_note_name = None

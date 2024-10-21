@@ -2614,9 +2614,9 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 
 	make_order_completed() {
 		// Check security deposit and payment status before proceeding
-		if (this.frm.doc.security_deposit_status === 'Paid' && this.frm.doc.payment_status === 'Paid') {
+		if (this.frm.doc.security_deposit_status === 'Paid' && this.frm.doc.payment_status === 'Paid' && this.frm.doc.refundable_security_deposit === 0) {
 			// Show confirmation dialog
-			frappe.confirm(__('Are you sure you want to complete this order? It Will Lock the entier sales order'), () => {
+			frappe.confirm(__('Are you sure you want to complete this order? This action will lock the entire sales order, and you won’t be able to make any further transactions on it.'), () => {
 				// User confirmed, proceed with creating the Sales Invoice first
 				this.createSalesInvoiceWithAdvance();
 			}, () => {
@@ -2624,10 +2624,34 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 				frappe.msgprint(__('Order completion cancelled.'));
 			});
 		} else {
-			// Throw an error if either payment or security deposit is not paid
-			frappe.throw(__('Cannot complete order. Ensure both Security Deposit and Rental Payment are fully paid.'));
+			// Prepare an error message summarizing the issues
+			let issues = [];
+	
+			if (this.frm.doc.security_deposit_status !== 'Paid') {
+				issues.push(__('Security Deposit is not paid.'));
+			}
+			if (this.frm.doc.payment_status !== 'Paid') {
+				issues.push(__('Rental Payment is not paid.'));
+			}
+			if (this.frm.doc.refundable_security_deposit > 0) {
+				issues.push(__('Refundable Security Deposit must be zero.'));
+			}
+	
+			// Join the issues into a single message
+			let issueMessage = issues.length > 0 ? `<span style="color: #000000;text-decoration: underline;font-weight: bold;font-style: italic;">${issues.join(' ')}</span>` : ''; // Using mild orange color
+	
+			// Show confirmation dialog with the issue message
+			frappe.confirm(__('Are you sure you want to complete this order? This action will lock the entire sales order, and you won’t be able to make any further transactions on it. Issues: ' + issueMessage), () => {
+				// User confirmed, proceed with creating the Sales Invoice first
+				this.createSalesInvoiceWithAdvance();
+			}, () => {
+				// User cancelled, do nothing
+				frappe.msgprint(__('Order completion cancelled.'));
+			});
 		}
 	}
+	
+	
 	
 	createSalesInvoiceWithAdvance() {
 		// Prepare arguments for creating the Sales Invoice
