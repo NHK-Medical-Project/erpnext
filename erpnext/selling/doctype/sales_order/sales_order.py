@@ -4041,12 +4041,12 @@ def create_security_deposit_journal_entry_payment(customer, payment_date,securit
 
 
 def create_rental_payment_entry(customer_name,payment_date, rental_payment_amount, mode_of_payment,
-                                sales_order_name, security_deposit_status, customer, payment_account, master_order_id, reference_no=None, reference_date=None, remark=None,from_technician_portal=None,technician_id=None):
+                                sales_order_name, security_deposit_status, customer, payment_account, master_order_id, reference_no=None, reference_date=None, remark=None):
     try:
         rental_payment_amount_numeric = float(rental_payment_amount)  # Convert rental_payment_amount to float
 
         # Create a new Payment Entry document
-        payment_entry_data = {
+        payment_entry = frappe.get_doc({
             "doctype": "Payment Entry",
             "master_order_id": master_order_id,
             "sales_order_id":sales_order_name,
@@ -4072,19 +4072,10 @@ def create_rental_payment_entry(customer_name,payment_date, rental_payment_amoun
             "reference_no": reference_no,
             "paid_to": payment_account,
             "payment_remark": f"Payment Against Sales Order {sales_order_name} and Master Order Id is {master_order_id} and Remark Is {remark}",
-        }
-        # Add custom fields if from_technician_portal is true
-        if from_technician_portal:
-            payment_entry_data["custom_from_technician_protal"] = 1
-            payment_entry_data["custom_technician_id"] = technician_id
+        }, ignore_permissions=True)
 
-        # Create the Payment Entry document
-        payment_entry = frappe.get_doc(payment_entry_data, ignore_permissions=True)
-
-        # Insert the document
         payment_entry.insert(ignore_permissions=True)
-        if not from_technician_portal:
-            payment_entry.submit()
+        payment_entry.submit()
 
         frappe.msgprint("Payment Entry created successfully.")
 
@@ -4092,6 +4083,68 @@ def create_rental_payment_entry(customer_name,payment_date, rental_payment_amoun
     except Exception as e:
         frappe.log_error(frappe.get_traceback(), _("Failed to create Rental Payment Entry"))
         frappe.throw(_("Failed to create Rental Payment Entry. Please try again later. Error: {0}".format(str(e))))
+
+@frappe.whitelist()
+def create_rental_payment_entry(customer_name, payment_date, rental_payment_amount, mode_of_payment,
+                                sales_order_name, security_deposit_status, customer, payment_account, 
+                                master_order_id, reference_no=None, reference_date=None, 
+                                remark=None, from_technician_portal=None, technician_id=None):
+    try:
+        rental_payment_amount_numeric = float(rental_payment_amount)  # Convert rental_payment_amount to float
+        # print('ccccccccccccccccccccccccccccccccccc',rental_payment_amount_numeric)
+        # Create a new Payment Entry document
+        payment_entry_data = {
+            "doctype": "Payment Entry",
+            "master_order_id": master_order_id,
+            "sales_order_id": sales_order_name,
+            "posting_date": payment_date,
+            "paid_from": "Debtors - INR",  # Replace this if needed
+            "received_amount": rental_payment_amount_numeric,
+            "base_received_amount": rental_payment_amount_numeric,  # Assuming base currency is INR
+            "received_amount_currency": "INR",
+            "base_received_amount_currency": "INR",
+            "target_exchange_rate": 1,
+            "paid_amount": rental_payment_amount_numeric,
+            "references": [
+                {
+                    "reference_doctype": "Sales Order",
+                    "reference_name": sales_order_name,
+                    "allocated_amount": rental_payment_amount_numeric
+                }
+            ],
+            "reference_date": reference_date,
+            "party_type": "Customer",
+            "party": customer,
+            "mode_of_payment": mode_of_payment,
+            "reference_no": reference_no,
+            "paid_to": payment_account,
+            "payment_remark": f"Payment Against Sales Order {sales_order_name} and Master Order Id is {master_order_id} and Remark is {remark}",
+        }
+        
+        # Add custom fields if from_technician_portal is true
+        if from_technician_portal:
+            payment_entry_data["custom_from_technician_protal"] = 1
+            payment_entry_data["custom_technician_id"] = technician_id
+
+        # Create the Payment Entry document
+        payment_entry = frappe.get_doc(payment_entry_data)
+
+        # Insert the document
+        payment_entry.insert(ignore_permissions=True)
+
+        if not from_technician_portal:
+            payment_entry.submit()
+
+        frappe.msgprint("Payment Entry created successfully.")
+        frappe.log_error("Rental Payment Entry created successfully.", _("Rental Payment Entry"))
+    
+    except Exception as e:
+        # Shorten error log title
+        error_message = _("Failed to process payment: ") + str(e)
+        frappe.log_error(frappe.get_traceback(), _("Rental Payment Error"))
+
+        # Raise error with a shortened message
+        frappe.throw(_("Failed to create Rental Payment Entry. Please try again later. Error: {0}").format(str(e)))
 
 
 @frappe.whitelist()
@@ -4237,7 +4290,7 @@ def create_journal_entry_and_payment_entry(adjust_against, adjust_amount, sales_
         })
 
         # Save and submit the Payment Entry
-        payment_entry.insert()
+        payment_entry.insert(ignore_permissions=True)
         payment_entry.submit()
 
         # Check if Payment Entry is successfully created
