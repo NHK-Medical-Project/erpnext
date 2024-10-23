@@ -523,7 +523,7 @@ class DeliveryNote(SellingController):
             sales_order.save(ignore_permissions=True)
             frappe.msgprint(f"Sales Order {sales_order_name} updated with serial number for item {item_code}")
         except Exception as e:
-            frappe.log_error(f"Error updating Sales Order {sales_order_name} with serial number {serial_no} for item {item_code}: {e}", "Sales Order Serial Numbers Update Error")
+            frappe.log_error(f"Error updating Sales Order {sales_order_name} with serial number {serial_numbers} for item {item_code}: {e}", "Sales Order Serial Numbers Update Error")
             frappe.throw(_("Failed to update Sales Order with serial numbers. Please check the error log for more details."))
 
     
