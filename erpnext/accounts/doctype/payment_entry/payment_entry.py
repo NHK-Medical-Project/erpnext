@@ -551,7 +551,7 @@ class PaymentEntry(AccountsController):
 					continue
 
 				ref_details = get_reference_details(
-					d.reference_doctype, d.reference_name, self.party_account_currency
+					d.reference_doctype, d.reference_name, self.party_account_currency,party_type=None,party=None
 				)
 
 				# Only update exchange rate when the reference is Journal Entry
