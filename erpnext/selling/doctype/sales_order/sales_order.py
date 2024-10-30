@@ -2497,7 +2497,7 @@ def make_ready_for_delivery(docname, technician_name, technician_mobile, technic
         # Get the 'Sales Order' document
         rental_group_order = frappe.get_doc('Sales Order', docname)
         technician_type = 'Delivery'
-        
+        patient_id = rental_group_order.customer
         # Update the status of the 'Sales Order'
         rental_group_order.status = 'Ready for Delivery'
         rental_group_order.custom_technician_id_before_delivered = technician_id
@@ -2519,7 +2519,7 @@ def make_ready_for_delivery(docname, technician_name, technician_mobile, technic
             sales_order_item.save(ignore_permissions=True)
         if technician_id:
         # Create an entry in the Technician Visit Entry doctype
-            create_technician_portal_entry(technician_id, technician_type, docname)
+            create_technician_portal_entry(technician_id, technician_type, docname,patient_id)
 
         # Commit the transaction if everything is successful
         frappe.db.commit()
@@ -2532,7 +2532,7 @@ def make_ready_for_delivery(docname, technician_name, technician_mobile, technic
         frappe.throw(f"An error occurred: {str(e)}")
 
 # New function to create an entry in the Technician Visit Entry doctype
-def create_technician_portal_entry(technician_id, technician_type, sales_order_id,item_code=None):
+def create_technician_portal_entry(technician_id, technician_type, sales_order_id,patient_id,item_code=None):
     try:
         # Create a new document in the 'Technician Visit Entry' doctype
         technician_portal_entry = frappe.get_doc({
@@ -2541,6 +2541,7 @@ def create_technician_portal_entry(technician_id, technician_type, sales_order_i
             "technician_id": technician_id,
             "type": technician_type,
             "status": "Assigned",
+            "patient_id":patient_id,
             "item_code":item_code
         })
         
@@ -2714,6 +2715,7 @@ def make_ready_for_pickup(docname, pickup_date, pickup_reason,pickup_remark,tech
         # Get the 'Sales Order' document
         doc = frappe.get_doc('Sales Order', docname)
         technician_type = 'Pickup'
+        patient_id = doc.customer
         # Set values for pickup date and update status
         doc.pickup_date = pickup_date
         doc.status = 'Ready for Pickup'
@@ -2736,7 +2738,7 @@ def make_ready_for_pickup(docname, pickup_date, pickup_reason,pickup_remark,tech
             # sales_order_item.technician_mobile_after_delivered = technician_mobile
             sales_order_item.save(ignore_permissions=True)
         if technician_id:
-            create_technician_portal_entry(technician_id, technician_type,docname)
+            create_technician_portal_entry(technician_id, technician_type,docname,patient_id)
 
         return "Sales Order is Ready for Pickup"
 
@@ -3045,6 +3047,7 @@ def update_status_to_ready_for_pickup(item_code, pickup_datetime, docname, child
 
             # Retrieve the Sales Order document and update its status
             sales_order_doc = frappe.get_doc("Sales Order", docname)
+            patient_id = sales_order_doc.customer
             sales_order_doc.status = "Ready for Pickup"
             sales_order_doc.pickup_date = pickup_datetime
             sales_order_doc.pickup_remark = pickupRemark
@@ -3054,7 +3057,7 @@ def update_status_to_ready_for_pickup(item_code, pickup_datetime, docname, child
             sales_order_doc.save(ignore_permissions=True)
             technician_type = 'Pickup'
             if technician_id:
-                create_technician_portal_entry(technician_id, technician_type,docname,item_code)
+                create_technician_portal_entry(technician_id, technician_type,docname,patient_id,item_code)
 
             return True
         else:
@@ -3069,7 +3072,7 @@ def update_status_to_ready_for_pickup(item_code, pickup_datetime, docname, child
             sales_order_item_doc.save(ignore_permissions=True)
             technician_type = 'Pickup'
             if technician_id:
-                create_technician_portal_entry(technician_id, technician_type,docname,item_code)
+                create_technician_portal_entry(technician_id, technician_type,docname,patient_id,item_code)
             return True
     else:
         return False
@@ -3786,7 +3789,7 @@ def get_journal_entry_records(master_order_id):
         # Fetch replaced items associated with the sales order
         journal_entry_records = frappe.get_all("Journal Entry",
                                         filters={"master_order_id": master_order_id},
-                                        fields=["name", "sales_order_id", "master_order_id", "security_deposite_type","total_debit","posting_date","mode_of__payment","transactional_effect","docstatus"])
+                                        fields=["name", "sales_order_id", "master_order_id", "security_deposite_type","total_debit","posting_date","mode_of__payment","transactional_effect","docstatus","custom_technician_id","custom_technician_name","custom_technician_visit_entry_id"])
 
         # Iterate through each journal entry record
         for entry in journal_entry_records:
@@ -3810,7 +3813,7 @@ def get_payment_entry_records(sales_order_id):
         # Fetch replaced items associated with the sales order
         payment_entry_records = frappe.get_all("Payment Entry",
                                         filters={"sales_order_id": sales_order_id},
-                                        fields=["name", "references.reference_name","sales_order_id", "master_order_id","total_allocated_amount","posting_date","mode_of_payment","reference_no","reference_date","docstatus"])
+                                        fields=["name", "references.reference_name","sales_order_id", "master_order_id","total_allocated_amount","posting_date","mode_of_payment","reference_no","reference_date","docstatus","custom_technician_id","custom_technician_name","custom_technician_visit_id"])
         return payment_entry_records
     except Exception as e:
         frappe.log_error(frappe.get_traceback(), _("Failed to fetch replaced items"))
@@ -3925,7 +3928,7 @@ def submit_payment_entry(payment_entry_id):
 
 @frappe.whitelist()
 def process_payment(balance_amount, outstanding_security_deposit_amount, customer_name, rental_payment_amount, sales_order_name, master_order_id, security_deposit_status, customer, payment_date,payment_account=None,security_deposit_account=None, reference_no=None, reference_date=None, mode_of_payment=None,
-                    security_deposit_payment_amount=None, remark=None,from_technician_portal=None,technician_id=None):
+                    security_deposit_payment_amount=None, remark=None,from_technician_portal=None,technician_id=None,technician_visit_id=None):
     try:
         # Convert balance_amount and outstanding_security_deposit_amount to floats
         balance_amount = float(balance_amount)
@@ -3960,10 +3963,10 @@ def process_payment(balance_amount, outstanding_security_deposit_amount, custome
                 return False
 
             # Create a journal entry for the security deposit payment amount
-            create_security_deposit_journal_entry_payment(customer_name,payment_date, security_deposit_payment_amount,mode_of_payment, sales_order_name, master_order_id,security_deposit_account, reference_no, reference_date, remark,from_technician_portal,technician_id)
+            create_security_deposit_journal_entry_payment(customer_name,payment_date, security_deposit_payment_amount,mode_of_payment, sales_order_name, master_order_id,security_deposit_account, reference_no, reference_date, remark,from_technician_portal,technician_id,technician_visit_id)
             
             # Create a payment entry for the rental payment amount
-            create_rental_payment_entry(customer_name,payment_date, rental_payment_amount, mode_of_payment, sales_order_name, security_deposit_status, customer, payment_account, master_order_id, reference_no, reference_date, remark,from_technician_portal,technician_id)
+            create_rental_payment_entry(customer_name,payment_date, rental_payment_amount, mode_of_payment, sales_order_name, security_deposit_status, customer, payment_account, master_order_id, reference_no, reference_date, remark,from_technician_portal,technician_id,technician_visit_id)
             
             return True
 
@@ -3975,7 +3978,7 @@ def process_payment(balance_amount, outstanding_security_deposit_amount, custome
                 return False
 
             # Create a journal entry for the security deposit payment amount
-            create_security_deposit_journal_entry_payment(customer_name, payment_date,security_deposit_payment_amount,mode_of_payment ,sales_order_name, master_order_id,security_deposit_account, reference_no, reference_date, remark,from_technician_portal,technician_id)
+            create_security_deposit_journal_entry_payment(customer_name, payment_date,security_deposit_payment_amount,mode_of_payment ,sales_order_name, master_order_id,security_deposit_account, reference_no, reference_date, remark,from_technician_portal,technician_id,technician_visit_id)
             return True
         
         elif rental_payment_amount > 0:
@@ -3986,7 +3989,7 @@ def process_payment(balance_amount, outstanding_security_deposit_amount, custome
                 return False
     
             # Create a payment entry for the rental payment amount
-            create_rental_payment_entry(customer_name,payment_date, rental_payment_amount, mode_of_payment, sales_order_name, security_deposit_status, customer, payment_account, master_order_id, reference_no, reference_date, remark,from_technician_portal,technician_id)
+            create_rental_payment_entry(customer_name,payment_date, rental_payment_amount, mode_of_payment, sales_order_name, security_deposit_status, customer, payment_account, master_order_id, reference_no, reference_date, remark,from_technician_portal,technician_id,technician_visit_id)
             return True
 
 
@@ -3998,7 +4001,7 @@ def process_payment(balance_amount, outstanding_security_deposit_amount, custome
     return False
 
 
-def create_security_deposit_journal_entry_payment(customer, payment_date,security_deposit_payment_amount,mode_of_payment, sales_order_name, master_order_id,security_deposit_account, reference_no=None, reference_date=None, remark=None,from_technician_portal=None,technician_id=None):
+def create_security_deposit_journal_entry_payment(customer, payment_date,security_deposit_payment_amount,mode_of_payment, sales_order_name, master_order_id,security_deposit_account, reference_no=None, reference_date=None, remark=None,from_technician_portal=None,technician_id=None,technician_visit_id=None):
     try:
         # Create a new Journal Entry document
         journal_entry = frappe.new_doc("Journal Entry")
@@ -4014,7 +4017,7 @@ def create_security_deposit_journal_entry_payment(customer, payment_date,securit
         journal_entry.customer_id = customer
         journal_entry.mode_of__payment = mode_of_payment
         journal_entry.transactional_effect = "Plus"
-
+        journal_entry.custom_technician_visit_entry_id = technician_visit_id
         # Add accounts for debit and credit
         journal_entry.append("accounts", {
             "account": security_deposit_account,
@@ -4040,55 +4043,55 @@ def create_security_deposit_journal_entry_payment(customer, payment_date,securit
         frappe.throw(_("Failed to create Security Deposit Journal Entry. Please try again later."))
 
 
-def create_rental_payment_entry(customer_name,payment_date, rental_payment_amount, mode_of_payment,
-                                sales_order_name, security_deposit_status, customer, payment_account, master_order_id, reference_no=None, reference_date=None, remark=None):
-    try:
-        rental_payment_amount_numeric = float(rental_payment_amount)  # Convert rental_payment_amount to float
+# def create_rental_payment_entry(customer_name,payment_date, rental_payment_amount, mode_of_payment,
+#                                 sales_order_name, security_deposit_status, customer, payment_account, master_order_id, reference_no=None, reference_date=None, remark=None):
+#     try:
+#         rental_payment_amount_numeric = float(rental_payment_amount)  # Convert rental_payment_amount to float
 
-        # Create a new Payment Entry document
-        payment_entry = frappe.get_doc({
-            "doctype": "Payment Entry",
-            "master_order_id": master_order_id,
-            "sales_order_id":sales_order_name,
-            "posting_date":payment_date,
-            "paid_from": "Debtors - INR",
-            "received_amount": rental_payment_amount_numeric,
-            "base_received_amount": rental_payment_amount_numeric,  # Assuming base currency is INR
-            "received_amount_currency": "INR",
-            "base_received_amount_currency": "INR",
-            "target_exchange_rate": 1,
-            "paid_amount": rental_payment_amount_numeric,
-            "references": [
-                {
-                    "reference_doctype": "Sales Order",
-                    "reference_name": sales_order_name,
-                    "allocated_amount": rental_payment_amount_numeric
-                }
-            ],
-            "reference_date": reference_date,
-            "party_type": "Customer",
-            "party": customer,
-            "mode_of_payment": mode_of_payment,
-            "reference_no": reference_no,
-            "paid_to": payment_account,
-            "payment_remark": f"Payment Against Sales Order {sales_order_name} and Master Order Id is {master_order_id} and Remark Is {remark}",
-        }, ignore_permissions=True)
+#         # Create a new Payment Entry document
+#         payment_entry = frappe.get_doc({
+#             "doctype": "Payment Entry",
+#             "master_order_id": master_order_id,
+#             "sales_order_id":sales_order_name,
+#             "posting_date":payment_date,
+#             "paid_from": "Debtors - INR",
+#             "received_amount": rental_payment_amount_numeric,
+#             "base_received_amount": rental_payment_amount_numeric,  # Assuming base currency is INR
+#             "received_amount_currency": "INR",
+#             "base_received_amount_currency": "INR",
+#             "target_exchange_rate": 1,
+#             "paid_amount": rental_payment_amount_numeric,
+#             "references": [
+#                 {
+#                     "reference_doctype": "Sales Order",
+#                     "reference_name": sales_order_name,
+#                     "allocated_amount": rental_payment_amount_numeric
+#                 }
+#             ],
+#             "reference_date": reference_date,
+#             "party_type": "Customer",
+#             "party": customer,
+#             "mode_of_payment": mode_of_payment,
+#             "reference_no": reference_no,
+#             "paid_to": payment_account,
+#             "payment_remark": f"Payment Against Sales Order {sales_order_name} and Master Order Id is {master_order_id} and Remark Is {remark}",
+#         }, ignore_permissions=True)
 
-        payment_entry.insert(ignore_permissions=True)
-        payment_entry.submit()
+#         payment_entry.insert(ignore_permissions=True)
+#         payment_entry.submit()
 
-        frappe.msgprint("Payment Entry created successfully.")
+#         frappe.msgprint("Payment Entry created successfully.")
 
-        frappe.log_error("Rental Payment Entry created successfully.", _("Rental Payment Entry"))
-    except Exception as e:
-        frappe.log_error(frappe.get_traceback(), _("Failed to create Rental Payment Entry"))
-        frappe.throw(_("Failed to create Rental Payment Entry. Please try again later. Error: {0}".format(str(e))))
+#         frappe.log_error("Rental Payment Entry created successfully.", _("Rental Payment Entry"))
+#     except Exception as e:
+#         frappe.log_error(frappe.get_traceback(), _("Failed to create Rental Payment Entry"))
+#         frappe.throw(_("Failed to create Rental Payment Entry. Please try again later. Error: {0}".format(str(e))))
 
 @frappe.whitelist()
 def create_rental_payment_entry(customer_name, payment_date, rental_payment_amount, mode_of_payment,
                                 sales_order_name, security_deposit_status, customer, payment_account, 
                                 master_order_id, reference_no=None, reference_date=None, 
-                                remark=None, from_technician_portal=None, technician_id=None):
+                                remark=None, from_technician_portal=None, technician_id=None,technician_visit_id=None):
     try:
         rental_payment_amount_numeric = float(rental_payment_amount)  # Convert rental_payment_amount to float
         # print('ccccccccccccccccccccccccccccccccccc',rental_payment_amount_numeric)
@@ -4125,6 +4128,7 @@ def create_rental_payment_entry(customer_name, payment_date, rental_payment_amou
         if from_technician_portal:
             payment_entry_data["custom_from_technician_protal"] = 1
             payment_entry_data["custom_technician_id"] = technician_id
+            payment_entry_data["custom_technician_visit_id"] = technician_visit_id
 
         # Create the Payment Entry document
         payment_entry = frappe.get_doc(payment_entry_data)

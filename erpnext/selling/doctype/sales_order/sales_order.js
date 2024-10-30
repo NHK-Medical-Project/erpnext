@@ -934,7 +934,7 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
                         }, __('Action'));
                     }
 
-                    if (flt(doc.per_billed, 2) < 100 && doc.status === 'Active' && doc.order_type === 'Rental') {
+                    if (doc.status === 'Active' && doc.order_type === 'Rental') {
                         this.frm.add_custom_button(__('Ready for Pickup'), () => {
                             frappe.confirm(
                                 __('Are you sure you want make the status as Ready for Pickup?'),
@@ -947,7 +947,7 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
                             );
                         }, __('Action'));
                     }
-					if (flt(doc.per_billed, 2) < 100 && doc.status === 'Ready for Pickup' && doc.order_type === 'Rental') {
+					if (doc.status === 'Ready for Pickup' && doc.order_type === 'Rental') {
                         this.frm.add_custom_button(__('Picked Up'), () => {
                             frappe.confirm(
                                 __('Are you sure you want make the status as Ready for Pickup?'),
@@ -960,7 +960,7 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
                             );
                         }, __('Action'));
                     }
-					if (flt(doc.per_billed, 2) < 100 && doc.status === 'Picked Up' && doc.order_type === 'Rental') {
+					if (doc.status === 'Picked Up' && doc.order_type === 'Rental') {
                         this.frm.add_custom_button(__('Submitted To Office'), () => {
                             frappe.confirm(
                                 __('Are you sure you want make the status as Submitted To Office?'),
@@ -975,7 +975,7 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
                     }
 
 
-					if (flt(doc.per_billed, 2) < 100 && doc.status === 'Submitted to Office' && doc.order_type === 'Rental') {
+					if (doc.status === 'Submitted to Office' && doc.order_type === 'Rental') {
 						this.frm.add_custom_button(__('Order Completed'), () => {
 							frappe.confirm(
 								__('Are you sure you want to make the status as Order Closed?'),
