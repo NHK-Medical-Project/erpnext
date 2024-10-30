@@ -975,7 +975,7 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
                     }
 
 
-					if (doc.status === 'Submitted to Office' && doc.order_type === 'Rental') {
+					if ((doc.status === 'Submitted to Office' || doc.status === 'RENEWED' || doc.status === 'Order') && (doc.order_type === 'Rental' || doc.order_type === 'Service'  )) {
 						this.frm.add_custom_button(__('Order Completed'), () => {
 							frappe.confirm(
 								__('Are you sure you want to make the status as Order Closed?'),
@@ -1007,13 +1007,13 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 					}
 
 					// sales invoice
-					if (flt(doc.per_billed, 2) < 100 && doc.status != 'RENEWED' && (doc.order_type === 'Service' || doc.order_type === 'Rental')) {
-						this.frm.add_custom_button(
-							__("Sales Invoice"),
-							() => me.make_sales_invoice(),
-							__("Action")
-						);
-					}
+					// if (flt(doc.per_billed, 2) < 100 && doc.status != 'RENEWED' && (doc.order_type === 'Service' || doc.order_type === 'Rental')) {
+					// 	this.frm.add_custom_button(
+					// 		__("Sales Invoice"),
+					// 		() => me.make_sales_invoice(),
+					// 		__("Action")
+					// 	);
+					// }
 					 // Check the status of the sales order
 					 if (this.frm.doc.status === "Rental SO Completed") {
 						// Lock all fields by making them read-only
@@ -2627,14 +2627,23 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 			// Prepare an error message summarizing the issues
 			let issues = [];
 	
-			if (this.frm.doc.security_deposit_status !== 'Paid') {
-				issues.push(__('Security Deposit is not paid.'));
-			}
-			if (this.frm.doc.payment_status !== 'Paid') {
-				issues.push(__('Rental Payment is not paid.'));
-			}
-			if (this.frm.doc.refundable_security_deposit > 0) {
-				issues.push(__('Refundable Security Deposit must be zero.'));
+			// Check if the order type is 'Rental'
+			if (this.frm.doc.order_type === 'Rental') {
+				// For 'Rental' order type, check for all three conditions
+				if (this.frm.doc.security_deposit_status !== 'Paid') {
+					issues.push(__('Security Deposit is not paid.'));
+				}
+				if (this.frm.doc.payment_status !== 'Paid') {
+					issues.push(__('Rental Payment is not paid.'));
+				}
+				if (this.frm.doc.refundable_security_deposit > 0) {
+					issues.push(__('Refundable Security Deposit must be zero.'));
+				}
+			} else {
+				// For other order types, only check for payment status
+				if (this.frm.doc.payment_status !== 'Paid') {
+					issues.push(__('Rental Payment is not paid.'));
+				}
 			}
 	
 			// Join the issues into a single message
