@@ -9,7 +9,7 @@
  "hide_custom": 0,
  "icon": "setting",
  "idx": 0,
- "is_hidden": 0,
+ "is_hidden": 1,
  "label": "Settings",
  "links": [
   {
@@ -437,7 +437,7 @@
    "type": "Link"
   }
  ],
- "modified": "2024-03-25 09:48:39.539245",
+ "modified": "2024-11-04 12:37:48.381393",
  "modified_by": "Administrator",
  "module": "Setup",
  "name": "Settings",

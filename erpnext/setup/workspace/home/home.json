@@ -9,7 +9,7 @@
  "hide_custom": 0,
  "icon": "getting-started",
  "idx": 0,
- "is_hidden": 0,
+ "is_hidden": 1,
  "label": "Home",
  "links": [
   {
@@ -232,7 +232,7 @@
    "type": "Link"
   }
  ],
- "modified": "2024-03-25 09:48:24.204777",
+ "modified": "2024-11-04 12:37:06.265863",
  "modified_by": "Administrator",
  "module": "Setup",
  "name": "Home",

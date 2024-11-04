@@ -14,7 +14,7 @@
  "hide_custom": 0,
  "icon": "stock",
  "idx": 0,
- "is_hidden": 0,
+ "is_hidden": 1,
  "label": "Stock",
  "links": [
   {
@@ -763,7 +763,7 @@
    "type": "Link"
   }
  ],
- "modified": "2024-08-08 12:10:29.995423",
+ "modified": "2024-11-04 12:37:16.264541",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Stock",

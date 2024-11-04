@@ -14,7 +14,7 @@
  "hide_custom": 0,
  "icon": "assets",
  "idx": 0,
- "is_hidden": 0,
+ "is_hidden": 1,
  "label": "Assets",
  "links": [
   {
@@ -196,7 +196,7 @@
    "type": "Link"
   }
  ],
- "modified": "2024-03-29 15:15:52.697078",
+ "modified": "2024-11-04 12:37:19.681055",
  "modified_by": "Administrator",
  "module": "Assets",
  "name": "Assets",

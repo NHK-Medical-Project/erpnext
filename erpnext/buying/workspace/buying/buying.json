@@ -14,7 +14,7 @@
  "hide_custom": 0,
  "icon": "buying",
  "idx": 0,
- "is_hidden": 0,
+ "is_hidden": 1,
  "label": "Buying",
  "links": [
   {
@@ -511,7 +511,7 @@
    "type": "Link"
   }
  ],
- "modified": "2024-03-25 09:48:27.855197",
+ "modified": "2024-11-04 12:37:11.440219",
  "modified_by": "Administrator",
  "module": "Buying",
  "name": "Buying",
