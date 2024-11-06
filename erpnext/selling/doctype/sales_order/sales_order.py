@@ -2532,7 +2532,7 @@ def make_ready_for_delivery(docname, technician_name, technician_mobile, technic
         frappe.throw(f"An error occurred: {str(e)}")
 
 # New function to create an entry in the Technician Visit Entry doctype
-def create_technician_portal_entry(technician_id, technician_type, sales_order_id,patient_id,item_code=None):
+def create_technician_portal_entry(technician_id, technician_type, sales_order_id,patient_id=None,item_code=None):
     try:
         # Create a new document in the 'Technician Visit Entry' doctype
         technician_portal_entry = frappe.get_doc({
@@ -3032,7 +3032,8 @@ def sales_order_for_html(sales_order_id):
 def update_status_to_ready_for_pickup(item_code, pickup_datetime, docname, child_name,pickupReason,pickupRemark,technician_id=None,technician_mobile=None):
     # Retrieve Rental Orders based on the item_code field in the items child table
     sales_order_items = frappe.get_all("Sales Order Item", filters={"parent": docname}, fields=["name"])
-
+    sales_order_doc = frappe.get_doc("Sales Order", docname)
+    patient_id = sales_order_doc.customer
     if sales_order_items:
         # If there is only one Sales Order Item, update both Sales Order and Sales Order Item statuses
         if len(sales_order_items) == 1:
@@ -3046,8 +3047,8 @@ def update_status_to_ready_for_pickup(item_code, pickup_datetime, docname, child
             sales_order_item_doc.save(ignore_permissions=True)
 
             # Retrieve the Sales Order document and update its status
-            sales_order_doc = frappe.get_doc("Sales Order", docname)
-            patient_id = sales_order_doc.customer
+            
+            # print('patient_iddddddddddddddddddddddddddddddddddddd',patient_id)
             sales_order_doc.status = "Ready for Pickup"
             sales_order_doc.pickup_date = pickup_datetime
             sales_order_doc.pickup_remark = pickupRemark
@@ -3061,6 +3062,7 @@ def update_status_to_ready_for_pickup(item_code, pickup_datetime, docname, child
 
             return True
         else:
+            
             # If there are multiple Sales Order Items, update only the Sales Order Item statuses
             sales_order_item_doc = frappe.get_doc("Sales Order Item", {"name": child_name})
             sales_order_item_doc.child_status = "Ready for Pickup"
