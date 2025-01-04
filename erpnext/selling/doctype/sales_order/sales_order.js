@@ -697,6 +697,12 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 												label: __('Cancel'),
 												fieldname: 'cancel',
 												fieldtype: 'Button'
+											},
+											{
+												label: __('Send WhatApp Notifications'),
+												fieldname: 'send_whatapp_notification',
+												fieldtype: 'Check',
+												default:1
 											}
 										]
 									});
