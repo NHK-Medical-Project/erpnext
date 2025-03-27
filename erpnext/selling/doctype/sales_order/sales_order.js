@@ -699,7 +699,8 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 											{
 												label: __('Notify through whatsapp'),
 												fieldname: 'notify_through_whatsapp',
-												fieldtype: 'Check'
+												fieldtype: 'Check',
+												default: 1
 											},
 											{
 												label: __('Mobile No.'),
@@ -722,11 +723,7 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 														});
 											
 														// Optionally, clear the field or reset the value to numeric characters only
-														frappe.ui.form.set_value('mobile_no', numericValue);
-													} else {
-														// If valid, update the field with numeric value
-														frappe.ui.form.set_value('mobile_no', numericValue);
-													}
+													} 
 												}
 											},
 											
@@ -734,10 +731,11 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 												label: __('Message'),
 												fieldname: 'message',
 												fieldtype: 'Small Text',
-												default: `Hello ${doc.customer_name},
+												default: `
+Hello ${doc.customer_name},
 Your order ID ${doc.name} has been successfully approved. 
-For any query, 
-call/WhatsApp on 8884880013.`,
+For any query, call/WhatsApp on 8884880013.
+${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_payment_url}` : ''}`,
 												depends_on: 'eval:doc.notify_through_whatsapp'
 											},
 											{
@@ -848,7 +846,8 @@ call/WhatsApp on 8884880013.`,
 											{
 												label: __('Notify through whatsapp'),
 												fieldname: 'notify_through_whatsapp',
-												fieldtype: 'Check'
+												fieldtype: 'Check',
+												default: 1
 											},
 											{
 												label: __('Mobile No.'),
@@ -871,11 +870,7 @@ call/WhatsApp on 8884880013.`,
 														});
 											
 														// Optionally, clear the field or reset the value to numeric characters only
-														frappe.ui.form.set_value('mobile_no', numericValue);
-													} else {
-														// If valid, update the field with numeric value
-														frappe.ui.form.set_value('mobile_no', numericValue);
-													}
+													} 
 												}
 											},
 											
@@ -883,12 +878,14 @@ call/WhatsApp on 8884880013.`,
 												label: __('Message'),
 												fieldname: 'message',
 												fieldtype: 'Small Text',
-												default: `Hello ${doc.customer_name},
-Your order ID ${doc.name} has been successfully approved. 
-For any query, 
-call/WhatsApp on 8884880013.`,
+												default: `
+Hello ${frm.doc.customer_name},
+Your order ID ${frm.doc.name} has been successfully approved. 
+For any query, call/WhatsApp on 8884880013.
+${frm.doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${frm.doc.custom_razorpay_payment_url}` : ''}`,
 												depends_on: 'eval:doc.notify_through_whatsapp'
 											},
+											
 											{
 												fieldtype: 'Section Break'
 											},
@@ -1693,6 +1690,7 @@ call/WhatsApp on 8884880013.`,
 				this.make_approved(values, () => {
 					// Send approval email
 					this.send_approval_email(this.frm.doc.name, promptValues.customer_email_id, promptValues.show_payment_link);
+					
 				});
 			} else {
 				console.log('User declined to show the payment link.');
@@ -1719,6 +1717,17 @@ call/WhatsApp on 8884880013.`,
 						indicator: 'green'
 					});
 					if (values.notify_through_whatsapp) {
+						// Validate mobile number
+						const mobile_no = values.mobile_no.replace(/\D/g, '');
+
+						if (mobile_no.length !== 10) {
+							frappe.msgprint({
+								title: __('Invalid Mobile Number'),
+								message: __('Please enter a valid 10-digit mobile number.'),
+								indicator: 'red'
+							});
+							return;  // Stop execution if mobile number is invalid
+						}
 						this.send_whatsapp_message(values.mobile_no, values.message);
 					}
 					// Reload the page after a short delay
@@ -1760,6 +1769,17 @@ call/WhatsApp on 8884880013.`,
                         indicator: 'green'
                     });
 					if (values.notify_through_whatsapp) {
+						// Validate mobile number
+						const mobile_no = values.mobile_no.replace(/\D/g, '');
+
+						if (mobile_no.length !== 10) {
+							frappe.msgprint({
+								title: __('Invalid Mobile Number'),
+								message: __('Please enter a valid 10-digit mobile number.'),
+								indicator: 'red'
+							});
+							return;  // Stop execution if mobile number is invalid
+						}
 						this.send_whatsapp_message(values.mobile_no, values.message);
 					}
                     // Reload the entire page after a short delay (adjust as needed)
@@ -1854,7 +1874,7 @@ call/WhatsApp on 8884880013.`,
 			args: {
 				mobile_number: mobile_no,
 				message: message,
-				instance_name: 'NHK' // Specify your WhatsApp instance name here
+				// instance_name: 'NHK' // Specify your WhatsApp instance name here
 			},
 			callback: (response) => {
 				if (response.message && response.message.status === true) {
@@ -2346,7 +2366,8 @@ call/WhatsApp on 8884880013.`,
 			{
 				label: __('Notify through whatsapp'),
 				fieldname: 'notify_through_whatsapp',
-				fieldtype: 'Check'
+				fieldtype: 'Check',
+				default: 1
 			},
 			{
 				label: __('Mobile No.'),
@@ -2369,10 +2390,6 @@ call/WhatsApp on 8884880013.`,
 						});
 			
 						// Optionally, clear the field or reset the value to numeric characters only
-						frappe.ui.form.set_value('mobile_no', numericValue);
-					} else {
-						// If valid, update the field with numeric value
-						frappe.ui.form.set_value('mobile_no', numericValue);
 					}
 				}
 			},
@@ -2381,10 +2398,15 @@ call/WhatsApp on 8884880013.`,
 				label: __('Message'),
 				fieldname: 'message',
 				fieldtype: 'Small Text',
-				default: `"Hello ${frm.doc.customer_name},
-Your order has been delivered successfully. We have received your total payment of${frm.doc.customer_name}+rs successfully.                                                                                              For any query call/what's app on 8884880013."`,
+				default: `Hello ${frm.doc.customer_name},
+Your order has been delivered successfully. We have received your payment of ${ (frm.doc.paid_security_deposit_amount || 0) + (frm.doc.received_amount || 0) } rs successfully.` + 
+((frm.doc.outstanding_security_deposit_amount || 0) + (frm.doc.balance_amount || 0) > 0 ? 
+` You have an outstanding amount of ${ (frm.doc.outstanding_security_deposit_amount || 0) + (frm.doc.balance_amount || 0) } rs.` : ``) + 
+			`                                                                                              
+For any query call/WhatsApp on 8884880013.`,
 				depends_on: 'eval:doc.notify_through_whatsapp'
 			},
+			
 			{
 				fieldtype: 'Section Break'
 			},
@@ -2518,7 +2540,20 @@ Your order has been delivered successfully. We have received your total payment 
 						message: __('Rental Device Delivered successfully.'),
 						indicator: 'green'
 					});
+					if (values.notify_through_whatsapp) {
+						// Validate mobile number
+						const mobile_no = values.mobile_no.replace(/\D/g, '');
 
+						if (mobile_no.length !== 10) {
+							frappe.msgprint({
+								title: __('Invalid Mobile Number'),
+								message: __('Please enter a valid 10-digit mobile number.'),
+								indicator: 'red'
+							});
+							return;  // Stop execution if mobile number is invalid
+						}
+						this.send_whatsapp_message(values.mobile_no, values.message);
+					}
 					// Reload the entire page after a short delay (adjust as needed)
 					setTimeout(() => {
 						window.location.reload();
@@ -2528,6 +2563,7 @@ Your order has been delivered successfully. We have received your total payment 
 		});
 	}
 	make_ready_for_pickup() {
+		let frm = this.frm;
 		var role_profile = [
 			{ role_profile: "NHK Technician" }, // Example data, replace with actual data
 			{ role_profile: "Other Role" }
@@ -2601,6 +2637,51 @@ Your order has been delivered successfully. We have received your total payment 
 				// reqd: 1
 			},
 			{
+				label: __('Notify through whatsapp'),
+				fieldname: 'notify_through_whatsapp',
+				fieldtype: 'Check',
+				default: 1
+			},
+			{
+				label: __('Mobile No.'),
+				fieldname: 'mobile_no',
+				fieldtype: 'Data',
+				default: frm.doc.customer_mobile_no,
+				depends_on: 'eval:doc.notify_through_whatsapp',
+				reqd: 1,  // Make field required
+				description: __('Only 10 digits are allowed.Make sure Number Must be in WhatsApp'),
+				on_change: (value) => {
+					// Remove any non-numeric characters
+					const numericValue = value.replace(/\D/g, '');
+			
+					// Check if the value has exactly 10 digits
+					if (numericValue.length !== 10) {
+						frappe.msgprint({
+							title: __('Invalid Mobile Number'),
+							message: __('Please enter a valid 10-digit mobile number. Only numbers are allowed.'),
+							indicator: 'red'
+						});
+			
+						// Optionally, clear the field or reset the value to numeric characters only
+					} 
+				}
+			},
+			
+			{
+				label: __('Message'),
+				fieldname: 'message',
+				fieldtype: 'Small Text',
+				default: `Hello Sir/Mam
+			
+Patient Name: ${frm.doc.customer_name}
+Equipment Name: ${frm.doc.items ? frm.doc.items.map(item => item.item_name).join(', ') : 'No items'}
+			
+We have initiated pickup of the above equipment.
+For any query call/WhatsApp on 8884880013.`,
+				depends_on: 'eval:doc.notify_through_whatsapp'
+			},
+			
+			{
 				label: 'Pickup Date',
 				fieldname: 'pickup_date',
 				fieldtype: 'Datetime',
@@ -2661,7 +2742,20 @@ Your order has been delivered successfully. We have received your total payment 
 						message: __('RentalSales Order is Ready for Pickup.'),
 						indicator: 'green'
 					});
+					if (values.notify_through_whatsapp) {
+						// Validate mobile number
+						const mobile_no = values.mobile_no.replace(/\D/g, '');
 
+						if (mobile_no.length !== 10) {
+							frappe.msgprint({
+								title: __('Invalid Mobile Number'),
+								message: __('Please enter a valid 10-digit mobile number.'),
+								indicator: 'red'
+							});
+							return;  // Stop execution if mobile number is invalid
+						}
+						this.send_whatsapp_message(values.mobile_no, values.message);
+					}
 					// Reload the entire page after a short delay (adjust as needed)
 					setTimeout(() => {
 						window.location.reload();
@@ -2672,6 +2766,7 @@ Your order has been delivered successfully. We have received your total payment 
 	}
 
 	make_pickedup() {
+		let frm = this.frm;
 		frappe.prompt([
 			// {
 			// 	fieldname: 'technician_name',
@@ -2712,7 +2807,51 @@ Your order has been delivered successfully. We have received your total payment 
 				fieldtype: 'Datetime',
 				default:'Now',
 				reqd: 1
-			}
+			},
+			{
+				label: __('Notify through whatsapp'),
+				fieldname: 'notify_through_whatsapp',
+				fieldtype: 'Check',
+				default: 1
+			},
+			{
+				label: __('Mobile No.'),
+				fieldname: 'mobile_no',
+				fieldtype: 'Data',
+				default: frm.doc.customer_mobile_no,
+				depends_on: 'eval:doc.notify_through_whatsapp',
+				reqd: 1,  // Make field required
+				description: __('Only 10 digits are allowed.Make sure Number Must be in WhatsApp'),
+				on_change: (value) => {
+					// Remove any non-numeric characters
+					const numericValue = value.replace(/\D/g, '');
+			
+					// Check if the value has exactly 10 digits
+					if (numericValue.length !== 10) {
+						frappe.msgprint({
+							title: __('Invalid Mobile Number'),
+							message: __('Please enter a valid 10-digit mobile number. Only numbers are allowed.'),
+							indicator: 'red'
+						});
+			
+						// Optionally, clear the field or reset the value to numeric characters only
+					} 
+				}
+			},
+			
+			{
+				label: __('Message'),
+				fieldname: 'message',
+				fieldtype: 'Small Text',
+				default: `Hello Sir/Mam
+			
+Patient Name: ${frm.doc.customer_name}
+Equipment Name: ${frm.doc.items ? frm.doc.items.map(item => item.item_name).join(', ') : 'No items'}
+			
+We have successfully received the rental equipment at our office. Thank you for returning it on time.
+If you have any questions, feel free to call/what's app us on 8884880013.`,
+				depends_on: 'eval:doc.notify_through_whatsapp'
+			},
 			// Add more fields as needed
 		], (values) => {
 			// values will contain the entered data
@@ -2746,6 +2885,20 @@ Your order has been delivered successfully. We have received your total payment 
 						message: __('RentalSales Order is picked up.'),
 						indicator: 'green'
 					});
+					if (values.notify_through_whatsapp) {
+						// Validate mobile number
+						const mobile_no = values.mobile_no.replace(/\D/g, '');
+
+						if (mobile_no.length !== 10) {
+							frappe.msgprint({
+								title: __('Invalid Mobile Number'),
+								message: __('Please enter a valid 10-digit mobile number.'),
+								indicator: 'red'
+							});
+							return;  // Stop execution if mobile number is invalid
+						}
+						this.send_whatsapp_message(values.mobile_no, values.message);
+					}
 					// this.frm.save();
 					// Reload the entire page after a short delay (adjust as needed)
 					setTimeout(() => {
