@@ -2465,7 +2465,7 @@ def send_approval_email(docname, customer_email_id, payment_link):
         text = msg.as_string()
         server.sendmail(smtp_username, [customer_email_id] + cc_email_list, text)
         server.quit()
-        print("Email sent successfully!")
+        # print("Email sent successfully!")
         
         return True
     except Exception as e:
@@ -3121,7 +3121,7 @@ def update_status_to_ready_for_pickup(item_code, pickup_datetime, docname, child
 
 @frappe.whitelist()
 def update_status_to_picked_up(item_code, docname, child_name,picked_up_datetime):
-    print()
+    # print()
     # Retrieve Rental Orders based on the item_code field in the items child table
     sales_order_items = frappe.get_all("Sales Order Item", filters={"parent": docname}, fields=["name"])
 
@@ -4590,7 +4590,7 @@ def get_sales_orders(master_order_id):
         # sales_order = [order.get("name") for order in sales_orders]
         
         # Return the list of sales order names
-        print(sales_orders_names)
+        # print(sales_orders_names)
         return sales_orders_names
     except Exception as e:
         frappe.log_error(frappe.get_traceback(), "Failed to fetch sales orders")

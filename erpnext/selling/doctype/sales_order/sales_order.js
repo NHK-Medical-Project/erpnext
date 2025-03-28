@@ -1702,6 +1702,20 @@ ${frm.doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${frm.doc.custom_r
 	
 	
 	make_approved(values, callback) {
+		if (values.notify_through_whatsapp) {
+			// Validate mobile number
+			const mobile_no = values.mobile_no.replace(/\D/g, '');
+
+			if (mobile_no.length !== 10) {
+				frappe.msgprint({
+					title: __('Invalid Mobile Number'),
+					message: __('Please enter a valid 10-digit mobile number.'),
+					indicator: 'red'
+				});
+				return;  // Stop execution if mobile number is invalid
+			}
+			// this.callServerMethodForPickedup(values);
+		}
 		frappe.call({
 			method: 'erpnext.selling.doctype.sales_order.sales_order.make_approved',
 			args: {
@@ -1709,7 +1723,7 @@ ${frm.doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${frm.doc.custom_r
 			},
 			callback: (response) => {
 				if (response.message === true) {
-					console.log(response.message);
+					// console.log(response.message);
 	
 					frappe.msgprint({
 						title: __('Success'),
@@ -1760,7 +1774,7 @@ ${frm.doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${frm.doc.custom_r
                 // Handle the response
                 if (response.message) {
                     // Log the result to the console
-                    console.log(response.message);
+                    // console.log(response.message);
     
                     // Display a success message
                     frappe.msgprint({
@@ -1829,7 +1843,7 @@ ${frm.doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${frm.doc.custom_r
 		], (promptValues) => {
 			// Values will contain the user's input from the prompt
 			if (promptValues.show_payment_link) {
-				console.log('Showing payment link:', paymentUrl);
+				// console.log('Showing payment link:', paymentUrl);
 	
 				// Call make_approved and send email on success
 				this.make_sales_approved(values,() => {
@@ -2176,7 +2190,7 @@ ${frm.doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${frm.doc.custom_r
 					// Handle the response
 					if (response.message) {
 						// Log the result to the console
-						console.log(response.message);
+						// console.log(response.message);
 		
 						// Display a success message
 						frappe.msgprint({
@@ -2510,7 +2524,20 @@ For any query call/WhatsApp on 8884880013.`,
 			// this.frm.save(() => {
 				// Optionally, refresh the form to reflect the changes
 				this.frm.refresh();
+				if (values.notify_through_whatsapp) {
+					// Validate mobile number
+					const mobile_no = values.mobile_no.replace(/\D/g, '');
 
+					if (mobile_no.length !== 10) {
+						frappe.msgprint({
+							title: __('Invalid Mobile Number'),
+							message: __('Please enter a valid 10-digit mobile number.'),
+							indicator: 'red'
+						});
+						return;  // Stop execution if mobile number is invalid
+					}
+					// this.send_whatsapp_message(values.mobile_no, values.message);
+				}
 				// Now call the server-side method only after the user submits the dispatch date
 				this.callServerMethodForDelivered(values);
 			// });
@@ -2714,7 +2741,20 @@ For any query call/WhatsApp on 8884880013.`,
 			// this.frm.save(() => {
 				// Optionally, refresh the form to reflect the changes
 				this.frm.refresh();
+				if (values.notify_through_whatsapp) {
+					// Validate mobile number
+					const mobile_no = values.mobile_no.replace(/\D/g, '');
 
+					if (mobile_no.length !== 10) {
+						frappe.msgprint({
+							title: __('Invalid Mobile Number'),
+							message: __('Please enter a valid 10-digit mobile number.'),
+							indicator: 'red'
+						});
+						return;  // Stop execution if mobile number is invalid
+					}
+					// this.callServerMethodForReadyForPickup(values);
+				}
 				// Now call the server-side method only after the user submits the pickup date
 				this.callServerMethodForReadyForPickup(values);
 			// });
@@ -2862,7 +2902,20 @@ If you have any questions, feel free to call/what's app us on 8884880013.`,
 
 			// Optionally, refresh the form to reflect the changes
 			this.frm.refresh();
+			if (values.notify_through_whatsapp) {
+				// Validate mobile number
+				const mobile_no = values.mobile_no.replace(/\D/g, '');
 
+				if (mobile_no.length !== 10) {
+					frappe.msgprint({
+						title: __('Invalid Mobile Number'),
+						message: __('Please enter a valid 10-digit mobile number.'),
+						indicator: 'red'
+					});
+					return;  // Stop execution if mobile number is invalid
+				}
+				// this.callServerMethodForPickedup(values);
+			}
 			// Now call the server-side method only after the user submits the technician details
 			this.callServerMethodForPickedup(values);
 		}, __('Picked Up'));
@@ -2935,7 +2988,7 @@ If you have any questions, feel free to call/what's app us on 8884880013.`,
 
 	callServerMethodForSubmittedToOffice(values) {
 		const itemCodes = this.frm.doc.items.map(item => item.item_code);
-		console.log(itemCodes)
+		// console.log(itemCodes)
 		frappe.call({
 			method: 'erpnext.selling.doctype.sales_order.sales_order.make_submitted_to_office',
 			args: {

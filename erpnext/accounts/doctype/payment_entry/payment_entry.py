@@ -1547,7 +1547,7 @@ Thank you for choosing NHK Medical Pvt Ltd.
 				"advance_payment_receivable_doctypes"
 			) + frappe.get_hooks("advance_payment_payable_doctypes")
 			for d in self.get("references"):
-				print(d)
+				# print(d)
 				if d.allocated_amount and d.reference_doctype in advance_payment_doctypes:
 					frappe.get_doc(
 						d.reference_doctype, d.reference_name, for_update=True
