@@ -680,15 +680,18 @@ class SalesOrder(SellingController):
         return super().before_cancel()
 
     def on_cancel(self):
+
         if self.status == 'RENEWED':
             frappe.throw(
             'Cannot cancel this record because it has been RENEWED'
         )
+        else:
+            self.status = "Cancelled"
         # if self.status == 'Submitted to Office' and self.is_renewed == 1:
         #         frappe.throw(
         #     'Cannot cancel this record because it has been submitted to office and is marked as renewed.'
         # )
-        self.status = "Cancelled"
+        
 
         # if self.previous_order_id:
         #     sales_order_renewal = frappe.get_doc("Sales Order", self.previous_order_id)
