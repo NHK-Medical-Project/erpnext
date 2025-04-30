@@ -694,6 +694,54 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 												fieldtype: 'Button'
 											},
 											{
+												fieldtype: 'Section Break'
+											},
+											{
+												label: __('Notify through whatsapp'),
+												fieldname: 'notify_through_whatsapp',
+												fieldtype: 'Check',
+												default: 1
+											},
+											{
+												label: __('Mobile No.'),
+												fieldname: 'mobile_no',
+												fieldtype: 'Data',
+												default: doc.customer_mobile_no,
+												depends_on: 'eval:doc.notify_through_whatsapp',
+												reqd: 1,  // Make field required
+												description: __('Only 10 digits are allowed.'),
+												on_change: (value) => {
+													// Remove any non-numeric characters
+													const numericValue = value.replace(/\D/g, '');
+											
+													// Check if the value has exactly 10 digits
+													if (numericValue.length !== 10) {
+														frappe.msgprint({
+															title: __('Invalid Mobile Number'),
+															message: __('Please enter a valid 10-digit mobile number. Only numbers are allowed.'),
+															indicator: 'red'
+														});
+											
+														// Optionally, clear the field or reset the value to numeric characters only
+													} 
+												}
+											},
+											
+											{
+												label: __('Message'),
+												fieldname: 'message',
+												fieldtype: 'Small Text',
+												default: `
+Hello ${doc.customer_name},
+Your order ID ${doc.name} has been successfully approved. 
+For any query, call/WhatsApp on 8884880013.
+${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_payment_url}` : ''}`,
+												depends_on: 'eval:doc.notify_through_whatsapp'
+											},
+											{
+												fieldtype: 'Section Break'
+											},
+											{
 												label: __('Cancel'),
 												fieldname: 'cancel',
 												fieldtype: 'Button'
@@ -703,12 +751,12 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 					
 									d.fields_dict.share_payment_link.$input.click(() => {
 										d.hide();
-										me.make_approved_with_payment_link();
+										me.make_approved_with_payment_link(d.get_values());
 									});
 					
 									d.fields_dict.without_payment_link.$input.click(() => {
 										d.hide();
-										me.make_approved(false);
+										me.make_approved(d.get_values());
 									});
 					
 									d.fields_dict.cancel.$input.click(() => {
@@ -793,6 +841,55 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 												fieldtype: 'Button'
 											},
 											{
+												fieldtype: 'Section Break'
+											},
+											{
+												label: __('Notify through whatsapp'),
+												fieldname: 'notify_through_whatsapp',
+												fieldtype: 'Check',
+												default: 1
+											},
+											{
+												label: __('Mobile No.'),
+												fieldname: 'mobile_no',
+												fieldtype: 'Data',
+												default: doc.customer_mobile_no,
+												depends_on: 'eval:doc.notify_through_whatsapp',
+												reqd: 1,  // Make field required
+												description: __('Only 10 digits are allowed.'),
+												on_change: (value) => {
+													// Remove any non-numeric characters
+													const numericValue = value.replace(/\D/g, '');
+											
+													// Check if the value has exactly 10 digits
+													if (numericValue.length !== 10) {
+														frappe.msgprint({
+															title: __('Invalid Mobile Number'),
+															message: __('Please enter a valid 10-digit mobile number. Only numbers are allowed.'),
+															indicator: 'red'
+														});
+											
+														// Optionally, clear the field or reset the value to numeric characters only
+													} 
+												}
+											},
+											
+											{
+												label: __('Message'),
+												fieldname: 'message',
+												fieldtype: 'Small Text',
+												default: `
+Hello ${frm.doc.customer_name},
+Your order ID ${frm.doc.name} has been successfully approved. 
+For any query, call/WhatsApp on 8884880013.
+${frm.doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${frm.doc.custom_razorpay_payment_url}` : ''}`,
+												depends_on: 'eval:doc.notify_through_whatsapp'
+											},
+											
+											{
+												fieldtype: 'Section Break'
+											},
+											{
 												label: __('Cancel'),
 												fieldname: 'cancel',
 												fieldtype: 'Button'
@@ -803,12 +900,12 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 									d.fields_dict.share_payment_link.$input.click(() => {
 										d.hide();
 										// me.make_approved_with_payment_link();
-										me.make_sales_approved_with_payment_link();
+										me.make_sales_approved_with_payment_link(d.get_values());
 									});
 					
 									d.fields_dict.without_payment_link.$input.click(() => {
 										d.hide();
-										me.make_sales_approved(false);
+										me.make_sales_approved(d.get_values());
 									});
 					
 									d.fields_dict.cancel.$input.click(() => {
@@ -1510,7 +1607,53 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 			frm: this.frm,
 		});
 	}
-	make_approved_with_payment_link() {
+	// make_approved_with_payment_link() {
+	// 	// Check if custom_razorpay_payment_url is present in the form data
+	// 	const paymentUrl = this.frm.doc.custom_razorpay_payment_url;
+	// 	if (!paymentUrl) {
+	// 		// If custom_razorpay_payment_url is not set, show an error message
+	// 		frappe.throw({
+	// 			title: __('Error'),
+	// 			message: __('Please generate the payment link first.'),
+	// 			indicator: 'red'
+	// 		});
+	// 		return;
+	// 	}
+	
+	// 	// Prompt to show the payment link and get customer_email_id
+	// 	frappe.prompt([
+	// 		{
+	// 			label: __('Payment Link'),
+	// 			fieldname: 'show_payment_link',
+	// 			fieldtype: 'Data',
+	// 			reqd: 1,
+	// 			read_only: 1,
+	// 			default: paymentUrl
+	// 		},
+	// 		{
+	// 			label: __('Customer Email ID:'),
+	// 			fieldname: 'customer_email_id',
+	// 			fieldtype: 'Data',
+	// 			reqd: 1,
+	// 			default: this.frm.doc.customer_email_id || ''
+	// 		}
+	// 	], (values) => {
+	// 		// Values will contain the user's input from the prompt
+	// 		if (values.show_payment_link) {
+	// 			// console.log('Showing payment link:', paymentUrl);
+				
+	// 			// Call make_approved and send email on success
+	// 			this.make_approved(() => {
+	// 				// Send approval email
+	// 				this.send_approval_email(this.frm.doc.name, values.customer_email_id, values.show_payment_link);
+	// 			});
+	// 		} else {
+	// 			console.log('User declined to show the payment link.');
+	// 		}
+	// 	}, __('Payment Link Confirmation'));
+	// }
+
+	make_approved_with_payment_link(values) {
 		// Check if custom_razorpay_payment_url is present in the form data
 		const paymentUrl = this.frm.doc.custom_razorpay_payment_url;
 		if (!paymentUrl) {
@@ -1540,15 +1683,14 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 				reqd: 1,
 				default: this.frm.doc.customer_email_id || ''
 			}
-		], (values) => {
+		], (promptValues) => {
 			// Values will contain the user's input from the prompt
-			if (values.show_payment_link) {
-				console.log('Showing payment link:', paymentUrl);
-	
+			if (promptValues.show_payment_link) {
 				// Call make_approved and send email on success
-				this.make_approved(() => {
+				this.make_approved(values, () => {
 					// Send approval email
-					this.send_approval_email(this.frm.doc.name, values.customer_email_id, values.show_payment_link);
+					this.send_approval_email(this.frm.doc.name, promptValues.customer_email_id, promptValues.show_payment_link);
+					
 				});
 			} else {
 				console.log('User declined to show the payment link.');
@@ -1556,7 +1698,24 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 		}, __('Payment Link Confirmation'));
 	}
 	
-	make_approved(callback) {
+	
+	
+	
+	make_approved(values, callback) {
+		if (values.notify_through_whatsapp) {
+			// Validate mobile number
+			const mobile_no = values.mobile_no.replace(/\D/g, '');
+
+			if (mobile_no.length !== 10) {
+				frappe.msgprint({
+					title: __('Invalid Mobile Number'),
+					message: __('Please enter a valid 10-digit mobile number.'),
+					indicator: 'red'
+				});
+				return;  // Stop execution if mobile number is invalid
+			}
+			// this.callServerMethodForPickedup(values);
+		}
 		frappe.call({
 			method: 'erpnext.selling.doctype.sales_order.sales_order.make_approved',
 			args: {
@@ -1564,14 +1723,27 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 			},
 			callback: (response) => {
 				if (response.message === true) {
-					console.log(response.message);
+					// console.log(response.message);
 	
 					frappe.msgprint({
 						title: __('Success'),
 						message: __('Rental Sales Order Approved successfully.'),
 						indicator: 'green'
 					});
-	
+					if (values.notify_through_whatsapp) {
+						// Validate mobile number
+						const mobile_no = values.mobile_no.replace(/\D/g, '');
+
+						if (mobile_no.length !== 10) {
+							frappe.msgprint({
+								title: __('Invalid Mobile Number'),
+								message: __('Please enter a valid 10-digit mobile number.'),
+								indicator: 'red'
+							});
+							return;  // Stop execution if mobile number is invalid
+						}
+						this.send_whatsapp_message(values.mobile_no, values.message);
+					}
 					// Reload the page after a short delay
 					setTimeout(() => {
 						window.location.reload();
@@ -1591,6 +1763,101 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 		});
 	}
 	
+
+	make_sales_approved(values, callback) {
+        frappe.call({
+            method: 'erpnext.selling.doctype.sales_order.sales_order.make_sales_approved',
+            args: {
+                docname: this.frm.doc.name,
+            },
+            callback: (response) => {
+                // Handle the response
+                if (response.message) {
+                    // Log the result to the console
+                    // console.log(response.message);
+    
+                    // Display a success message
+                    frappe.msgprint({
+                        title: __('Success'),
+                        message: __('Sales Order Approved successfully.'),
+                        indicator: 'green'
+                    });
+					if (values.notify_through_whatsapp) {
+						// Validate mobile number
+						const mobile_no = values.mobile_no.replace(/\D/g, '');
+
+						if (mobile_no.length !== 10) {
+							frappe.msgprint({
+								title: __('Invalid Mobile Number'),
+								message: __('Please enter a valid 10-digit mobile number.'),
+								indicator: 'red'
+							});
+							return;  // Stop execution if mobile number is invalid
+						}
+						this.send_whatsapp_message(values.mobile_no, values.message);
+					}
+                    // Reload the entire page after a short delay (adjust as needed)
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000); // 1000 milliseconds = 1 second
+					if (callback) callback();
+                } else {
+                    // Handle the case where the response does not contain a message
+                    console.error('Unexpected response:', response);
+                }
+            }
+        });
+    }
+
+
+	make_sales_approved_with_payment_link(values) {
+		// Check if custom_razorpay_payment_url is present in the form data
+		const paymentUrl = this.frm.doc.custom_razorpay_payment_url;
+		if (!paymentUrl) {
+			// If custom_razorpay_payment_url is not set, show an error message
+			frappe.throw({
+				title: __('Error'),
+				message: __('Please generate the payment link first.'),
+				indicator: 'red'
+			});
+			return;
+		}
+	
+		// Prompt to show the payment link and get customer_email_id
+		frappe.prompt([
+			{
+				label: __('Payment Link'),
+				fieldname: 'show_payment_link',
+				fieldtype: 'Data',
+				reqd: 1,
+				read_only: 1,
+				default: paymentUrl
+			},
+			{
+				label: __('Customer Email ID:'),
+				fieldname: 'customer_email_id',
+				fieldtype: 'Data',
+				reqd: 1,
+				default: this.frm.doc.customer_email_id || ''
+			}
+		], (promptValues) => {
+			// Values will contain the user's input from the prompt
+			if (promptValues.show_payment_link) {
+				// console.log('Showing payment link:', paymentUrl);
+	
+				// Call make_approved and send email on success
+				this.make_sales_approved(values,() => {
+					// Send approval email
+					this.send_approval_email(this.frm.doc.name, promptValues.customer_email_id, promptValues.show_payment_link);
+				});
+			} else {
+				console.log('User declined to show the payment link.');
+			}
+		}, __('Payment Link Confirmation'));
+	}
+
+
+
 	send_approval_email(docname, customerEmailId, payment_link) {
 		frappe.call({
 			method: 'erpnext.selling.doctype.sales_order.sales_order.send_approval_email',
@@ -1615,117 +1882,34 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 	}
 	
 	
-	
-	// make_approved() {
-    //     frappe.call({
-    //         method: 'erpnext.selling.doctype.sales_order.sales_order.make_approved',
-    //         args: {
-    //             docname: this.frm.doc.name,
-    //         },
-    //         callback: (response) => {
-    //             // Handle the response
-    //             if (response.message === true) {
-    //                 // Log the result to the console
-    //                 console.log(response.message);
-    
-    //                 // Display a success message
-    //                 frappe.msgprint({
-    //                     title: __('Success'),
-    //                     message: __('Rental Sales Order Approved successfully.'),
-    //                     indicator: 'green'
-    //                 });
-    
-    //                 // Reload the entire page after a short delay (adjust as needed)
-    //                 setTimeout(() => {
-    //                     window.location.reload();
-    //                 }, 1000); // 1000 milliseconds = 1 second
-    //             } else {
-    //                 // Handle the case where the response does not contain a message
-    //                 console.error('Unexpected response:', response);
-    //             }
-    //         }
-    //     });
-    // }
-
-
-	make_sales_approved_with_payment_link() {
-		// Check if custom_razorpay_payment_url is present in the form data
-		const paymentUrl = this.frm.doc.custom_razorpay_payment_url;
-		if (!paymentUrl) {
-			// If custom_razorpay_payment_url is not set, show an error message
-			frappe.throw({
-				title: __('Error'),
-				message: __('Please generate the payment link first.'),
-				indicator: 'red'
-			});
-			return;
-		}
-	
-		// Prompt to show the payment link and get customer_email_id
-		frappe.prompt([
-			{
-				label: __('Payment Link'),
-				fieldname: 'show_payment_link',
-				fieldtype: 'Data',
-				reqd: 1,
-				read_only: 1,
-				default: paymentUrl
+	send_whatsapp_message(mobile_no, message) {
+		frappe.call({
+			method: 'webtoolex_whatsapp.webtoolex_whatsapp.doctype.whatsapp_instance.whatsapp_instance.send_custom_whatsapp_message',
+			args: {
+				mobile_number: mobile_no,
+				message: message,
+				// instance_name: 'NHK' // Specify your WhatsApp instance name here
 			},
-			{
-				label: __('Customer Email ID:'),
-				fieldname: 'customer_email_id',
-				fieldtype: 'Data',
-				reqd: 1,
-				default: this.frm.doc.customer_email_id || ''
+			callback: (response) => {
+				if (response.message && response.message.status === true) {
+					frappe.msgprint({
+						title: __('WhatsApp'),
+						message: __('WhatsApp message sent successfully.'),
+						indicator: 'green'
+					});
+				} else {
+					frappe.msgprint({
+						title: __('WhatsApp'),
+						message: response.message ? response.message.msg : __('Failed to send WhatsApp message.'),
+						indicator: 'red'
+					});
+				}
 			}
-		], (values) => {
-			// Values will contain the user's input from the prompt
-			if (values.show_payment_link) {
-				console.log('Showing payment link:', paymentUrl);
-	
-				// Call make_approved and send email on success
-				this.make_sales_approved(() => {
-					// Send approval email
-					this.send_approval_email(this.frm.doc.name, values.customer_email_id, values.show_payment_link);
-				});
-			} else {
-				console.log('User declined to show the payment link.');
-			}
-		}, __('Payment Link Confirmation'));
+		});
 	}
-
-
-	make_sales_approved(callback) {
-        frappe.call({
-            method: 'erpnext.selling.doctype.sales_order.sales_order.make_sales_approved',
-            args: {
-                docname: this.frm.doc.name,
-            },
-            callback: (response) => {
-                // Handle the response
-                if (response.message) {
-                    // Log the result to the console
-                    console.log(response.message);
-    
-                    // Display a success message
-                    frappe.msgprint({
-                        title: __('Success'),
-                        message: __('Sales Order Approved successfully.'),
-                        indicator: 'green'
-                    });
-    
-                    // Reload the entire page after a short delay (adjust as needed)
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 1000); // 1000 milliseconds = 1 second
-					if (callback) callback();
-                } else {
-                    // Handle the case where the response does not contain a message
-                    console.error('Unexpected response:', response);
-                }
-            }
-        });
-    }
+	
+	
+	
 
 
 	
@@ -2006,7 +2190,7 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 					// Handle the response
 					if (response.message) {
 						// Log the result to the console
-						console.log(response.message);
+						// console.log(response.message);
 		
 						// Display a success message
 						frappe.msgprint({
@@ -2191,6 +2375,56 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 		let frm = this.frm;
 		frappe.prompt([
 			{
+				fieldtype: 'Section Break'
+			},
+			{
+				label: __('Notify through whatsapp'),
+				fieldname: 'notify_through_whatsapp',
+				fieldtype: 'Check',
+				default: 1
+			},
+			{
+				label: __('Mobile No.'),
+				fieldname: 'mobile_no',
+				fieldtype: 'Data',
+				default: frm.doc.customer_mobile_no,
+				depends_on: 'eval:doc.notify_through_whatsapp',
+				reqd: 1,  // Make field required
+				description: __('Only 10 digits are allowed.Make sure Number Must be in WhatsApp'),
+				on_change: (value) => {
+					// Remove any non-numeric characters
+					const numericValue = value.replace(/\D/g, '');
+			
+					// Check if the value has exactly 10 digits
+					if (numericValue.length !== 10) {
+						frappe.msgprint({
+							title: __('Invalid Mobile Number'),
+							message: __('Please enter a valid 10-digit mobile number. Only numbers are allowed.'),
+							indicator: 'red'
+						});
+			
+						// Optionally, clear the field or reset the value to numeric characters only
+					}
+				}
+			},
+			
+			{
+				label: __('Message'),
+				fieldname: 'message',
+				fieldtype: 'Small Text',
+				default: `Hello ${frm.doc.customer_name},
+Your order has been delivered successfully. We have received your payment of ${ (frm.doc.paid_security_deposit_amount || 0) + (frm.doc.received_amount || 0) } rs successfully.` + 
+((frm.doc.outstanding_security_deposit_amount || 0) + (frm.doc.balance_amount || 0) > 0 ? 
+` You have an outstanding amount of ${ (frm.doc.outstanding_security_deposit_amount || 0) + (frm.doc.balance_amount || 0) } rs.` : ``) + 
+			`                                                                                              
+For any query call/WhatsApp on 8884880013.`,
+				depends_on: 'eval:doc.notify_through_whatsapp'
+			},
+			
+			{
+				fieldtype: 'Section Break'
+			},
+			{
 				label: 'Delivered Date',
 				fieldname: 'delivered_date',
 				fieldtype: 'Datetime',
@@ -2290,7 +2524,20 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 			// this.frm.save(() => {
 				// Optionally, refresh the form to reflect the changes
 				this.frm.refresh();
+				if (values.notify_through_whatsapp) {
+					// Validate mobile number
+					const mobile_no = values.mobile_no.replace(/\D/g, '');
 
+					if (mobile_no.length !== 10) {
+						frappe.msgprint({
+							title: __('Invalid Mobile Number'),
+							message: __('Please enter a valid 10-digit mobile number.'),
+							indicator: 'red'
+						});
+						return;  // Stop execution if mobile number is invalid
+					}
+					// this.send_whatsapp_message(values.mobile_no, values.message);
+				}
 				// Now call the server-side method only after the user submits the dispatch date
 				this.callServerMethodForDelivered(values);
 			// });
@@ -2320,7 +2567,20 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 						message: __('Rental Device Delivered successfully.'),
 						indicator: 'green'
 					});
+					if (values.notify_through_whatsapp) {
+						// Validate mobile number
+						const mobile_no = values.mobile_no.replace(/\D/g, '');
 
+						if (mobile_no.length !== 10) {
+							frappe.msgprint({
+								title: __('Invalid Mobile Number'),
+								message: __('Please enter a valid 10-digit mobile number.'),
+								indicator: 'red'
+							});
+							return;  // Stop execution if mobile number is invalid
+						}
+						this.send_whatsapp_message(values.mobile_no, values.message);
+					}
 					// Reload the entire page after a short delay (adjust as needed)
 					setTimeout(() => {
 						window.location.reload();
@@ -2330,6 +2590,7 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 		});
 	}
 	make_ready_for_pickup() {
+		let frm = this.frm;
 		var role_profile = [
 			{ role_profile: "NHK Technician" }, // Example data, replace with actual data
 			{ role_profile: "Other Role" }
@@ -2403,6 +2664,51 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 				// reqd: 1
 			},
 			{
+				label: __('Notify through whatsapp'),
+				fieldname: 'notify_through_whatsapp',
+				fieldtype: 'Check',
+				default: 1
+			},
+			{
+				label: __('Mobile No.'),
+				fieldname: 'mobile_no',
+				fieldtype: 'Data',
+				default: frm.doc.customer_mobile_no,
+				depends_on: 'eval:doc.notify_through_whatsapp',
+				reqd: 1,  // Make field required
+				description: __('Only 10 digits are allowed.Make sure Number Must be in WhatsApp'),
+				on_change: (value) => {
+					// Remove any non-numeric characters
+					const numericValue = value.replace(/\D/g, '');
+			
+					// Check if the value has exactly 10 digits
+					if (numericValue.length !== 10) {
+						frappe.msgprint({
+							title: __('Invalid Mobile Number'),
+							message: __('Please enter a valid 10-digit mobile number. Only numbers are allowed.'),
+							indicator: 'red'
+						});
+			
+						// Optionally, clear the field or reset the value to numeric characters only
+					} 
+				}
+			},
+			
+			{
+				label: __('Message'),
+				fieldname: 'message',
+				fieldtype: 'Small Text',
+				default: `Hello Sir/Mam
+			
+Patient Name: ${frm.doc.customer_name}
+Equipment Name: ${frm.doc.items ? frm.doc.items.map(item => item.item_name).join(', ') : 'No items'}
+			
+We have initiated pickup of the above equipment.
+For any query call/WhatsApp on 8884880013.`,
+				depends_on: 'eval:doc.notify_through_whatsapp'
+			},
+			
+			{
 				label: 'Pickup Date',
 				fieldname: 'pickup_date',
 				fieldtype: 'Datetime',
@@ -2435,7 +2741,20 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 			// this.frm.save(() => {
 				// Optionally, refresh the form to reflect the changes
 				this.frm.refresh();
+				if (values.notify_through_whatsapp) {
+					// Validate mobile number
+					const mobile_no = values.mobile_no.replace(/\D/g, '');
 
+					if (mobile_no.length !== 10) {
+						frappe.msgprint({
+							title: __('Invalid Mobile Number'),
+							message: __('Please enter a valid 10-digit mobile number.'),
+							indicator: 'red'
+						});
+						return;  // Stop execution if mobile number is invalid
+					}
+					// this.callServerMethodForReadyForPickup(values);
+				}
 				// Now call the server-side method only after the user submits the pickup date
 				this.callServerMethodForReadyForPickup(values);
 			// });
@@ -2463,7 +2782,20 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 						message: __('RentalSales Order is Ready for Pickup.'),
 						indicator: 'green'
 					});
+					if (values.notify_through_whatsapp) {
+						// Validate mobile number
+						const mobile_no = values.mobile_no.replace(/\D/g, '');
 
+						if (mobile_no.length !== 10) {
+							frappe.msgprint({
+								title: __('Invalid Mobile Number'),
+								message: __('Please enter a valid 10-digit mobile number.'),
+								indicator: 'red'
+							});
+							return;  // Stop execution if mobile number is invalid
+						}
+						this.send_whatsapp_message(values.mobile_no, values.message);
+					}
 					// Reload the entire page after a short delay (adjust as needed)
 					setTimeout(() => {
 						window.location.reload();
@@ -2474,6 +2806,7 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 	}
 
 	make_pickedup() {
+		let frm = this.frm;
 		frappe.prompt([
 			// {
 			// 	fieldname: 'technician_name',
@@ -2514,7 +2847,51 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 				fieldtype: 'Datetime',
 				default:'Now',
 				reqd: 1
-			}
+			},
+			{
+				label: __('Notify through whatsapp'),
+				fieldname: 'notify_through_whatsapp',
+				fieldtype: 'Check',
+				default: 1
+			},
+			{
+				label: __('Mobile No.'),
+				fieldname: 'mobile_no',
+				fieldtype: 'Data',
+				default: frm.doc.customer_mobile_no,
+				depends_on: 'eval:doc.notify_through_whatsapp',
+				reqd: 1,  // Make field required
+				description: __('Only 10 digits are allowed.Make sure Number Must be in WhatsApp'),
+				on_change: (value) => {
+					// Remove any non-numeric characters
+					const numericValue = value.replace(/\D/g, '');
+			
+					// Check if the value has exactly 10 digits
+					if (numericValue.length !== 10) {
+						frappe.msgprint({
+							title: __('Invalid Mobile Number'),
+							message: __('Please enter a valid 10-digit mobile number. Only numbers are allowed.'),
+							indicator: 'red'
+						});
+			
+						// Optionally, clear the field or reset the value to numeric characters only
+					} 
+				}
+			},
+			
+			{
+				label: __('Message'),
+				fieldname: 'message',
+				fieldtype: 'Small Text',
+				default: `Hello Sir/Mam
+			
+Patient Name: ${frm.doc.customer_name}
+Equipment Name: ${frm.doc.items ? frm.doc.items.map(item => item.item_name).join(', ') : 'No items'}
+			
+We have successfully received the rental equipment at our office. Thank you for returning it on time.
+If you have any questions, feel free to call/what's app us on 8884880013.`,
+				depends_on: 'eval:doc.notify_through_whatsapp'
+			},
 			// Add more fields as needed
 		], (values) => {
 			// values will contain the entered data
@@ -2525,7 +2902,20 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 
 			// Optionally, refresh the form to reflect the changes
 			this.frm.refresh();
+			if (values.notify_through_whatsapp) {
+				// Validate mobile number
+				const mobile_no = values.mobile_no.replace(/\D/g, '');
 
+				if (mobile_no.length !== 10) {
+					frappe.msgprint({
+						title: __('Invalid Mobile Number'),
+						message: __('Please enter a valid 10-digit mobile number.'),
+						indicator: 'red'
+					});
+					return;  // Stop execution if mobile number is invalid
+				}
+				// this.callServerMethodForPickedup(values);
+			}
 			// Now call the server-side method only after the user submits the technician details
 			this.callServerMethodForPickedup(values);
 		}, __('Picked Up'));
@@ -2548,6 +2938,20 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 						message: __('RentalSales Order is picked up.'),
 						indicator: 'green'
 					});
+					if (values.notify_through_whatsapp) {
+						// Validate mobile number
+						const mobile_no = values.mobile_no.replace(/\D/g, '');
+
+						if (mobile_no.length !== 10) {
+							frappe.msgprint({
+								title: __('Invalid Mobile Number'),
+								message: __('Please enter a valid 10-digit mobile number.'),
+								indicator: 'red'
+							});
+							return;  // Stop execution if mobile number is invalid
+						}
+						this.send_whatsapp_message(values.mobile_no, values.message);
+					}
 					// this.frm.save();
 					// Reload the entire page after a short delay (adjust as needed)
 					setTimeout(() => {
@@ -2584,7 +2988,7 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 
 	callServerMethodForSubmittedToOffice(values) {
 		const itemCodes = this.frm.doc.items.map(item => item.item_code);
-		console.log(itemCodes)
+		// console.log(itemCodes)
 		frappe.call({
 			method: 'erpnext.selling.doctype.sales_order.sales_order.make_submitted_to_office',
 			args: {

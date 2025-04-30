@@ -18,6 +18,8 @@ from erpnext.accounts.doctype.bank_account.bank_account import (
 	get_bank_account_details,
 	get_party_bank_account,
 )
+from webtoolex_whatsapp.webtoolex_whatsapp.doctype.whatsapp_instance.whatsapp_instance import send_custom_whatsapp_message
+
 from erpnext.accounts.doctype.invoice_discounting.invoice_discounting import (
 	get_party_account_based_on_invoice_discounting,
 )
@@ -293,11 +295,26 @@ class PaymentEntry(AccountsController):
 
 			# Save the Sales Order
 			sales_order.save()
+			message = f"""
+Hello Sir/Mam,
+
+Your payment of {self.paid_amount} has been successfully received for Sales Order ID: {self.sales_order_id}.
+
+If you have any questions, feel free to contact us.
+
+Thank you for choosing NHK Medical Pvt Ltd.
+    """
+			# ✅ Check Admin Settings for sending WhatsApp message
+			mobile_number = sales_order.customer_mobile_no
+			admin_settings = frappe.get_single("Admin Settings")
+			if admin_settings.send_renewal_and_payment_message == 1:
+				send_custom_whatsapp_message(mobile_number, message)
 
 
 
 	def update_advance_paid_custom(self):
 		if self.sales_order_id and self.paid_amount:
+
 			# Fetch the Sales Order
 			sales_order = frappe.get_doc("Sales Order", self.sales_order_id)
 
@@ -319,7 +336,7 @@ class PaymentEntry(AccountsController):
 
 				# Save the Sales Order
 				sales_order.save()
-
+				
 	def set_payment_req_status(self):
 		from erpnext.accounts.doctype.payment_request.payment_request import update_payment_req_status
 
@@ -1530,7 +1547,7 @@ class PaymentEntry(AccountsController):
 				"advance_payment_receivable_doctypes"
 			) + frappe.get_hooks("advance_payment_payable_doctypes")
 			for d in self.get("references"):
-				print(d)
+				# print(d)
 				if d.allocated_amount and d.reference_doctype in advance_payment_doctypes:
 					frappe.get_doc(
 						d.reference_doctype, d.reference_name, for_update=True

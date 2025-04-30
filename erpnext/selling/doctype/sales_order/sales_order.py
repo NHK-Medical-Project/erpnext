@@ -15,6 +15,7 @@ from frappe.model.utils import get_fetch_values
 from frappe.query_builder.functions import Sum
 from frappe.utils import add_days, cint, cstr, flt, get_link_to_form, getdate, nowdate, strip_html
 from datetime import datetime
+from webtoolex_whatsapp.webtoolex_whatsapp.doctype.whatsapp_instance.whatsapp_instance import send_custom_whatsapp_message
 
 from erpnext.accounts.doctype.sales_invoice.sales_invoice import (
     unlink_inter_company_doc,
@@ -633,6 +634,14 @@ class SalesOrder(SellingController):
 
             # Update status in parent Sales Order
             existing_orders = frappe.get_list("Sales Order", filters={"name": self.previous_order_id})
+            # print('existing_ordersssssssssssssss',existing_orders)
+            if existing_orders:
+                sales_order_enddate = frappe.get_doc("Sales Order", existing_orders[0].name)
+                existing_orders_end_date = sales_order_enddate.get("end_date")
+
+                if existing_orders_end_date:
+                    # Convert to dd-mmm-yyyy format
+                    existing_orders_end_date_formatted_end_date = datetime.strptime(str(existing_orders_end_date), "%Y-%m-%d").strftime("%d-%b-%Y")
             for order in existing_orders:
                 sales_order = frappe.get_doc("Sales Order", order.name)
                 sales_order.status = "RENEWED"
@@ -644,6 +653,12 @@ class SalesOrder(SellingController):
                 sales_order_item = frappe.get_doc("Sales Order Item", order_item.name)
                 sales_order_item.child_status = "Renewed"
                 sales_order_item.save()
+            if self.customer_mobile_no:
+                admin_settings = frappe.get_single("Admin Settings")
+                
+                if admin_settings.send_renewal_and_payment_message == 1:
+                    self.send_renewal_whatsapp_message(existing_orders_end_date_formatted_end_date)
+
         # elif self.order_type == "Rental":
         # 	# Update master_order_id with the current doc name
         # 	self.master_order_id = self.name
@@ -651,6 +666,29 @@ class SalesOrder(SellingController):
         # self.save()
     
 
+    def send_renewal_whatsapp_message(self,existing_orders_end_date_formatted_end_date):
+        """Send renewal message to client through WhatsApp"""
+        customer_name = self.customer_name or "Customer"
+        equipment_names = ", ".join([item.item_name for item in self.items]) if self.items else "No equipment"
+        formatted_start_date = datetime.strptime(str(self.start_date), '%Y-%m-%d').strftime('%d-%b-%Y') if self.start_date else "N/A"
+        formatted_end_date_current = datetime.strptime(str(self.end_date), '%Y-%m-%d').strftime('%d-%b-%Y') if self.end_date else "N/A"
+
+        message = f"""
+Hello Sir/Mam,
+
+Patient Name: {customer_name}
+Equipment Name: {equipment_names}
+
+Your current rental period for medical devices is ending on {existing_orders_end_date_formatted_end_date}.
+
+To continue, kindly make renewal payment of {self.grand_total} Rs for the period {formatted_start_date} to {formatted_end_date_current}.
+
+For any query, call or WhatsApp on 8884880013.
+    """
+
+        # Check if customer has a mobile number
+        if self.customer_mobile_no and len(self.customer_mobile_no) == 10:
+            send_custom_whatsapp_message(self.customer_mobile_no, message)
     def before_cancel(self):
         if self.previous_order_id:
             # if self.status == 'Submitted to Office':
@@ -2427,7 +2465,7 @@ def send_approval_email(docname, customer_email_id, payment_link):
         text = msg.as_string()
         server.sendmail(smtp_username, [customer_email_id] + cc_email_list, text)
         server.quit()
-        print("Email sent successfully!")
+        # print("Email sent successfully!")
         
         return True
     except Exception as e:
@@ -3030,6 +3068,7 @@ def sales_order_for_html(sales_order_id):
 
 @frappe.whitelist()
 def update_status_to_ready_for_pickup(item_code, pickup_datetime, docname, child_name,pickupReason,pickupRemark,technician_id=None,technician_mobile=None):
+    # print('qqqqqqqqqqqqqqqqqqqqqqqq',item_code, pickup_datetime, docname, child_name,pickupReason,pickupRemark)
     # Retrieve Rental Orders based on the item_code field in the items child table
     sales_order_items = frappe.get_all("Sales Order Item", filters={"parent": docname}, fields=["name"])
     sales_order_doc = frappe.get_doc("Sales Order", docname)
@@ -3082,7 +3121,7 @@ def update_status_to_ready_for_pickup(item_code, pickup_datetime, docname, child
 
 @frappe.whitelist()
 def update_status_to_picked_up(item_code, docname, child_name,picked_up_datetime):
-    print()
+    # print()
     # Retrieve Rental Orders based on the item_code field in the items child table
     sales_order_items = frappe.get_all("Sales Order Item", filters={"parent": docname}, fields=["name"])
 
@@ -4551,7 +4590,7 @@ def get_sales_orders(master_order_id):
         # sales_order = [order.get("name") for order in sales_orders]
         
         # Return the list of sales order names
-        print(sales_orders_names)
+        # print(sales_orders_names)
         return sales_orders_names
     except Exception as e:
         frappe.log_error(frappe.get_traceback(), "Failed to fetch sales orders")
