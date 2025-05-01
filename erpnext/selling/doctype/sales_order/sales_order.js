@@ -878,11 +878,16 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 												label: __('Message'),
 												fieldname: 'message',
 												fieldtype: 'Small Text',
+// 												default: `
+// Hello ${frm.doc.customer_name},
+// Your order ID ${frm.doc.name} has been successfully approved. 
+// For any query, call/WhatsApp on 8884880013.
+// ${frm.doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${frm.doc.custom_razorpay_payment_url}` : ''}`,
 												default: `
-Hello ${frm.doc.customer_name},
-Your order ID ${frm.doc.name} has been successfully approved. 
+Hello ${doc.customer_name},
+Your order ID ${doc.name} has been successfully approved.
 For any query, call/WhatsApp on 8884880013.
-${frm.doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${frm.doc.custom_razorpay_payment_url}` : ''}`,
+${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_payment_url}` : ''}`,
 												depends_on: 'eval:doc.notify_through_whatsapp'
 											},
 											
