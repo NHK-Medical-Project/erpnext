@@ -3433,6 +3433,9 @@ def create_renewal_order(sales_order_name):
 
     for item in new_sales_order.items:
         item.read_only = 1
+        current_tax_rate = frappe.get_value("Item", item.item_code, "tax_rate") or 0
+        item.tax_rate = current_tax_rate
+        item.gst_treatment = "Non-GST"
 
     # Increment the renewal_order_count of the new sales order
     renewal_count = getattr(original_sales_order, "renewal_order_count", 0)
