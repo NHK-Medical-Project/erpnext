@@ -724,7 +724,8 @@ For any query, call or WhatsApp on 8884880013.
             'Cannot cancel this record because it has been RENEWED'
         )
         else:
-            self.status = "Cancelled"
+            # self.status = "Cancelled"
+            self.db_set("status", "Cancelled")
         # if self.status == 'Submitted to Office' and self.is_renewed == 1:
         #         frappe.throw(
         #     'Cannot cancel this record because it has been submitted to office and is marked as renewed.'
@@ -2428,7 +2429,7 @@ def send_approval_email(docname, customer_email_id, payment_link):
                     <td>{doc.grand_total}</td>
                 </tr>
                 """
-        logo_url = f"{frappe.utils.get_url()}/files/nhk_logo.png"
+        logo_url = f"{frappe.utils.get_url()}/files/nhk_logo2.png"
 
         # Append the payment link row and closing message
         message += f"""
@@ -2453,7 +2454,7 @@ def send_approval_email(docname, customer_email_id, payment_link):
             <p>
                 <img src="{logo_url}" 
                      alt="NHK Logo" 
-                     style="margin-top:20px; max-width:200px; height:auto;">
+                     style="max-width:110px; height:auto;">
             </p>
             """
 
@@ -2516,7 +2517,7 @@ def send_sales_order_email(sales_order, customer_email):
         items_html += "</ul>"
 
         # Company logo URL
-        logo_url = f"{get_url()}/files/nhk_logo.png"
+        logo_url = f"{get_url()}/files/nhk_logo2.png"
         order_date = formatdate(so.transaction_date, "dd-MMM-yyyy")
         delivery_date = formatdate(so.delivery_date, "dd-MMM-yyyy") if so.delivery_date else "N/A"
 
@@ -2529,7 +2530,7 @@ def send_sales_order_email(sales_order, customer_email):
             <p>Estimated delivery: {delivery_date}</p>
             <p>If you have any questions, contact our support at +91 8884880013.</p><br>
             <p>Thank you for choosing NHK Medical Pvt Ltd.</p>
-            <p><img src="{logo_url}" alt="NHK Logo" style="max-width:200px;"></p>
+            <p><img src="{logo_url}" alt="NHK Logo" style="max-width:110px;"></p>
         """
 
         # Get SMTP credentials from Email Account
@@ -2966,7 +2967,7 @@ def send_submitted_email(doc, submitted_items_html, customer_email):
         cc_email_list = [entry.user for entry in cc_email_entries] if cc_email_entries else []
 
         # Company logo
-        logo_url = f"{get_url()}/files/nhk_logo.png"
+        logo_url = f"{get_url()}/files/nhk_logo2.png"
 
         # Format dates
         order_date = formatdate(doc.transaction_date, "dd-MMM-yyyy")
@@ -2981,7 +2982,7 @@ def send_submitted_email(doc, submitted_items_html, customer_email):
             <p>Submitted to Office on: {submitted_date}</p>
             <p>If you have any questions, contact our support at +91 8884880013.</p><br>
             <p>Thank you for choosing NHK Medical.</p>
-            <p><img src="{logo_url}" alt="NHK Logo" style="max-width:200px;"></p>
+            <p><img src="{logo_url}" alt="NHK Logo" style="max-width:110px;"></p>
         """
 
         # SMTP setup from Email Account

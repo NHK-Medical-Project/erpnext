@@ -1787,7 +1787,7 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 	
 
 	make_sales_approved(values, callback) {
-		console.log("make_sales_approved called with values:", values);
+		// console.log("make_sales_approved called with values:", values);
         frappe.call({
             method: 'erpnext.selling.doctype.sales_order.sales_order.make_sales_approved',
             args: {
