@@ -382,14 +382,14 @@
   {
    "allow_on_submit": 1,
    "default": "Today",
-   "depends_on": "eval:!doc.skip_delivery_note",
+   "depends_on": "eval:doc.order_type === 'Sales'",
    "fieldname": "delivery_date",
    "fieldtype": "Date",
-   "hidden": 1,
    "hide_days": 1,
    "hide_seconds": 1,
    "in_list_view": 1,
    "label": "Delivery Date",
+   "mandatory_depends_on": "eval:doc.order_type === 'Sales'",
    "no_copy": 1
   },
   {
@@ -2235,7 +2235,7 @@
  "idx": 105,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-09-03 10:23:33.425169",
+ "modified": "2025-09-29 17:44:32.493351",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order",
