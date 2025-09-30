@@ -499,7 +499,7 @@ class DeliveryNote(SellingController):
 
     def update_sales_order_with_serial_numbers123(self):
         for item in self.items:
-            if item.use_serial_batch_fields == 1:
+            if item.use_serial_batch_fields == 1 or item.serial_and_batch_bundle:
                 item_name = item.item_name
                 qty = item.qty
                 serial_and_batch_bundle = item.serial_and_batch_bundle

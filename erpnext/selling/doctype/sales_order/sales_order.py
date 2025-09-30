@@ -2351,6 +2351,7 @@ import requests
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.application import MIMEApplication
+from frappe.utils.password import get_decrypted_password
 
 @frappe.whitelist()
 def send_approval_email(docname, customer_email_id, payment_link):
@@ -2363,6 +2364,19 @@ def send_approval_email(docname, customer_email_id, payment_link):
         cc_email_entries = admin_settings.sales_order_email_notification_cc
         cc_email_list = [entry.user for entry in cc_email_entries] if cc_email_entries else []
         # print('cc_email_listttttttttttttttttttttttt',cc_email_list)
+        
+        # Get Email Account from Admin Settings
+        email_account = admin_settings.email_account
+        if not email_account:
+            frappe.throw("Please configure Email Account in Admin Settings.")
+
+        # Fetch SMTP credentials
+        smtp_username = frappe.db.get_value("Email Account", email_account, "email_id")
+        smtp_password = get_decrypted_password("Email Account", email_account, "password")
+
+        if not smtp_username or not smtp_password:
+            frappe.throw(f"Email Account {email_account} is missing email_id or password.")
+
         # Determine the URL based on the order type
         if doc.order_type == "Sales":
             pdf_url = frappe.utils.get_url(f"/api/method/frappe.utils.print_format.download_pdf?doctype=Sales%20Order&name={docname}&format=Nhk%20Sales%20Order&no_letterhead=1&letterhead=No%20Letterhead&settings=%7B%7D&_lang=en")
@@ -2414,7 +2428,8 @@ def send_approval_email(docname, customer_email_id, payment_link):
                     <td>{doc.grand_total}</td>
                 </tr>
                 """
-        
+        logo_url = f"{frappe.utils.get_url()}/files/nhk_logo.png"
+
         # Append the payment link row and closing message
         message += f"""
                  <tr>
@@ -2432,8 +2447,14 @@ def send_approval_email(docname, customer_email_id, payment_link):
                     </td>
                 </tr>
             </table>
+            <p>If you have any questions, contact our support at +91 8884880013.<p>
             
-            <p>Best regards,<br>NHK MEDICAL PRIVATE LIMITED</p>
+            <p>Thank you for choosing NHK Medical pvt ltd. </p>
+            <p>
+                <img src="{logo_url}" 
+                     alt="NHK Logo" 
+                     style="margin-top:20px; max-width:200px; height:auto;">
+            </p>
             """
 
         # Fetch the PDF content using requests library
@@ -2458,9 +2479,8 @@ def send_approval_email(docname, customer_email_id, payment_link):
         # SMTP setup
         smtp_server = 'smtp.gmail.com'
         smtp_port = 587
-        smtp_username = 'support@nhkmedical.com'
-        smtp_password = 'zpvr bmkd nqaz qnxe'
-        
+        # smtp_username = 'support@nhkmedical.com'
+        # smtp_password = 'zpvr bmkd nqaz qnxe'
         # Send email
         server = smtplib.SMTP(smtp_server, smtp_port)
         server.starttls()  # Secure the connection
@@ -2475,9 +2495,76 @@ def send_approval_email(docname, customer_email_id, payment_link):
         frappe.log_error(f"Error sending approval email for Sales Order {docname}: {e}")
         return False
 
+from frappe.utils import get_url
+from frappe.utils import formatdate, get_url
+@frappe.whitelist()
+def send_sales_order_email(sales_order, customer_email):
+    try:
+        # Fetch Sales Order
+        so = frappe.get_doc("Sales Order", sales_order)
 
+        # Fetch CC emails from Admin Settings
+        admin_settings = frappe.get_doc('Admin Settings')
+        cc_email_entries = admin_settings.sales_order_email_notification_cc
+        cc_email_list = [entry.user for entry in cc_email_entries] if cc_email_entries else []
 
+        # Build items HTML
+        items_html = "<ul>"
+        for item in so.items:
+            # items_html += f"<li>{item.item_code} - {item.qty} x {item.rate} = {item.amount}</li>"
+            items_html += f"<li>{item.item_code}</li>"
+        items_html += "</ul>"
 
+        # Company logo URL
+        logo_url = f"{get_url()}/files/nhk_logo.png"
+        order_date = formatdate(so.transaction_date, "dd-MMM-yyyy")
+        delivery_date = formatdate(so.delivery_date, "dd-MMM-yyyy") if so.delivery_date else "N/A"
+
+        # Email body template
+        message = f"""
+            <p>Hello {so.customer_name},</p>
+            <p>Thank you — your order has been placed successfully.</p><br>
+            <p>Order number: {so.name} <br> Order date: {order_date}</p>
+            <p>Items: {items_html}</p>
+            <p>Estimated delivery: {delivery_date}</p>
+            <p>If you have any questions, contact our support at +91 8884880013.</p><br>
+            <p>Thank you for choosing NHK Medical Pvt Ltd.</p>
+            <p><img src="{logo_url}" alt="NHK Logo" style="max-width:200px;"></p>
+        """
+
+        # Get SMTP credentials from Email Account
+        email_account_name = frappe.get_single("Admin Settings").email_account
+        email_account = frappe.get_doc("Email Account", email_account_name)
+        smtp_username = email_account.email_id
+        smtp_password = email_account.get_password("password")
+
+        # Create email
+        msg = MIMEMultipart()
+        msg['From'] = "NHK MEDICAL PRIVATE LIMITED"
+        msg['To'] = customer_email
+        msg['Cc'] = ", ".join(cc_email_list)
+        msg['Subject'] = f"Order Confirmation - {so.name}"
+        msg.attach(MIMEText(message, 'html'))
+
+        # Attach Sales Order PDF
+        pdf_url = get_url(f"/api/method/frappe.utils.print_format.download_pdf?doctype=Sales%20Order&name={so.name}&format=Nhk%20Sales%20Order&no_letterhead=1")
+        pdf_response = requests.get(pdf_url)
+        pdf_attachment = MIMEApplication(pdf_response.content, _subtype="pdf")
+        pdf_attachment.add_header('Content-Disposition', 'attachment', filename=f"Sales_Order_{so.name}.pdf")
+        msg.attach(pdf_attachment)
+
+        # Send email via SMTP
+        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server.starttls()
+        server.login(smtp_username, smtp_password)
+        recipients = [customer_email] + cc_email_list
+        server.sendmail(smtp_username, recipients, msg.as_string())
+        server.quit()
+
+        return True
+    except Exception as e:
+        frappe.log_error(f"Error sending email for Sales Order {sales_order}: {e}")
+        return False
 
 
 
@@ -2822,14 +2909,14 @@ def make_pickedup(docname, pickup_date):
 import ast
 
 @frappe.whitelist()
-def make_submitted_to_office(docname, item_code, submitted_date):
+def make_submitted_to_office(docname, item_code, submitted_date, send_email, customer_email=None):
     try:
         # Convert the string representation of the list to an actual list
         item_codes = ast.literal_eval(item_code)
         # print('asdddddddddddddddddddddddddddddddddddddddddddd',item_codes)
         # Get the 'Sales Order' document
         doc = frappe.get_doc('Sales Order', docname)
-
+        submitted_items_html = "<ul>"
         # Update status of items to "Available"
         for item_code in item_codes:
             item_doc = frappe.get_doc("Item", item_code)
@@ -2839,9 +2926,11 @@ def make_submitted_to_office(docname, item_code, submitted_date):
                 item_doc.customer_name = ""
                 item_doc.custom_sales_order_id = ""
                 item_doc.save(ignore_permissions=True)
+                submitted_items_html += f"<li>{item_doc.item_name} ({item_doc.item_code})</li>"
+
             else:
                 frappe.throw('Current item Status is Not Rented Out')
-
+        submitted_items_html += "</ul>"
         # Set values for submission to office and update status
         doc.submitted_date = submitted_date
         doc.status = 'Submitted to Office'
@@ -2855,12 +2944,72 @@ def make_submitted_to_office(docname, item_code, submitted_date):
             sales_order_item.submitted_date = submitted_date
             sales_order_item.save(ignore_permissions=True)
 
+        # print('send_sssssssssssssssssemail', send_email, customer_email)
+        # Send email if checked
+        if int(send_email) == 1 and customer_email:
+            send_submitted_email(doc, submitted_items_html, customer_email)
+
         return "Submitted to Office Success"
 
     except Exception as e:
         # Log any errors that occur
         frappe.log_error(f"Error in make_submitted_to_office: {e}")
         frappe.throw("An error occurred while processing the request. Please try again.")
+
+
+
+
+def send_submitted_email(doc, submitted_items_html, customer_email):
+    try:
+        admin_settings = frappe.get_doc('Admin Settings')
+        cc_email_entries = admin_settings.sales_order_email_notification_cc
+        cc_email_list = [entry.user for entry in cc_email_entries] if cc_email_entries else []
+
+        # Company logo
+        logo_url = f"{get_url()}/files/nhk_logo.png"
+
+        # Format dates
+        order_date = formatdate(doc.transaction_date, "dd-MMM-yyyy")
+        submitted_date = formatdate(doc.submitted_date, "dd-MMM-yyyy")
+
+        # Email message
+        message = f"""
+            <p>Hello {doc.customer_name},</p>
+            <p>This is to confirm that your rental device has been successfully picked up from your home address and submitted at our office.</p>
+            <p>Order ID: {doc.name} <br> Order date: {order_date}</p>
+            <p>Items received: {submitted_items_html}</p>
+            <p>Submitted to Office on: {submitted_date}</p>
+            <p>If you have any questions, contact our support at +91 8884880013.</p><br>
+            <p>Thank you for choosing NHK Medical.</p>
+            <p><img src="{logo_url}" alt="NHK Logo" style="max-width:200px;"></p>
+        """
+
+        # SMTP setup from Email Account
+        email_account = frappe.get_doc("Email Account", frappe.get_single("Admin Settings").email_account)
+        smtp_username = email_account.email_id
+        smtp_password = email_account.get_password("password")
+
+        msg = MIMEMultipart()
+        msg['From'] = "NHK MEDICAL PRIVATE LIMITED"
+        msg['To'] = customer_email
+        msg['Cc'] = ", ".join(cc_email_list)
+        msg['Subject'] = f"Rental Device Submitted - {doc.name}"
+        msg.attach(MIMEText(message, 'html'))
+
+        # Attach Sales Order PDF
+        pdf_url = get_url(f"/api/method/frappe.utils.print_format.download_pdf?doctype=Sales%20Order&name={doc.name}&format=Nhk%20Rental%20Order")
+        pdf_response = requests.get(pdf_url)
+        attachment = MIMEApplication(pdf_response.content, _subtype="pdf")
+        attachment.add_header('Content-Disposition', 'attachment', filename=f'Sales_Order_{doc.name}.pdf')
+        msg.attach(attachment)
+
+        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server.starttls()
+        server.login(smtp_username, smtp_password)
+        server.sendmail(smtp_username, [customer_email] + cc_email_list, msg.as_string())
+        server.quit()
+    except Exception as e:
+        frappe.log_error(f"Error sending submitted email for Sales Order {doc.name}: {e}")
 
 
 

@@ -890,7 +890,24 @@ For any query, call/WhatsApp on 8884880013.
 ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_payment_url}` : ''}`,
 												depends_on: 'eval:doc.notify_through_whatsapp'
 											},
-											
+											{ fieldtype: 'Section Break' },
+											// ✅ Send Mail option (only for Sales order_type)
+											...(doc.order_type === 'Sales' ? [
+												{
+													label: __('Send Mail'),
+													fieldname: 'send_mail',
+													fieldtype: 'Check',
+													default: 1
+												},
+												{
+													label: __('Email ID'),
+													fieldname: 'customer_email',
+													fieldtype: 'Data',
+													default: doc.customer_email_id,
+													depends_on: 'eval:doc.send_mail',
+													reqd: 1
+												}
+											] : []),
 											{
 												fieldtype: 'Section Break'
 											},
@@ -1770,6 +1787,7 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 	
 
 	make_sales_approved(values, callback) {
+		console.log("make_sales_approved called with values:", values);
         frappe.call({
             method: 'erpnext.selling.doctype.sales_order.sales_order.make_sales_approved',
             args: {
@@ -1801,7 +1819,28 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 						}
 						this.send_whatsapp_message(values.mobile_no, values.message);
 					}
-                    // Reload the entire page after a short delay (adjust as needed)
+					// Send Email if checked
+                if (values.send_mail) {
+                    frappe.call({
+                        method: "erpnext.selling.doctype.sales_order.sales_order.send_sales_order_email",  // Custom Python method
+                        args: {
+                            sales_order: this.frm.doc.name,
+                            customer_email: values.customer_email
+                        },
+                        callback: (r) => {
+                            if(r.message) {
+                                frappe.msgprint({
+                                    title: __('Email Sent'),
+                                    message: __('Order confirmation email has been sent.'),
+                                    indicator: 'green'
+                                });
+                            }
+                        }
+                    });
+                }
+
+					
+                    //Reload the entire page after a short delay (adjust as needed)
                     setTimeout(() => {
                         window.location.reload();
                     }, 1000); // 1000 milliseconds = 1 second
@@ -2966,30 +3005,50 @@ If you have any questions, feel free to call/what's app us on 8884880013.`,
 			}
 		});
 	}
-	make_submitted_to_office() {
-		frappe.prompt([
-			{
-				label: 'Submitted Date',
-				fieldname: 'submitted_date',
-				fieldtype: 'Datetime',
-				default:'Now',
-				reqd: 1
-			}
-			// Add more fields as needed
-		], (values) => {
-			// values will contain the entered data
+	make_submitted_to_office(doc) {
+	frappe.prompt([
+		{
+			label: 'Submitted Date',
+			fieldname: 'submitted_date',
+			fieldtype: 'Datetime',
+			default: 'Now',
+			reqd: 1
+		},
+		{
+			label: 'Send Email',
+			fieldname: 'send_email',
+			fieldtype: 'Check',
+			default: 1
+		},
+		{
+			label: 'Email ID',
+			fieldname: 'customer_email',
+			fieldtype: 'Data',
+			reqd: 1,
+			default: this.frm.doc.customer_email_id,
+			depends_on: 'eval:doc.send_email'
+		}
+	], (values) => {
+		// show loading indicator
+		frappe.dom.freeze(__('Submitting... Please wait'));
 
-			// Update RentalSales Order with the entered values
-			this.frm.doc.submitted_date = values.submitted_date;
-			// this.frm.doc.rental_device_id = values.device_id;
+		// update doc fields
+		this.frm.doc.submitted_date = values.submitted_date;
+		this.frm.refresh();
 
-			// Optionally, refresh the form to reflect the changes
-			this.frm.refresh();
+		// call server-side method
+		this.callServerMethodForSubmittedToOffice(values)
+			.then(() => {
+				frappe.dom.unfreeze();
+				frappe.show_alert({message: __('Submitted successfully!'), indicator: 'green'});
+			})
+			.catch(() => {
+				frappe.dom.unfreeze();
+				frappe.show_alert({message: __('Something went wrong'), indicator: 'red'});
+			});
+	}, __('Rental Device Details'));
+}
 
-			// Now call the server-side method only after the user submits the device details
-			this.callServerMethodForSubmittedToOffice(values);
-		}, __('Rental Device Details'));
-	}
 
 	callServerMethodForSubmittedToOffice(values) {
 		const itemCodes = this.frm.doc.items.map(item => item.item_code);
@@ -2999,7 +3058,9 @@ If you have any questions, feel free to call/what's app us on 8884880013.`,
 			args: {
 				docname: this.frm.doc.name,
 				item_code: itemCodes,  // Pass the array of item codes
-				submitted_date: values.submitted_date
+				submitted_date: values.submitted_date,
+				send_email: values.send_email,
+            	customer_email: values.customer_email
 				// device_id: values.device_id
 			},
 			callback: (response) => {
