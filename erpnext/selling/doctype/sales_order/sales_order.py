@@ -718,57 +718,43 @@ For any query, call or WhatsApp on 8884880013.
         return super().before_cancel()
 
     def on_cancel(self):
-
+        # Prevent cancellation if RENEWED
         if self.status == 'RENEWED':
-            frappe.throw(
-            'Cannot cancel this record because it has been RENEWED'
-        )
-        else:
-            # self.status = "Cancelled"
-            self.db_set("status", "Cancelled")
-        # if self.status == 'Submitted to Office' and self.is_renewed == 1:
-        #         frappe.throw(
-        #     'Cannot cancel this record because it has been submitted to office and is marked as renewed.'
-        # )
-        
+            frappe.throw('Cannot cancel this record because it has been RENEWED')
 
-        # if self.previous_order_id:
-        #     sales_order_renewal = frappe.get_doc("Sales Order", self.previous_order_id)
-        #     sales_order_renewal.status = "Active"
-
-        #     for item in sales_order_renewal.items:
-        #         item.child_status = "Active"
-        #         item_sales_order_update = frappe.get_doc('Item',item.item_code)
-        #         item_sales_order_update.custom_sales_order_id = self.previous_order_id
-        #         item_sales_order_update.save()
-
-        #     sales_order_renewal.save()
-        # if not self.previous_order_id:
-        if self.order_type == 'Rental' and not self.previous_order_id and self.is_renewed == 0:
-            self.item_status_change_cancel()
-
-        self.ignore_linked_doctypes = ("GL Entry", "Stock Ledger Entry", "Payment Ledger Entry")
-        super(SalesOrder, self).on_cancel()
-
-        # Cannot cancel closed SO
+        # Prevent cancellation if Closed
         if self.status == "Closed":
             frappe.throw(_("Closed order cannot be cancelled. Unclose to cancel."))
 
-        # self.check_nextdoc_docstatus()
+        # Directly set status in memory and DB once
+        self.status = "Cancelled"
+        self.db_set("status", "Cancelled")
+
+        # Handle Rental orders without previous order and not renewed
+        if self.order_type == 'Rental' and not self.previous_order_id and self.is_renewed == 0:
+            self.item_status_change_cancel()
+
+        # Skip linked doctypes for faster cancellation
+        self.ignore_linked_doctypes = ("GL Entry", "Stock Ledger Entry", "Payment Ledger Entry")
+        super(SalesOrder, self).on_cancel()
+
+        # Update reserved quantities, projects, and previous doc status
         self.update_reserved_qty()
         self.update_project()
         self.update_prevdoc_status("cancel")
 
-        self.db_set("status", "Cancelled")
-
+        # Update Blanket Orders and cancel stock reservations
         self.update_blanket_order()
         self.cancel_stock_reservation_entries()
 
+        # Unlink inter-company references
         unlink_inter_company_doc(self.doctype, self.name, self.inter_company_order_reference)
+
+        # Update coupon code usage count
         if self.coupon_code:
             from erpnext.accounts.doctype.pricing_rule.utils import update_coupon_code_count
-
             update_coupon_code_count(self.coupon_code, "cancelled")
+
 
 
     # def item_status_change_cancel(self):
