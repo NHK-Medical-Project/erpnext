@@ -47,6 +47,7 @@ class SalesOrderItem(Document):
 		is_free_item: DF.Check
 		is_stock_item: DF.Check
 		item_code: DF.Link
+		item_discount_amount: DF.Currency
 		item_group: DF.Link | None
 		item_name: DF.Data
 		item_tax_rate: DF.Code | None

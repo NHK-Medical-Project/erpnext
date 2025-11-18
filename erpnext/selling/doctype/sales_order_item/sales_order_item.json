@@ -21,6 +21,7 @@
   "delivery_date",
   "item_name",
   "tax_amount",
+  "item_discount_amount",
   "line_total",
   "rental_tax_rate",
   "serial_no",
@@ -597,7 +598,7 @@
   },
   {
    "allow_on_submit": 1,
-   "columns": 2,
+   "columns": 1,
    "fieldname": "item_group",
    "fieldtype": "Link",
    "in_list_view": 1,
@@ -1114,12 +1115,19 @@
    "fieldtype": "Link",
    "label": "Technician Id Before Deliverd",
    "options": "Technician Details"
+  },
+  {
+   "columns": 1,
+   "fieldname": "item_discount_amount",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Discount Amount"
   }
  ],
  "idx": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-10-19 14:54:15.997246",
+ "modified": "2025-10-17 15:30:40.277285",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order Item",
