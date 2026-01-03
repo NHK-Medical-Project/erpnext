@@ -4880,6 +4880,9 @@ def get_product_type(item_group):
 import requests
 import random
 import frappe
+import time
+from frappe.utils import now_datetime
+from datetime import timedelta
 
 @frappe.whitelist()
 def create_razorpay_payment_link_sales_order(amount, invoice_name, customer, customer_name, actual_amount, order_type):
@@ -4898,13 +4901,16 @@ def create_razorpay_payment_link_sales_order(amount, invoice_name, customer, cus
     
     # Convert the amount to paise
     amount_in_paise = int(float(amount) * 100)
-    
+    expiry_datetime = now_datetime() + timedelta(hours=24)
+    expiry_unix = int(expiry_datetime.timestamp())
+
     # Create order parameters
     order_params = {
         "amount": amount_in_paise,
         "currency": "INR",
         "description": f"Sales order type {order_type} NHK Medical Pvt Ltd",
         "accept_partial": False,
+        "expire_by": expiry_unix,
         # "first_min_partial_amount": 100,
         "notes": {
             "invoice_name": invoice_name,
@@ -4942,6 +4948,7 @@ def create_razorpay_payment_link_sales_order(amount, invoice_name, customer, cus
             "customer_id": customer,
             "sales_order": invoice_name,
             "total_amount": amount,
+            "expiry_datetime": expiry_datetime,
             "link_short_url": short_url,
             "link_id": link_id,
         })
