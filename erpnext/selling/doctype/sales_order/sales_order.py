@@ -4877,92 +4877,235 @@ def get_product_type(item_group):
 
 # Razorpay
 
+# import requests
+# import random
+# import frappe
+# import time
+# from frappe.utils import now_datetime
+# from datetime import timedelta
+
+# @frappe.whitelist()
+# def create_razorpay_payment_link_sales_order(amount, invoice_name, customer, customer_name, actual_amount, order_type):
+#     payment_links = frappe.get_all("Payment Link Log", filters={"sales_order": invoice_name, "enabled": 1})
+#     if payment_links:
+#         return {"status": False, "msg": "Payment link already exists."}
+#     admin_settings = frappe.get_doc('Admin Settings')
+#     razorpay_base_url = admin_settings.razorpay_base_url
+#     razorpay_key_id = admin_settings.razorpay_api_key
+#     razorpay_key_secret = admin_settings.razorpay_secret
+#     razorpay_api_url = razorpay_base_url + "payment_links" 
+    
+    
+#     if not (razorpay_api_url and razorpay_key_id and razorpay_key_secret):
+#         return {"status": False, "msg": "Razorpay API credentials are missing or invalid."}
+    
+#     # Convert the amount to paise
+#     amount_in_paise = int(float(amount) * 100)
+#     expiry_datetime = now_datetime() + timedelta(hours=24)
+#     expiry_unix = int(expiry_datetime.timestamp())
+
+#     # Create order parameters
+#     order_params = {
+#         "amount": amount_in_paise,
+#         "currency": "INR",
+#         "description": f"Sales order type {order_type} NHK Medical Pvt Ltd",
+#         "accept_partial": False,
+#         "expire_by": expiry_unix,
+#         # "first_min_partial_amount": 100,
+#         "notes": {
+#             "invoice_name": invoice_name,
+#             "company": "NHK Medical Pvt Ltd"
+#         },
+#         "reference_id": invoice_name,
+#         "callback_url": frappe.utils.get_url(f"/api/method/erpnext.selling.doctype.sales_order.sales_order.get_razorpay_payment_details?sales_order_id={invoice_name}&customer={customer}&actual_amount={actual_amount}&final_amount={amount}"),
+#         "callback_method": "get"
+#     }
+    
+#     try:
+#         def generate_payment_link(order_params, retries=3):
+#             for _ in range(retries):
+#                 response = requests.post(
+#                     razorpay_api_url,
+#                     json=order_params,
+#                     auth=(razorpay_key_id, razorpay_key_secret)
+#                 )
+#                 if response.status_code == 200:
+#                     return response.json()
+#                 else:
+#                     order_params["reference_id"] += f"-{random.randint(100, 999)}"
+#             response.raise_for_status()
+        
+#         # Generate the payment link
+#         response_json = generate_payment_link(order_params)
+#         short_url = response_json.get('short_url')
+#         link_id = response_json.get('id')
+        
+        
+        
+#         # Log the payment link
+#         new_payment_link = frappe.get_doc({
+#             "doctype": "Payment Link Log",
+#             "customer_id": customer,
+#             "sales_order": invoice_name,
+#             "total_amount": amount,
+#             "expiry_datetime": expiry_datetime,
+#             "link_short_url": short_url,
+#             "link_id": link_id,
+#         })
+#         new_payment_link.insert()
+#         # Update the Sales Order with the payment link
+#         doc = frappe.get_doc('Sales Order', invoice_name)
+#         doc.custom_razorpay_payment_url = short_url
+#         doc.custom_razorpay_payment_link_log_id = new_payment_link.name
+#         doc.save()
+#         return {"status": True, "msg": f"Successfully created Razorpay order. Short URL: {short_url}"}
+    
+#     except requests.exceptions.RequestException as e:
+#         frappe.log_error(f"Failed to generate the Razorpay payment link: {e}")
+#         return {"status": False, "msg": f"Failed to generate the Razorpay payment link: {e}"}
+
+
 import requests
 import random
 import frappe
-import time
 from frappe.utils import now_datetime
 from datetime import timedelta
 
+
 @frappe.whitelist()
-def create_razorpay_payment_link_sales_order(amount, invoice_name, customer, customer_name, actual_amount, order_type):
-    payment_links = frappe.get_all("Payment Link Log", filters={"sales_order": invoice_name, "enabled": 1})
-    if payment_links:
-        return {"status": False, "msg": "Payment link already exists."}
-    admin_settings = frappe.get_doc('Admin Settings')
-    razorpay_base_url = admin_settings.razorpay_base_url
+def create_razorpay_payment_link_sales_order(
+    amount, invoice_name, customer, customer_name, actual_amount, order_type
+):
+    # ---------------------------------------------------------
+    # 1. Check existing active payment link
+    # ---------------------------------------------------------
+    existing_link = frappe.get_all(
+        "Payment Link Log",
+        filters={
+            "sales_order": invoice_name,
+            "enabled": 1
+        },
+        fields=["name", "link_short_url", "expiry_datetime"],
+        order_by="creation desc",
+        limit=1
+    )
+
+    now = now_datetime()
+
+    if existing_link:
+        link = existing_link[0]
+
+        # If link still valid → reuse
+        if link.expiry_datetime and link.expiry_datetime > now:
+            return {
+                "status": True,
+                "msg": "Active payment link already exists.",
+                "short_url": link.link_short_url
+            }
+
+        # Expired → disable it
+        frappe.db.set_value(
+            "Payment Link Log",
+            link.name,
+            "enabled",
+            0,
+            update_modified=False
+        )
+
+    # ---------------------------------------------------------
+    # 2. Load Razorpay settings
+    # ---------------------------------------------------------
+    admin_settings = frappe.get_doc("Admin Settings")
+
+    razorpay_api_url = admin_settings.razorpay_base_url + "payment_links"
     razorpay_key_id = admin_settings.razorpay_api_key
     razorpay_key_secret = admin_settings.razorpay_secret
-    razorpay_api_url = razorpay_base_url + "payment_links" 
-    
-    
+
     if not (razorpay_api_url and razorpay_key_id and razorpay_key_secret):
-        return {"status": False, "msg": "Razorpay API credentials are missing or invalid."}
-    
-    # Convert the amount to paise
+        return {"status": False, "msg": "Razorpay API credentials missing"}
+
+    # ---------------------------------------------------------
+    # 3. Prepare Razorpay payload
+    # ---------------------------------------------------------
     amount_in_paise = int(float(amount) * 100)
-    expiry_datetime = now_datetime() + timedelta(hours=24)
+    expiry_datetime = now + timedelta(hours=24)
     expiry_unix = int(expiry_datetime.timestamp())
 
-    # Create order parameters
     order_params = {
         "amount": amount_in_paise,
         "currency": "INR",
         "description": f"Sales order type {order_type} NHK Medical Pvt Ltd",
         "accept_partial": False,
         "expire_by": expiry_unix,
-        # "first_min_partial_amount": 100,
         "notes": {
             "invoice_name": invoice_name,
             "company": "NHK Medical Pvt Ltd"
         },
         "reference_id": invoice_name,
-        "callback_url": frappe.utils.get_url(f"/api/method/erpnext.selling.doctype.sales_order.sales_order.get_razorpay_payment_details?sales_order_id={invoice_name}&customer={customer}&actual_amount={actual_amount}&final_amount={amount}"),
+        "callback_url": frappe.utils.get_url(
+            f"/api/method/erpnext.selling.doctype.sales_order.sales_order.get_razorpay_payment_details"
+            f"?sales_order_id={invoice_name}&customer={customer}"
+            f"&actual_amount={actual_amount}&final_amount={amount}"
+        ),
         "callback_method": "get"
     }
-    
-    try:
-        def generate_payment_link(order_params, retries=3):
-            for _ in range(retries):
-                response = requests.post(
-                    razorpay_api_url,
-                    json=order_params,
-                    auth=(razorpay_key_id, razorpay_key_secret)
-                )
-                if response.status_code == 200:
-                    return response.json()
-                else:
-                    order_params["reference_id"] += f"-{random.randint(100, 999)}"
-            response.raise_for_status()
-        
-        # Generate the payment link
-        response_json = generate_payment_link(order_params)
-        short_url = response_json.get('short_url')
-        link_id = response_json.get('id')
-        
-        
-        
-        # Log the payment link
-        new_payment_link = frappe.get_doc({
-            "doctype": "Payment Link Log",
-            "customer_id": customer,
-            "sales_order": invoice_name,
-            "total_amount": amount,
-            "expiry_datetime": expiry_datetime,
-            "link_short_url": short_url,
-            "link_id": link_id,
-        })
-        new_payment_link.insert()
-        # Update the Sales Order with the payment link
-        doc = frappe.get_doc('Sales Order', invoice_name)
-        doc.custom_razorpay_payment_url = short_url
-        doc.custom_razorpay_payment_link_log_id = new_payment_link.name
-        doc.save()
-        return {"status": True, "msg": f"Successfully created Razorpay order. Short URL: {short_url}"}
-    
-    except requests.exceptions.RequestException as e:
-        frappe.log_error(f"Failed to generate the Razorpay payment link: {e}")
-        return {"status": False, "msg": f"Failed to generate the Razorpay payment link: {e}"}
+
+    # ---------------------------------------------------------
+    # 4. Create Razorpay Payment Link (retry-safe)
+    # ---------------------------------------------------------
+    def generate_payment_link(params, retries=3):
+        for _ in range(retries):
+            response = requests.post(
+                razorpay_api_url,
+                json=params,
+                auth=(razorpay_key_id, razorpay_key_secret),
+                timeout=15
+            )
+            if response.status_code == 200:
+                return response.json()
+
+            # Retry with unique reference_id
+            params["reference_id"] = f"{invoice_name}-{random.randint(100,999)}"
+
+        response.raise_for_status()
+
+    response_json = generate_payment_link(order_params)
+
+    short_url = response_json.get("short_url")
+    link_id = response_json.get("id")
+
+    # ---------------------------------------------------------
+    # 5. Log new Payment Link
+    # ---------------------------------------------------------
+    new_link = frappe.get_doc({
+        "doctype": "Payment Link Log",
+        "customer_id": customer,
+        "sales_order": invoice_name,
+        "total_amount": amount,
+        "expiry_datetime": expiry_datetime,
+        "link_short_url": short_url,
+        "link_id": link_id,
+        "enabled": 1
+    })
+    new_link.insert(ignore_permissions=True)
+
+    # ---------------------------------------------------------
+    # 6. Update Sales Order
+    # ---------------------------------------------------------
+    so_doc = frappe.get_doc("Sales Order", invoice_name)
+    so_doc.db_set("custom_razorpay_payment_url", short_url, update_modified=False)
+    so_doc.db_set(
+        "custom_razorpay_payment_link_log_id",
+        new_link.name,
+        update_modified=False
+    )
+
+    return {
+        "status": True,
+        "msg": "New Razorpay payment link created",
+        "short_url": short_url
+    }
+
 
 ####################################with razorpay payment details################################################
 
