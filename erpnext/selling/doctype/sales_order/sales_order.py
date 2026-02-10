@@ -771,43 +771,79 @@ For any query, call or WhatsApp on 8884880013.
     #         update_coupon_code_count(self.coupon_code, "cancelled")
     
     
+    # def on_cancel(self):
+    #     # Prevent cancellation if RENEWED
+    #     if self.status == 'RENEWED':
+    #         frappe.throw('Cannot cancel this record because it has been RENEWED')
+
+    #     # Prevent cancellation if Closed
+    #     if self.status == "Closed":
+    #         frappe.throw(_("Closed order cannot be cancelled. Unclose to cancel."))
+
+    #     # Directly set status in memory and DB once
+    #     self.status = "Cancelled"
+    #     self.db_set("status", "Cancelled")
+
+    #     # Handle Rental orders without previous order and not renewed
+    #     if self.order_type == 'Rental' and not self.previous_order_id and self.is_renewed == 0:
+    #         self.item_status_change_cancel()
+
+    #     # Skip linked doctypes for faster cancellation
+    #     self.ignore_linked_doctypes = ("GL Entry", "Stock Ledger Entry", "Payment Ledger Entry")
+    #     super(SalesOrder, self).on_cancel()
+
+    #     # Update reserved quantities, projects, and previous doc status
+    #     self.update_reserved_qty()
+    #     self.update_project()
+    #     self.update_prevdoc_status("cancel")
+
+    #     # Update Blanket Orders and cancel stock reservations
+    #     self.update_blanket_order()
+    #     self.cancel_stock_reservation_entries()
+
+    #     # Unlink inter-company references
+    #     unlink_inter_company_doc(self.doctype, self.name, self.inter_company_order_reference)
+
+    #     # Update coupon code usage count
+    #     if self.coupon_code:
+    #         from erpnext.accounts.doctype.pricing_rule.utils import update_coupon_code_count
+    #         update_coupon_code_count(self.coupon_code, "cancelled")
+
+
+
     def on_cancel(self):
         # Prevent cancellation if RENEWED
         if self.status == 'RENEWED':
-            frappe.throw('Cannot cancel this record because it has been RENEWED')
+            frappe.throw(_('Cannot cancel this record because it has been RENEWED'))
 
         # Prevent cancellation if Closed
         if self.status == "Closed":
             frappe.throw(_("Closed order cannot be cancelled. Unclose to cancel."))
 
-        # Directly set status in memory and DB once
+        # Directly set status
         self.status = "Cancelled"
         self.db_set("status", "Cancelled")
 
-        # Handle Rental orders without previous order and not renewed
-        if self.order_type == 'Rental' and not self.previous_order_id and self.is_renewed == 0:
+        # Handle Rental orders
+        if self.order_type == 'Rental' and not self.previous_order_id and not self.is_renewed:
             self.item_status_change_cancel()
 
         # Skip linked doctypes for faster cancellation
         self.ignore_linked_doctypes = ("GL Entry", "Stock Ledger Entry", "Payment Ledger Entry")
         super(SalesOrder, self).on_cancel()
 
-        # Update reserved quantities, projects, and previous doc status
         self.update_reserved_qty()
         self.update_project()
         self.update_prevdoc_status("cancel")
-
-        # Update Blanket Orders and cancel stock reservations
         self.update_blanket_order()
         self.cancel_stock_reservation_entries()
 
-        # Unlink inter-company references
         unlink_inter_company_doc(self.doctype, self.name, self.inter_company_order_reference)
 
-        # Update coupon code usage count
         if self.coupon_code:
             from erpnext.accounts.doctype.pricing_rule.utils import update_coupon_code_count
             update_coupon_code_count(self.coupon_code, "cancelled")
+
 
 
     # def item_status_change_cancel(self):
@@ -846,50 +882,102 @@ For any query, call or WhatsApp on 8884880013.
     #     frappe.db.commit()
 
 
+    # def item_status_change_cancel(self):
+    #     for item in self.get("items"):
+    #         item_code = item.item_code
+    #         other_order_info = []
+            
+    #         # Check if the item_code is present in any other sales order
+    #         other_orders = frappe.get_all("Sales Order",
+    #                                     filters={"docstatus": 1,  # Only consider submitted sales orders
+    #                                             "name": ("!=", self.name),
+    #                                             "status": ("not in", ["Rental SO Completed","Submitted to Office","RENEWED","Partially Closed"])},
+    #                                     fields=["name", "status"])
+            
+    #         for order in other_orders:
+    #             sales_order = frappe.get_doc("Sales Order", order.name)
+    #             for order_item in sales_order.items:
+    #                 if order_item.item_code == item_code:
+    #                     other_order_info.append((sales_order.name, sales_order.status))
+    #                     break  # No need to check other items in this order if the item is already found
+            
+    #         if other_order_info:
+    #             # Construct a message with order IDs and statuses
+    #             orders_info = ", ".join(["{} ({})".format(order[0], order[1]) for order in other_order_info])
+    #             current_item_status = frappe.get_value("Item", item_code, "status")
+                
+    #             # Show alert and prevent cancellation if other orders exist
+    #             frappe.msgprint(_("Item {} (current status: {}) is present in other sales orders ({}) .<br><br> Note: The current order will be cancelled without updating the inventory status.".format(item_code, current_item_status, orders_info)))
+
+    #         else:
+    #             # If not present in any other order, update item status
+    #             item_doc = frappe.get_doc("Item", item_code)
+    #             if item_doc.status in ["Rented Out", "Reserved", "Pre Reserved"]:
+    #                 item_doc.status = "Available"
+    #                 item_doc.customer_name = ""
+    #                 item_doc.customer_n = ""
+    #                 item_doc.custom_sales_order_id = ""
+                    
+    #                 item_doc.save()
+
+    #             orders_info = ", ".join(["{} ({})".format(order[0], order[1]) for order in other_order_info])
+    #             current_item_status = frappe.get_value("Item", item_code, "status")
+                
+    #             frappe.msgprint(_("Item {} (current status: {}) is not present in any other sales orders ({}) .<br><br> Note: The current order will be cancelled with updating the inventory status to Available.".format(item_code, current_item_status, orders_info)))
+
+    #     frappe.db.commit()
+
+
+
     def item_status_change_cancel(self):
+        # Get all unique item codes in the current SO
+        item_codes = list(set(item.item_code for item in self.items))
+        if not item_codes:
+            return
+
+        # Efficiently find all OTHER orders containing these items in ONE query
+        # This replaces the nested loops and get_doc calls
+        other_order_data = frappe.db.sql("""
+            SELECT item_code, parent, status 
+            FROM `tabSales Order Item` soi
+            JOIN `tabSales Order` so ON soi.parent = so.name
+            WHERE soi.item_code IN %s 
+            AND so.name != %s
+            AND so.docstatus = 1
+            AND so.status NOT IN ('Rental SO Completed', 'Submitted to Office', 'RENEWED', 'Partially Closed')
+        """, (item_codes, self.name), as_dict=1)
+
+        # Group the results by item_code for quick lookup
+        item_map = {}
+        for d in other_order_data:
+            item_map.setdefault(d.item_code, []).append("{} ({})".format(d.parent, d.status))
+
         for item in self.get("items"):
             item_code = item.item_code
-            other_order_info = []
-            
-            # Check if the item_code is present in any other sales order
-            other_orders = frappe.get_all("Sales Order",
-                                        filters={"docstatus": 1,  # Only consider submitted sales orders
-                                                "name": ("!=", self.name),
-                                                "status": ("not in", ["Rental SO Completed","Submitted to Office","RENEWED","Partially Closed"])},
-                                        fields=["name", "status"])
-            
-            for order in other_orders:
-                sales_order = frappe.get_doc("Sales Order", order.name)
-                for order_item in sales_order.items:
-                    if order_item.item_code == item_code:
-                        other_order_info.append((sales_order.name, sales_order.status))
-                        break  # No need to check other items in this order if the item is already found
-            
-            if other_order_info:
-                # Construct a message with order IDs and statuses
-                orders_info = ", ".join(["{} ({})".format(order[0], order[1]) for order in other_order_info])
-                current_item_status = frappe.get_value("Item", item_code, "status")
-                
-                # Show alert and prevent cancellation if other orders exist
-                frappe.msgprint(_("Item {} (current status: {}) is present in other sales orders ({}) .<br><br> Note: The current order will be cancelled without updating the inventory status.".format(item_code, current_item_status, orders_info)))
+            others = item_map.get(item_code, [])
+            current_item_status = frappe.get_value("Item", item_code, "status")
 
+            if others:
+                orders_info = ", ".join(others)
+                frappe.msgprint(_("Item {} (current status: {}) is present in other sales orders ({}) .<br><br> "
+                                "Note: The current order will be cancelled without updating the inventory status.")
+                                .format(item_code, current_item_status, orders_info))
             else:
-                # If not present in any other order, update item status
-                item_doc = frappe.get_doc("Item", item_code)
-                if item_doc.status in ["Rented Out", "Reserved", "Pre Reserved"]:
-                    item_doc.status = "Available"
-                    item_doc.customer_name = ""
-                    item_doc.customer_n = ""
-                    item_doc.custom_sales_order_id = ""
-                    
-                    item_doc.save()
-
-                orders_info = ", ".join(["{} ({})".format(order[0], order[1]) for order in other_order_info])
-                current_item_status = frappe.get_value("Item", item_code, "status")
+                # Check status and update in one hit if status matches
+                # Avoids frappe.get_doc which is slow
+                if current_item_status in ["Rented Out", "Reserved", "Pre Reserved"]:
+                    frappe.db.set_value("Item", item_code, {
+                        "status": "Available",
+                        "customer_name": "",
+                        "customer_n": "",
+                        "custom_sales_order_id": ""
+                    }, update_modified=True)
                 
-                frappe.msgprint(_("Item {} (current status: {}) is not present in any other sales orders ({}) .<br><br> Note: The current order will be cancelled with updating the inventory status to Available.".format(item_code, current_item_status, orders_info)))
+                frappe.msgprint(_("Item {} (current status: {}) is not present in any other sales orders.<br><br> "
+                                "Note: The current order will be cancelled with updating the inventory status to Available.")
+                                .format(item_code, current_item_status))
 
-        frappe.db.commit()
+
     
     # def item_status_change_cancel(self):
     #     from frappe import _
