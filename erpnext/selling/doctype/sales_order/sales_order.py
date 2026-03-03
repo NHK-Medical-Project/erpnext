@@ -226,6 +226,7 @@ class SalesOrder(SellingController):
             self.security_deposit = float(self.security_deposit)
         if self.order_type == 'Rental':
             self.total_rental_amount = self.rounded_total + (self.security_deposit or 0)
+            self.prevent_duplicate_items()
         else:
             self.total_rental_amount = self.rounded_total
         # self.validate_delivery_date()
@@ -302,6 +303,12 @@ class SalesOrder(SellingController):
 
     # 	# Save the changes to the selfument
     # 	doc.save()
+    def prevent_duplicate_items(self):
+        items_list = []
+        for item in self.items:
+            if item.item_code in items_list:
+                frappe.throw(f"Duplicate item {item.item_code} found. In 'Rental' orders, each item must be unique.")
+            items_list.append(item.item_code)
 
     def update_item_names(self):
         item_names = []
