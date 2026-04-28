@@ -3091,7 +3091,7 @@ def make_pickedup(docname, pickup_date):
 import ast
 
 @frappe.whitelist()
-def make_submitted_to_office(docname, item_code, submitted_date, send_email, customer_email=None):
+def make_submitted_to_office(docname, item_code, submitted_date, send_email=None, customer_email=None):
     try:
         # Convert the string representation of the list to an actual list
         item_codes = ast.literal_eval(item_code)

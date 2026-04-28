@@ -905,7 +905,6 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 													fieldtype: 'Data',
 													default: doc.customer_email_id,
 													depends_on: 'eval:doc.send_mail',
-													reqd: 1
 												}
 											] : []),
 											{
@@ -3018,13 +3017,12 @@ If you have any questions, feel free to call/what's app us on 8884880013.`,
 			label: 'Send Email',
 			fieldname: 'send_email',
 			fieldtype: 'Check',
-			default: 1
+			default: 0
 		},
 		{
 			label: 'Email ID',
 			fieldname: 'customer_email',
 			fieldtype: 'Data',
-			reqd: 1,
 			default: this.frm.doc.customer_email_id,
 			depends_on: 'eval:doc.send_email'
 		}
