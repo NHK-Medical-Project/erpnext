@@ -183,7 +183,7 @@ class SalesOrder(SellingController):
         skip_delivery_note: DF.Check
         source: DF.Link | None
         start_date: DF.Date | None
-        status: DF.Literal["Draft", "Pending", "Approved", "Rental Device Assigned", "Ready for Delivery", "DISPATCHED", "DELIVERED", "Active", "Ready for Pickup", "Picked Up", "Submitted to Office", "On Hold", "Overdue", "RENEWED", "To Pay", "To Deliver and Bill", "To Bill", "To Deliver", "Completed", "Cancelled", "Closed", "Partially Closed", "Order", "Sales Completed", "Rental SO Completed"]
+        status: DF.Literal["Draft", "Pending", "Approved", "Rental Device Assigned", "Ready for Delivery", "DISPATCHED", "DELIVERED", "Active", "Ready for Pickup", "Picked Up", "Submitted to Office", "On Hold", "Overdue", "RENEWED", "To Pay", "To Deliver and Bill", "To Bill", "To Deliver", "Completed", "Cancelled", "Closed", "Partially Closed", "Order", "Technician Assigned", "Technician Work Done", "Sales Completed", "Rental SO Completed", "SO Completed"]
         submitted_date: DF.Datetime | None
         tax_category: DF.Link | None
         tax_id: DF.Data | None
@@ -3195,6 +3195,48 @@ def send_submitted_email(doc, submitted_items_html, customer_email):
 
 
 
+# @frappe.whitelist()
+# def make_order_completed(docname, item_code):
+#     try:
+#         # Start a database transaction
+#         frappe.db.sql("START TRANSACTION")
+
+#         # Convert the string representation of the list to an actual list
+#         item_codes = ast.literal_eval(item_code)
+
+#         # Get the 'Sales Order' document
+#         doc = frappe.get_doc('Sales Order', docname)
+
+#         # Check payment and security deposit status
+#         if doc.payment_status != "Paid" or doc.security_deposit_status != "Paid":
+#             frappe.throw(_("Both Payment Status and Security Deposit Status must be 'Paid' to complete the order."))
+
+#         # Update Sales Order status to 'Rental SO Completed'
+#         doc.status = 'Rental SO Completed'
+#         doc.save(ignore_permissions=True)
+
+#         # Update status in related Sales Order Items
+#         sales_order_items = frappe.get_all("Sales Order Item", filters={"parent": docname}, fields=["name"])
+#         for item in sales_order_items:
+#             sales_order_item = frappe.get_doc("Sales Order Item", item.name)
+#             sales_order_item.child_status = "Rental SO Completed"
+#             sales_order_item.save(ignore_permissions=True)
+
+#         # Commit the transaction if no errors occurred
+#         frappe.db.commit()
+
+#         return "Rental SO Completed Success"
+
+#     except Exception as e:
+#         # Rollback the transaction to undo any changes if an error occurs
+#         frappe.db.rollback()
+#         frappe.log_error(f"Error in make_order_completed: {e}")
+#         frappe.throw(_("An error occurred while processing the request. No changes were made. Please try again."))
+
+import ast
+import frappe
+from frappe import _
+
 @frappe.whitelist()
 def make_order_completed(docname, item_code):
     try:
@@ -3207,33 +3249,39 @@ def make_order_completed(docname, item_code):
         # Get the 'Sales Order' document
         doc = frappe.get_doc('Sales Order', docname)
 
-        # Check payment and security deposit status
-        if doc.payment_status != "Paid" or doc.security_deposit_status != "Paid":
-            frappe.throw(_("Both Payment Status and Security Deposit Status must be 'Paid' to complete the order."))
+        # --- CORRECTED: Status validations depending on Order Type ---
+        if doc.order_type == "Rental":
+            # Rental requires both Payment and Security Deposit validation
+            if doc.payment_status != "Paid" or doc.security_deposit_status != "Paid":
+                frappe.throw(_("Both Payment Status and Security Deposit Status must be 'Paid' to complete a Rental order."))
+            target_status = 'Rental SO Completed'
+        else:
+            # Non-Rental orders only require Payment validation
+            if doc.payment_status != "Paid":
+                frappe.throw(_("Payment Status must be 'Paid' to complete the order."))
+            target_status = 'SO Completed'
 
-        # Update Sales Order status to 'Rental SO Completed'
-        doc.status = 'Rental SO Completed'
+        # Update Sales Order status
+        doc.status = target_status
         doc.save(ignore_permissions=True)
 
         # Update status in related Sales Order Items
         sales_order_items = frappe.get_all("Sales Order Item", filters={"parent": docname}, fields=["name"])
         for item in sales_order_items:
             sales_order_item = frappe.get_doc("Sales Order Item", item.name)
-            sales_order_item.child_status = "Rental SO Completed"
+            sales_order_item.child_status = target_status
             sales_order_item.save(ignore_permissions=True)
 
         # Commit the transaction if no errors occurred
         frappe.db.commit()
 
-        return "Rental SO Completed Success"
+        return f"{target_status} Success"
 
     except Exception as e:
         # Rollback the transaction to undo any changes if an error occurs
         frappe.db.rollback()
         frappe.log_error(f"Error in make_order_completed: {e}")
         frappe.throw(_("An error occurred while processing the request. No changes were made. Please try again."))
-
-
 
 @frappe.whitelist()
 def on_hold(docname):
@@ -6028,3 +6076,157 @@ def get_payment_link_log_id(custom_razorpay_payment_url):
         'enabled': 1
     }, 'name')
     return payment_link_log
+
+
+
+
+
+
+
+
+# ==========================================
+# SALES FLOW METHODS
+# ==========================================
+
+@frappe.whitelist()
+def assign_technician(docname, technician_name, technician_mobile, technician_id):
+    try:
+        sales_order = frappe.get_doc('Sales Order', docname)
+        technician_type = 'Technician Assignment For Sales'
+        patient_id = sales_order.customer
+        
+        sales_order.custom_technician_id_before_delivered = technician_id
+        
+        frappe.db.begin()
+        # Save custom field updates
+        sales_order.save(ignore_permissions=True)
+        
+        # Force update custom status directly in DB to bypass standard ERPNext hooks
+        frappe.db.set_value('Sales Order', docname, 'status', 'Technician Assigned')
+        
+        sales_order_items = frappe.get_all("Sales Order Item", filters={"parent": docname}, fields=["name"])
+        for item in sales_order_items:
+            frappe.db.set_value("Sales Order Item", item.name, {
+                "child_status": "Technician Assigned",
+                "technician_id_before_deliverd": technician_id
+            })
+            
+        if technician_id:
+            create_technician_portal_entry(technician_id, technician_type, docname, patient_id)
+
+        frappe.db.commit()
+        return "Technician Assigned Success"
+
+    except Exception as e:
+        frappe.db.rollback()
+        frappe.log_error(message=frappe.get_traceback(), title="Technician Assignment For Sales Error")
+        frappe.throw(f"An error occurred: {str(e)}")
+
+
+@frappe.whitelist()
+def complete_technician_work(docname):
+    """
+    Called from Sales Order (Sales Flow) to complete work.
+    Updates the linked Technician Visit Entry to 'Installation Done'.
+    """
+    try:
+        frappe.db.begin()
+        
+        # 1. Update Sales Order status directly in DB
+        frappe.db.set_value('Sales Order', docname, 'status', 'Technician Work Done')
+        
+        # 2. Update child item statuses directly in DB
+        sales_order_items = frappe.get_all("Sales Order Item", filters={"parent": docname}, fields=["name"])
+        for item in sales_order_items:
+            frappe.db.set_value("Sales Order Item", item.name, "child_status", "Technician Work Done")
+            
+        # 3. Find and update the corresponding active Technician Visit Entry
+        tech_visits = frappe.get_all(
+            'Technician Visit Entry',
+            filters={'sales_order_id': docname, 'status': 'Assigned', 'type': 'Technician Assignment For Sales'},
+            fields=['name']
+        )
+        for visit in tech_visits:
+            frappe.db.set_value('Technician Visit Entry', visit.name, 'status', 'Installation Done')
+            
+        frappe.db.commit()
+        return "Technician Work Done Success"
+
+    except Exception as e:
+        frappe.db.rollback()
+        frappe.log_error(message=frappe.get_traceback(), title="Technician Work Completion For Sales Error")
+        frappe.throw(f"An error occurred: {str(e)}")
+
+
+# ==========================================
+# SERVICE FLOW METHODS
+# ==========================================
+
+@frappe.whitelist()
+def assign_technician_service(docname, technician_name, technician_mobile, technician_id):
+    try:
+        sales_order = frappe.get_doc('Sales Order', docname)
+        technician_type = 'Technician Assignment For Service'
+        patient_id = sales_order.customer
+        
+        sales_order.custom_technician_id_before_delivered = technician_id
+        
+        frappe.db.begin()
+        # Save custom field updates
+        sales_order.save(ignore_permissions=True)
+        
+        # Force update custom status directly in DB to bypass standard ERPNext hooks
+        frappe.db.set_value('Sales Order', docname, 'status', 'Technician Assigned')
+        
+        sales_order_items = frappe.get_all("Sales Order Item", filters={"parent": docname}, fields=["name"])
+        for item in sales_order_items:
+            frappe.db.set_value("Sales Order Item", item.name, {
+                "child_status": "Technician Assigned",
+                "technician_id_before_deliverd": technician_id
+            })
+            
+        if technician_id:
+            create_technician_portal_entry(technician_id, technician_type, docname, patient_id)
+
+        frappe.db.commit()
+        return "Technician Assigned Success"
+
+    except Exception as e:
+        frappe.db.rollback()
+        frappe.log_error(message=frappe.get_traceback(), title="Technician Assignment For Service Error")
+        frappe.throw(f"An error occurred: {str(e)}")
+
+
+@frappe.whitelist()
+def complete_technician_work_service(docname):
+    """
+    Called from Sales Order (Service Flow) to complete work.
+    Updates the linked Technician Visit Entry to 'Service Done'.
+    """
+    try:
+        frappe.db.begin()
+        
+        # 1. Update Sales Order status directly in DB
+        frappe.db.set_value('Sales Order', docname, 'status', 'Technician Work Done')
+        
+        # 2. Update child item statuses directly in DB
+        sales_order_items = frappe.get_all("Sales Order Item", filters={"parent": docname}, fields=["name"])
+        for item in sales_order_items:
+            frappe.db.set_value("Sales Order Item", item.name, "child_status", "Technician Work Done")
+            
+        # 3. Find and update the corresponding active Technician Visit Entry
+        tech_visits = frappe.get_all(
+            'Technician Visit Entry',
+            filters={'sales_order_id': docname, 'status': 'Assigned', 'type': 'Technician Assignment For Service'},
+            fields=['name']
+        )
+        for visit in tech_visits:
+            frappe.db.set_value('Technician Visit Entry', visit.name, 'status', 'Service Done')
+            
+        frappe.db.commit()
+        return "Technician Work Done Success"
+
+    except Exception as e:
+        frappe.db.rollback()
+        frappe.log_error(message=frappe.get_traceback(), title="Technician Work Completion For Service Error")
+        frappe.throw(f"An error occurred: {str(e)}")
