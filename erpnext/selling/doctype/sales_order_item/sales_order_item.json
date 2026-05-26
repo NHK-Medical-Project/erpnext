@@ -983,7 +983,7 @@
    "fieldname": "child_status",
    "fieldtype": "Select",
    "label": "Child Status",
-   "options": "Pending\nApproved\nRental Device Assigned\nReady for Delivery\nDISPATCHED\nDELIVERED\nActive\nReady for Pickup\nPicked Up\nSubmitted to Office\nOn Hold\nOverdue\nRenewed\nCancelled\nClosed\nPartially Closed\nItem Replaced\nRental SO Completed",
+   "options": "Pending\nApproved\nRental Device Assigned\nReady for Delivery\nDISPATCHED\nDELIVERED\nActive\nReady for Pickup\nPicked Up\nSubmitted to Office\nOn Hold\nOverdue\nRenewed\nCancelled\nClosed\nPartially Closed\nItem Replaced\nTechnician Assigned\nTechnician Work Done\nRental SO Completed\nSO Completed",
    "read_only": 1
   },
   {
@@ -1127,7 +1127,7 @@
  "idx": 1,
  "istable": 1,
  "links": [],
- "modified": "2026-03-06 14:40:16.958934",
+ "modified": "2026-05-26 10:44:06.255299",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order Item",

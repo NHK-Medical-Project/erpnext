@@ -974,7 +974,25 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
                         }, __('Action'));
                     }
 
-					if (flt(doc.per_billed, 2) < 100 && doc.status === 'Order' && (doc.order_type === 'Sales')) {
+					// const doc = this.frm.doc;
+
+					if (flt(doc.per_billed, 2) < 100 && doc.order_type === 'Sales') {
+						// Stage 1: Assign Technician
+						if (doc.status === 'Order') {
+							this.frm.add_custom_button(__('Assign Technician'), () => {
+								this.assign_technician_prompt();
+							}, __('Action'));
+						} 
+						// Stage 2: Mark Technician Work Done
+						else if (doc.status === 'Technician Assigned') {
+							this.frm.add_custom_button(__('Installation Done'), () => {
+								this.mark_technician_work_done();
+							}, __('Action'));
+						}
+					}
+
+
+					if (flt(doc.per_billed, 2) < 100 && doc.status === 'Technician Work Done' && (doc.order_type === 'Sales')) {
 						this.frm.add_custom_button(__('Create Sales Invoice & Delivery Note'), () => {
 							frappe.confirm(
 								__('Are you sure you want to Create Sales Invoice & Delivery Note?'),
@@ -1093,7 +1111,7 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
                     }
 
 
-					if ((doc.status === 'Submitted to Office' || doc.status === 'RENEWED' || doc.status === 'Order') && (doc.order_type === 'Rental' || doc.order_type === 'Service'  )) {
+					if ((doc.status === 'Submitted to Office' || doc.status === 'RENEWED' || doc.status === 'Technician Work Done') && (doc.order_type === 'Rental' || doc.order_type === 'Service'  )) {
 						this.frm.add_custom_button(__('Order Completed'), () => {
 							frappe.confirm(
 								__('Are you sure you want to make the status as Order Closed?'),
@@ -1107,10 +1125,35 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 						}, __('Action'));
 					}
 					// delivery note
+
 					if (
 						flt(doc.per_delivered, 2) < 100 &&
 						(order_is_a_sale || order_is_a_custom_sale) &&
-						allow_delivery && doc.status === 'Order' && doc.order_type === 'Service'
+						allow_delivery &&  doc.order_type === 'Service'
+					) {
+						if (doc.status === 'Order') {
+							this.frm.add_custom_button(__('Assign Technician'), () => {
+								this.assign_technician_prompt_service();
+							}, __('Action'));
+						} 
+						// Stage 2: Mark Technician Work Done
+						else if (doc.status === 'Technician Assigned') {
+							this.frm.add_custom_button(__('Service Done'), () => {
+								this.mark_technician_work_done_service();
+							}, __('Action'));
+						}
+						// this.frm.add_custom_button(
+						// 	__("Work Order"),
+						// 	() => this.make_work_order(),
+						// 	__("Action")
+						// );
+					}
+
+
+					if (
+						flt(doc.per_delivered, 2) < 100 &&
+						(order_is_a_sale || order_is_a_custom_sale) &&
+						allow_delivery && doc.status === 'Order'&& doc.status === 'Technician Assigned' && doc.status === 'Technician Work Done' && doc.order_type === 'Service'
 					) {
 						this.frm.add_custom_button(
 							__("Delivery Note"),
@@ -2254,8 +2297,200 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 		}, 'Technician Details', 'Submit');
 	}
 
+	assign_technician_prompt_service() {
+		const me = this;
 
-	
+		frappe.prompt([
+			{
+				fieldname: 'technician_name',
+				fieldtype: 'Link',
+				options: 'Technician Details',
+				label: 'Technician',
+				reqd: 1,
+				onchange: function() {
+					var technicianName = this.value;
+					if (technicianName) {
+						frappe.call({
+							method: 'frappe.client.get_value',
+							args: {
+								doctype: 'Technician Details',
+								filters: { 'name': technicianName },
+								fieldname: ['mobile_number', 'name', 'name1']
+							},
+							callback: function(response) {
+								if (response.message) {
+									cur_dialog.fields_dict.technician_mobile.set_input(response.message.mobile_number || '');
+									cur_dialog.fields_dict.technician_id.set_input(response.message.name || '');
+									cur_dialog.fields_dict.technician_name1.set_input(response.message.name1 || '');
+								}
+							}
+						});
+					}
+				}
+			},
+			{
+				fieldname: 'technician_name1',
+				fieldtype: 'Data',
+				label: 'Technician Name',
+				read_only: 1
+			},
+			{
+				fieldname: 'technician_mobile',
+				fieldtype: 'Data',
+				label: 'Technician Mobile Number',
+				read_only: 1
+			},
+			{
+				fieldname: 'technician_id',
+				fieldtype: 'Data',
+				label: 'Technician Id',
+				hidden: 1
+			}
+		], function(values) {
+			frappe.call({
+				method: 'erpnext.selling.doctype.sales_order.sales_order.assign_technician_service',
+				args: {
+					docname: me.frm.doc.name,
+					technician_name: values.technician_name,
+					technician_mobile: values.technician_mobile,
+					technician_id: values.technician_id
+				},
+				callback: function(response) {
+					if (response.message) {
+						frappe.msgprint({
+							title: __('Success'),
+							message: __('Technician assigned successfully.'),
+							indicator: 'green'
+						});
+						me.frm.reload_doc();
+					}
+				}
+			});
+		}, __('Assign Technician'), __('Assign'));
+	}
+
+	mark_technician_work_done_service() {
+		const me = this;
+
+		frappe.confirm(
+			__('Are you sure the technician has completed the work?'),
+			() => {
+				frappe.call({
+					method: 'erpnext.selling.doctype.sales_order.sales_order.complete_technician_work_service',
+					args: {
+						docname: me.frm.doc.name
+					},
+					callback: function(response) {
+						if (response.message) {
+							frappe.msgprint({
+								title: __('Success'),
+								message: __('Technician work marked as done.'),
+								indicator: 'green'
+							});
+							me.frm.reload_doc();
+						}
+					}
+				});
+			}
+		);
+	}
+	assign_technician_prompt() {
+		const me = this;
+
+		frappe.prompt([
+			{
+				fieldname: 'technician_name',
+				fieldtype: 'Link',
+				options: 'Technician Details',
+				label: 'Technician',
+				reqd: 1,
+				onchange: function() {
+					var technicianName = this.value;
+					if (technicianName) {
+						frappe.call({
+							method: 'frappe.client.get_value',
+							args: {
+								doctype: 'Technician Details',
+								filters: { 'name': technicianName },
+								fieldname: ['mobile_number', 'name', 'name1']
+							},
+							callback: function(response) {
+								if (response.message) {
+									cur_dialog.fields_dict.technician_mobile.set_input(response.message.mobile_number || '');
+									cur_dialog.fields_dict.technician_id.set_input(response.message.name || '');
+									cur_dialog.fields_dict.technician_name1.set_input(response.message.name1 || '');
+								}
+							}
+						});
+					}
+				}
+			},
+			{
+				fieldname: 'technician_name1',
+				fieldtype: 'Data',
+				label: 'Technician Name',
+				read_only: 1
+			},
+			{
+				fieldname: 'technician_mobile',
+				fieldtype: 'Data',
+				label: 'Technician Mobile Number',
+				read_only: 1
+			},
+			{
+				fieldname: 'technician_id',
+				fieldtype: 'Data',
+				label: 'Technician Id',
+				hidden: 1
+			}
+		], function(values) {
+			frappe.call({
+				method: 'erpnext.selling.doctype.sales_order.sales_order.assign_technician',
+				args: {
+					docname: me.frm.doc.name,
+					technician_name: values.technician_name,
+					technician_mobile: values.technician_mobile,
+					technician_id: values.technician_id
+				},
+				callback: function(response) {
+					if (response.message) {
+						frappe.msgprint({
+							title: __('Success'),
+							message: __('Technician assigned successfully.'),
+							indicator: 'green'
+						});
+						me.frm.reload_doc();
+					}
+				}
+			});
+		}, __('Assign Technician'), __('Assign'));
+	}
+
+	mark_technician_work_done() {
+		const me = this;
+
+		frappe.confirm(
+			__('Are you sure the technician has completed the work?'),
+			() => {
+				frappe.call({
+					method: 'erpnext.selling.doctype.sales_order.sales_order.complete_technician_work',
+					args: {
+						docname: me.frm.doc.name
+					},
+					callback: function(response) {
+						if (response.message) {
+							frappe.msgprint({
+								title: __('Success'),
+								message: __('Technician work marked as done.'),
+								indicator: 'green'
+							});
+							me.frm.reload_doc();
+						}
+					}
+				});
+			}
+		);
+	}
 	make_sales_invoice_delivery_note() {
 		const me = this; // Preserve reference to 'this' object
 	
@@ -3079,54 +3314,106 @@ If you have any questions, feel free to call/what's app us on 8884880013.`,
 			}
 		});
 	}
-
 	make_order_completed() {
-		// Check security deposit and payment status before proceeding
-		if (this.frm.doc.security_deposit_status === 'Paid' && this.frm.doc.payment_status === 'Paid' && this.frm.doc.refundable_security_deposit === 0) {
-			// Show confirmation dialog
-			frappe.confirm(__('Are you sure you want to complete this order? This action will lock the entire sales order, and you won’t be able to make any further transactions on it.'), () => {
-				// User confirmed, proceed with creating the Sales Invoice first
-				this.createSalesInvoiceWithAdvance();
-			}, () => {
-				// User cancelled, do nothing
-				frappe.msgprint(__('Order completion cancelled.'));
-			});
-		} else {
-			// Prepare an error message summarizing the issues
-			let issues = [];
-	
-			// Check if the order type is 'Rental'
-			if (this.frm.doc.order_type === 'Rental') {
-				// For 'Rental' order type, check for all three conditions
-				if (this.frm.doc.security_deposit_status !== 'Paid') {
-					issues.push(__('Security Deposit is not paid.'));
-				}
-				if (this.frm.doc.payment_status !== 'Paid') {
-					issues.push(__('Rental Payment is not paid.'));
-				}
-				if (this.frm.doc.refundable_security_deposit > 0) {
-					issues.push(__('Refundable Security Deposit must be zero.'));
-				}
-			} else {
-				// For other order types, only check for payment status
-				if (this.frm.doc.payment_status !== 'Paid') {
-					issues.push(__('Rental Payment is not paid.'));
-				}
-			}
-	
-			// Join the issues into a single message
-			let issueMessage = issues.length > 0 ? `<span style="color: #000000;text-decoration: underline;font-weight: bold;font-style: italic;">${issues.join(' ')}</span>` : ''; // Using mild orange color
-	
-			// Show confirmation dialog with the issue message
-			frappe.confirm(__('Are you sure you want to complete this order? This action will lock the entire sales order, and you won’t be able to make any further transactions on it. Issues: ' + issueMessage), () => {
-				// User confirmed, proceed with creating the Sales Invoice first
-				this.createSalesInvoiceWithAdvance();
-			}, () => {
-				// User cancelled, do nothing
-				frappe.msgprint(__('Order completion cancelled.'));
-			});
-		}
+	let is_rental = (this.frm.doc.order_type === 'Rental');
+	let is_ready_to_complete = false;
+
+	// Determine readiness based strictly on Order Type
+	if (is_rental) {
+		is_ready_to_complete = (this.frm.doc.security_deposit_status === 'Paid' && 
+		                        this.frm.doc.payment_status === 'Paid' && 
+		                        this.frm.doc.refundable_security_deposit === 0);
+	} else {
+		// Non-Rental orders only require Payment Status to be paid
+		is_ready_to_complete = (this.frm.doc.payment_status === 'Paid');
 	}
+
+	if (is_ready_to_complete) {
+		// PATH 1: Order is fully paid and correct (No issues listed)
+		frappe.confirm(__('Are you sure you want to complete this order? This action will lock the entire sales order, and you won’t be able to make any further transactions on it.'), () => {
+			this.createSalesInvoiceWithAdvance();
+		}, () => {
+			frappe.msgprint(__('Order completion cancelled.'));
+		});
+	} else {
+		// PATH 2: There are missing requirements, so compile the specific issues
+		let issues = [];
+
+		if (is_rental) {
+			if (this.frm.doc.security_deposit_status !== 'Paid') {
+				issues.push(__('Security Deposit is not paid.'));
+			}
+			if (this.frm.doc.payment_status !== 'Paid') {
+				issues.push(__('Rental Payment is not paid.'));
+			}
+			if (this.frm.doc.refundable_security_deposit > 0) {
+				issues.push(__('Refundable Security Deposit must be zero.'));
+			}
+		} else {
+			if (this.frm.doc.payment_status !== 'Paid') {
+				issues.push(__('Payment is not paid.'));
+			}
+		}
+
+		// Only add the "Issues: " label if there are actual issues compiled
+		let issueMessage = issues.length > 0 
+			? ` Issues: <span style="color: #000000; text-decoration: underline; font-weight: bold; font-style: italic;">${issues.join(' ')}</span>` 
+			: '';
+
+		frappe.confirm(__('Are you sure you want to complete this order? This action will lock the entire sales order, and you won’t be able to make any further transactions on it.' + issueMessage), () => {
+			this.createSalesInvoiceWithAdvance();
+		}, () => {
+			frappe.msgprint(__('Order completion cancelled.'));
+		});
+	}
+}
+	// make_order_completed() {
+	// 	// Check security deposit and payment status before proceeding
+	// 	if (this.frm.doc.security_deposit_status === 'Paid' && this.frm.doc.payment_status === 'Paid' && this.frm.doc.refundable_security_deposit === 0) {
+	// 		// Show confirmation dialog
+	// 		frappe.confirm(__('Are you sure you want to complete this order? This action will lock the entire sales order, and you won’t be able to make any further transactions on it.'), () => {
+	// 			// User confirmed, proceed with creating the Sales Invoice first
+	// 			this.createSalesInvoiceWithAdvance();
+	// 		}, () => {
+	// 			// User cancelled, do nothing
+	// 			frappe.msgprint(__('Order completion cancelled.'));
+	// 		});
+	// 	} else {
+	// 		// Prepare an error message summarizing the issues
+	// 		let issues = [];
+	
+	// 		// Check if the order type is 'Rental'
+	// 		if (this.frm.doc.order_type === 'Rental') {
+	// 			// For 'Rental' order type, check for all three conditions
+	// 			if (this.frm.doc.security_deposit_status !== 'Paid') {
+	// 				issues.push(__('Security Deposit is not paid.'));
+	// 			}
+	// 			if (this.frm.doc.payment_status !== 'Paid') {
+	// 				issues.push(__('Rental Payment is not paid.'));
+	// 			}
+	// 			if (this.frm.doc.refundable_security_deposit > 0) {
+	// 				issues.push(__('Refundable Security Deposit must be zero.'));
+	// 			}
+	// 		} else {
+	// 			// For other order types, only check for payment status
+	// 			if (this.frm.doc.payment_status !== 'Paid') {
+	// 				issues.push(__('Rental Payment is not paid.'));
+	// 			}
+	// 		}
+	
+	// 		// Join the issues into a single message
+	// 		let issueMessage = issues.length > 0 ? `<span style="color: #000000;text-decoration: underline;font-weight: bold;font-style: italic;">${issues.join(' ')}</span>` : ''; // Using mild orange color
+	
+	// 		// Show confirmation dialog with the issue message
+	// 		frappe.confirm(__('Are you sure you want to complete this order? This action will lock the entire sales order, and you won’t be able to make any further transactions on it. Issues: ' + issueMessage), () => {
+	// 			// User confirmed, proceed with creating the Sales Invoice first
+	// 			this.createSalesInvoiceWithAdvance();
+	// 		}, () => {
+	// 			// User cancelled, do nothing
+	// 			frappe.msgprint(__('Order completion cancelled.'));
+	// 		});
+	// 	}
+	// }
 	
 	
 	

@@ -1361,7 +1361,7 @@
    "no_copy": 1,
    "oldfieldname": "status",
    "oldfieldtype": "Select",
-   "options": "Draft\nPending\nApproved\nRental Device Assigned\nReady for Delivery\nDISPATCHED\nDELIVERED\nActive\nReady for Pickup\nPicked Up\nSubmitted to Office\nOn Hold\nOverdue\nRENEWED\nTo Pay\nTo Deliver and Bill\nTo Bill\nTo Deliver\nCompleted\nCancelled\nClosed\nPartially Closed\nOrder\nSales Completed\nRental SO Completed",
+   "options": "Draft\nPending\nApproved\nRental Device Assigned\nReady for Delivery\nDISPATCHED\nDELIVERED\nActive\nReady for Pickup\nPicked Up\nSubmitted to Office\nOn Hold\nOverdue\nRENEWED\nTo Pay\nTo Deliver and Bill\nTo Bill\nTo Deliver\nCompleted\nCancelled\nClosed\nPartially Closed\nOrder\nTechnician Assigned\nTechnician Work Done\nSales Completed\nRental SO Completed\nSO Completed",
    "print_hide": 1,
    "reqd": 1,
    "search_index": 1,
@@ -2236,7 +2236,7 @@
  "idx": 105,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-03-06 14:41:05.276557",
+ "modified": "2026-05-26 10:44:58.185124",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order",
@@ -2383,6 +2383,18 @@
   {
    "color": "Green",
    "title": "Rental SO Completed"
+  },
+  {
+   "color": "Purple",
+   "title": "Technician Assigned"
+  },
+  {
+   "color": "Orange",
+   "title": "Technician Work Done"
+  },
+  {
+   "color": "Blue",
+   "title": "SO Completed"
   }
  ],
  "timeline_field": "customer",
