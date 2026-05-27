@@ -992,7 +992,7 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 					}
 
 
-					if (flt(doc.per_billed, 2) < 100 && doc.status === 'Technician Work Done' && (doc.order_type === 'Sales')) {
+					if (flt(doc.per_billed, 2) < 100 && (doc.status === 'Order' || doc.status === 'Technician Work Done'|| doc.status === 'Technician Assigned') && (doc.order_type === 'Sales')) {
 						this.frm.add_custom_button(__('Create Sales Invoice & Delivery Note'), () => {
 							frappe.confirm(
 								__('Are you sure you want to Create Sales Invoice & Delivery Note?'),
