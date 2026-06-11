@@ -2802,7 +2802,7 @@ def make_rental_device_assign(docname, item_group, item_code):
 
 
 @frappe.whitelist()
-def make_ready_for_delivery(docname, technician_name, technician_mobile, technician_id):
+def make_ready_for_delivery(docname, technician_name, technician_mobile, technician_id,technician_category):
     try:
         # Get the 'Sales Order' document
         rental_group_order = frappe.get_doc('Sales Order', docname)
@@ -2811,7 +2811,8 @@ def make_ready_for_delivery(docname, technician_name, technician_mobile, technic
         # Update the status of the 'Sales Order'
         rental_group_order.status = 'Ready for Delivery'
         rental_group_order.custom_technician_id_before_delivered = technician_id
-        
+        # rental_group_order.technician_category = technician_category
+
         # Fetch Sales Order Item records with the given docname as parent
         sales_order_items = frappe.get_all("Sales Order Item", filters={"parent": docname}, fields=["name"])
 
@@ -2829,7 +2830,7 @@ def make_ready_for_delivery(docname, technician_name, technician_mobile, technic
             sales_order_item.save(ignore_permissions=True)
         if technician_id:
         # Create an entry in the Technician Visit Entry doctype
-            create_technician_portal_entry(technician_id, technician_type, docname,patient_id)
+            create_technician_portal_entry(technician_id, technician_type, docname,patient_id,technician_category)
 
         # Commit the transaction if everything is successful
         frappe.db.commit()
@@ -2842,7 +2843,7 @@ def make_ready_for_delivery(docname, technician_name, technician_mobile, technic
         frappe.throw(f"An error occurred: {str(e)}")
 
 # New function to create an entry in the Technician Visit Entry doctype
-def create_technician_portal_entry(technician_id, technician_type, sales_order_id,patient_id=None,item_code=None):
+def create_technician_portal_entry(technician_id, technician_type, sales_order_id,patient_id=None,technician_category=None,item_code=None):
     try:
         # Create a new document in the 'Technician Visit Entry' doctype
         technician_portal_entry = frappe.get_doc({
@@ -2852,7 +2853,8 @@ def create_technician_portal_entry(technician_id, technician_type, sales_order_i
             "type": technician_type,
             "status": "Assigned",
             "patient_id":patient_id,
-            "item_code":item_code
+            "item_code":item_code,
+            "technician_category":technician_category
         })
         
         # Insert the new entry into the database
@@ -3020,7 +3022,7 @@ def make_delivered(docname,customer_name, delivered_date, rental_order_agreement
         frappe.throw("An error occurred while processing the request. Please try again.")
 
 @frappe.whitelist()
-def make_ready_for_pickup(docname, pickup_date, pickup_reason,pickup_remark,technician_name=None,technician_mobile=None,technician_id=None ):
+def make_ready_for_pickup(docname, pickup_date, pickup_reason,pickup_remark,technician_name=None,technician_mobile=None,technician_id=None,technician_category=None ):
     try:
         # Get the 'Sales Order' document
         doc = frappe.get_doc('Sales Order', docname)
@@ -3048,7 +3050,7 @@ def make_ready_for_pickup(docname, pickup_date, pickup_reason,pickup_remark,tech
             # sales_order_item.technician_mobile_after_delivered = technician_mobile
             sales_order_item.save(ignore_permissions=True)
         if technician_id:
-            create_technician_portal_entry(technician_id, technician_type,docname,patient_id)
+            create_technician_portal_entry(technician_id, technician_type,docname,patient_id,technician_category)
 
         return "Sales Order is Ready for Pickup"
 
@@ -3128,7 +3130,7 @@ def make_submitted_to_office(docname, item_code, submitted_date, send_email=None
 
         # print('send_sssssssssssssssssemail', send_email, customer_email)
         # Send email if checked
-        if int(send_email) == 1 and customer_email:
+        if send_email and int(send_email) == 1 and customer_email:
             send_submitted_email(doc, submitted_items_html, customer_email)
 
         return "Submitted to Office Success"
@@ -3449,7 +3451,7 @@ def sales_order_for_html(sales_order_id):
 
 
 @frappe.whitelist()
-def update_status_to_ready_for_pickup(item_code, pickup_datetime, docname, child_name,pickupReason,pickupRemark,technician_id=None,technician_mobile=None):
+def update_status_to_ready_for_pickup(item_code, pickup_datetime, docname, child_name,pickupReason,pickupRemark,technician_id=None,technician_mobile=None,technician_category=None):
     # print('qqqqqqqqqqqqqqqqqqqqqqqq',item_code, pickup_datetime, docname, child_name,pickupReason,pickupRemark)
     # Retrieve Rental Orders based on the item_code field in the items child table
     sales_order_items = frappe.get_all("Sales Order Item", filters={"parent": docname}, fields=["name"])
@@ -3479,7 +3481,7 @@ def update_status_to_ready_for_pickup(item_code, pickup_datetime, docname, child
             sales_order_doc.save(ignore_permissions=True)
             technician_type = 'Pickup'
             if technician_id:
-                create_technician_portal_entry(technician_id, technician_type,docname,patient_id,item_code)
+                create_technician_portal_entry(technician_id, technician_type,docname,patient_id,technician_category,item_code)
 
             return True
         else:
@@ -3495,7 +3497,7 @@ def update_status_to_ready_for_pickup(item_code, pickup_datetime, docname, child
             sales_order_item_doc.save(ignore_permissions=True)
             technician_type = 'Pickup'
             if technician_id:
-                create_technician_portal_entry(technician_id, technician_type,docname,patient_id,item_code)
+                create_technician_portal_entry(technician_id, technician_type,docname,patient_id,technician_category,item_code)
             return True
     else:
         return False
@@ -6089,7 +6091,7 @@ def get_payment_link_log_id(custom_razorpay_payment_url):
 # ==========================================
 
 @frappe.whitelist()
-def assign_technician(docname, technician_name, technician_mobile, technician_id):
+def assign_technician(docname, technician_name, technician_mobile, technician_category, technician_id):
     try:
         sales_order = frappe.get_doc('Sales Order', docname)
         technician_type = 'Technician Assignment For Sales'
@@ -6112,7 +6114,7 @@ def assign_technician(docname, technician_name, technician_mobile, technician_id
             })
             
         if technician_id:
-            create_technician_portal_entry(technician_id, technician_type, docname, patient_id)
+            create_technician_portal_entry(technician_id, technician_type, docname, patient_id, technician_category)
 
         frappe.db.commit()
         return "Technician Assigned Success"
@@ -6163,7 +6165,7 @@ def complete_technician_work(docname):
 # ==========================================
 
 @frappe.whitelist()
-def assign_technician_service(docname, technician_name, technician_mobile, technician_id):
+def assign_technician_service(docname, technician_name, technician_mobile, technician_category, technician_id):
     try:
         sales_order = frappe.get_doc('Sales Order', docname)
         technician_type = 'Technician Assignment For Service'
@@ -6186,7 +6188,7 @@ def assign_technician_service(docname, technician_name, technician_mobile, techn
             })
             
         if technician_id:
-            create_technician_portal_entry(technician_id, technician_type, docname, patient_id)
+            create_technician_portal_entry(technician_id, technician_type, docname, patient_id, technician_category)
 
         frappe.db.commit()
         return "Technician Assigned Success"

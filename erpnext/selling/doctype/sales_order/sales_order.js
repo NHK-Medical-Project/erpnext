@@ -2248,7 +2248,13 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 				label: 'Technician Mobile Number',
 				reqd: 1
 			},
-			
+			{
+				fieldname: 'technician_category',
+				fieldtype: 'Link',
+				options: 'Technician Category',
+				label: 'Technician Category',
+				reqd: 1
+			},
 			{
 				fieldname: 'technician_id',
 				fieldtype: 'Data',
@@ -2261,6 +2267,7 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 			var technicianName = values.technician_name;
 			var technicianid = values.technician_name;
 			var technicianMobile = values.technician_mobile;
+			var technicianCategory = values.technician_category;
 	
 			// Call the Python function passing the technician details
 			frappe.call({
@@ -2270,6 +2277,7 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 					technician_name: technicianName,
 					technician_mobile: technicianMobile,
 					technician_id: technicianid,
+					technician_category: technicianCategory,
 
 				},
 				callback: function(response) {
@@ -2341,6 +2349,13 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 				read_only: 1
 			},
 			{
+				fieldname: 'technician_category',
+				fieldtype: 'Link',
+				options: 'Technician Category',
+				label: 'Technician Category',
+				reqd: 1
+			},
+			{
 				fieldname: 'technician_id',
 				fieldtype: 'Data',
 				label: 'Technician Id',
@@ -2353,6 +2368,7 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 					docname: me.frm.doc.name,
 					technician_name: values.technician_name,
 					technician_mobile: values.technician_mobile,
+					technician_category: values.technician_category,
 					technician_id: values.technician_id
 				},
 				callback: function(response) {
@@ -2438,6 +2454,13 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 				read_only: 1
 			},
 			{
+				fieldname: 'technician_category',
+				fieldtype: 'Link',
+				options: 'Technician Category',
+				label: 'Technician Category',
+				reqd: 1
+			},
+			{
 				fieldname: 'technician_id',
 				fieldtype: 'Data',
 				label: 'Technician Id',
@@ -2450,6 +2473,7 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 					docname: me.frm.doc.name,
 					technician_name: values.technician_name,
 					technician_mobile: values.technician_mobile,
+					technician_category: values.technician_category,
 					technician_id: values.technician_id
 				},
 				callback: function(response) {
@@ -2942,6 +2966,14 @@ For any query call/WhatsApp on 8884880013.`,
 				// reqd: 1
 			},
 			{
+				fieldname: 'technician_category',
+				fieldtype: 'Link',
+				options: 'Technician Category',
+				label: 'Technician Category',
+			
+				reqd: 1
+			},
+			{
 				label: __('Notify through whatsapp'),
 				fieldname: 'notify_through_whatsapp',
 				fieldtype: 'Check',
@@ -3011,6 +3043,7 @@ For any query call/WhatsApp on 8884880013.`,
 			this.frm.doc.technician_name = values.technician_name;
 			this.frm.doc.technician_mobile = values.technician_mobile;
 			this.frm.doc.technician_id = values.technician_id;
+			this.frm.doc.technician_category = values.technician_category;
 			this.frm.doc.Pickup_Date = values.pickup_date;
 			this.frm.doc.pickup_reason = values.pickup_reason;
 			this.frm.doc.pickup_remark = values.pickup_remark;
@@ -3047,6 +3080,7 @@ For any query call/WhatsApp on 8884880013.`,
 				technician_name: values.technician_name,
 				technician_mobile: values.technician_mobile,
 				technician_id: values.technician_id,
+				technician_category: values.technician_category,
 				pickup_date: values.pickup_date,
 				pickup_reason: values.pickup_reason,
 				pickup_remark: values.pickup_remark
