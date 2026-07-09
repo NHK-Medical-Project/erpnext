@@ -220,6 +220,7 @@ class SalesOrder(SellingController):
             self.set_onload("has_reserved_stock", True)
 
     def validate(self):
+        # self.validate_technician_visit()
         super(SalesOrder, self).validate()
         # if self.order_type == "Rental":
         if self.security_deposit not in [None, '']:  # Check if security_deposit is neither None nor empty string
@@ -356,7 +357,57 @@ class SalesOrder(SellingController):
                             get_link_to_form("Selling Settings", "Selling Settings"),
                         )
                     )
+    def validate_technician_visit(self):
+        if self.is_new():
+            return
+            
+        old_status = frappe.db.get_value("Sales Order", self.name, "status")
+        new_status = self.status
+        
+        if old_status == new_status:
+            return
 
+        target_visit_status = ""
+        target_visit_type = ""
+        
+        # Scenario Rules mapped with the specific Visit Type
+        if old_status == "DISPATCHED" and new_status == "Active":
+            target_visit_status = "Delivered"
+            target_visit_type = "Delivery"
+            
+        elif old_status == "Picked Up" and new_status == "Submitted to Office":
+            print('Running Status Conversion:', old_status, new_status)
+            target_visit_status = "Picked up"
+            target_visit_type = "Pickup"
+            
+        # Run validation if it matches a scenario
+        if target_visit_status and target_visit_type:
+            technician_visits = frappe.db.get_all(
+                "Technician Visit Entry",
+                filters={
+                    "sales_order_id": self.name,
+                    "status": "Assigned",
+                    "type": target_visit_type   # <--- Filters by the required visit type
+                },
+                fields=["name", "kilometers", "charges"]
+            )
+            
+            from frappe.utils import flt
+            for visit in technician_visits:
+                km = flt(visit.kilometers)
+                # charges = flt(visit.charges) # Can enable if needed again
+                
+                # Validation check
+                if km <= 0:
+                    link = f"<br><br><a href='/app/technician-visit-entry/{visit.name}' target='_blank' style='text-decoration: underline; color: #1f78d1; font-weight: 600; font-size:14px;'>➜ Open Technician Visit in New Tab: {visit.name}</a><br>"
+                    msg = f"Please enter <b>Kilometers</b> before changing the Sales Order status to <b>{target_visit_status}</b>. {link}"
+                    
+                    frappe.throw(msg, title="Technician Details Missing")
+                else:
+                    # Updates the matching status based on visit
+                    frappe.db.set_value("Technician Visit Entry", visit.name, "status", target_visit_status)
+
+                    
     def validate_for_items(self):
         for d in self.get("items"):
 
@@ -1186,6 +1237,7 @@ For any query, call or WhatsApp on 8884880013.
         #         else:
         #             frappe.log_error(f"Item '{item.item_code}' not found or not reserved.")
     def before_update_after_submit(self):
+        self.validate_technician_visit()
         # self.validate_sales_order_payment_status()
         self.update_item_names()
         self.validate_po()
@@ -3017,9 +3069,17 @@ def make_delivered(docname,customer_name, delivered_date, rental_order_agreement
         return "Rental Device DELIVERED Success"
 
     except Exception as e:
-        # Log any errors that occur
-        frappe.log_error(f"Error in make_delivered: {e}")
-        frappe.throw("An error occurred while processing the request. Please try again.")
+        # 1. If it's a validation error, we simply raise it. 
+        # This will bypass the log_error and show your message directly to the user.
+        if isinstance(e, frappe.exceptions.ValidationError):
+            raise
+            
+        # 2. For real code errors, log properly without hitting the 140-char title limit
+        frappe.log_error(
+            title="Error in make_delivered", 
+            message=frappe.get_traceback()
+        )
+        frappe.throw("An internal error occurred while processing the delivery. Check error logs.")
 
 @frappe.whitelist()
 def make_ready_for_pickup(docname, pickup_date, pickup_reason,pickup_remark,technician_name=None,technician_mobile=None,technician_id=None,technician_category=None ):
@@ -3136,8 +3196,12 @@ def make_submitted_to_office(docname, item_code, submitted_date, send_email=None
         return "Submitted to Office Success"
 
     except Exception as e:
-        # Log any errors that occur
-        frappe.log_error(f"Error in make_submitted_to_office: {e}")
+        # Allow intentional frappe.throw validation messages to pop-up normally!
+        if isinstance(e, frappe.exceptions.ValidationError):
+            raise
+            
+        # Log actual server errors safely (limiting title size, logging full trace in message body)
+        frappe.log_error(message=frappe.get_traceback(), title="Error in make_submitted_to_office")
         frappe.throw("An error occurred while processing the request. Please try again.")
 
 
