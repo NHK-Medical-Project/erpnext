@@ -54,7 +54,7 @@ frappe.ui.form.on("Sales Order", {
 	},
 
 	refresh: function (frm) {
-		
+
 		if (frm.doc.docstatus === 1) {
 			if (
 				frm.doc.status !== "Closed" &&
@@ -185,7 +185,7 @@ frappe.ui.form.on("Sales Order", {
 		// On cancel and amending a sales order with advance payment, reset advance paid amount
 		if (frm.is_new()) {
 			frm.set_value("advance_paid", 0);
-			frm.set_value("master_order_id","");
+			frm.set_value("master_order_id", "");
 		}
 
 		frm.ignore_doctypes_on_cancel_all = ["Purchase Order"];
@@ -544,13 +544,13 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 		let allow_delivery = false;
 
 		if (doc.docstatus == 1) {
-			if(this.frm.has_perm("submit")) {
+			if (this.frm.has_perm("submit")) {
 				// 	if(doc.status === 'On Hold') {
 				// 	   // un-hold
 				// 	   this.frm.add_custom_button(__('Resume'), function() {
 				// 		   me.frm.cscript.update_status('Resume', 'Draft')
 				// 	   }, __("Status"));
-	
+
 				// 	   if(flt(doc.per_delivered, 2) < 100 || flt(doc.per_billed, 2) < 100) {
 				// 		   // close
 				// 		   this.frm.add_custom_button(__('Close'), () => this.close_sales_order(), __("Status"))
@@ -564,14 +564,14 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 				//    }
 				if (doc.status === 'On Hold') {
 					// un-hold
-					this.frm.add_custom_button(__('Resume'), function() {
+					this.frm.add_custom_button(__('Resume'), function () {
 						frappe.call({
 							method: 'erpnext.selling.doctype.sales_order.sales_order.update_status',
 							args: {
 								docname: me.frm.doc.name,
 								new_status: 'Pending'
 							},
-							callback: function(response) {
+							callback: function (response) {
 								if (!response.exc) {
 									frappe.show_alert({
 										message: __('Document Resumed successfully.'),
@@ -586,21 +586,21 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 							}
 						});
 					}, __("Status"));
-				
+
 					if (flt(doc.per_delivered, 2) < 100 || flt(doc.per_billed, 2) < 100) {
 						// close
 						this.frm.add_custom_button(__('Close'), () => this.close_sales_order(), __("Status"));
 					}
 				} else if (doc.status === 'Closed') {
 					// un-close
-					this.frm.add_custom_button(__('Re-open'), function() {
+					this.frm.add_custom_button(__('Re-open'), function () {
 						frappe.call({
 							method: 'erpnext.selling.doctype.sales_order.sales_order.update_status',
 							args: {
 								docname: me.frm.doc.name,
 								new_status: 'Pending'
 							},
-							callback: function(response) {
+							callback: function (response) {
 								if (!response.exc) {
 									frappe.show_alert({
 										message: __('Document Reopened successfully.'),
@@ -616,9 +616,9 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 						});
 					}, __("Status"));
 				}
-				
-				
-				}
+
+
+			}
 			if (doc.status !== "Closed") {
 				if (doc.status !== "On Hold") {
 					allow_delivery =
@@ -642,10 +642,10 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 						// 	);
 						// }
 						//if(flt(doc.per_delivered, 2) < 100 || flt(doc.per_billed, 2) < 100 || this.doc.status === "Pending") {
-							// hold
-							//this.frm.add_custom_button(__('Hold'), () => this.hold_rental_sales_order(), __("Status"))
-							// close
-							//this.frm.add_custom_button(__('Close'), () => this.close_rental_sales_order(), __("Status"))
+						// hold
+						//this.frm.add_custom_button(__('Hold'), () => this.hold_rental_sales_order(), __("Status"))
+						// close
+						//this.frm.add_custom_button(__('Close'), () => this.close_rental_sales_order(), __("Status"))
 						//}
 					}
 
@@ -713,7 +713,7 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 												on_change: (value) => {
 													// Remove any non-numeric characters
 													const numericValue = value.replace(/\D/g, '');
-											
+
 													// Check if the value has exactly 10 digits
 													if (numericValue.length !== 10) {
 														frappe.msgprint({
@@ -721,12 +721,12 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 															message: __('Please enter a valid 10-digit mobile number. Only numbers are allowed.'),
 															indicator: 'red'
 														});
-											
+
 														// Optionally, clear the field or reset the value to numeric characters only
-													} 
+													}
 												}
 											},
-											
+
 											{
 												label: __('Message'),
 												fieldname: 'message',
@@ -748,22 +748,22 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 											}
 										]
 									});
-					
+
 									d.fields_dict.share_payment_link.$input.click(() => {
 										d.hide();
 										me.make_approved_with_payment_link(d.get_values());
 									});
-					
+
 									d.fields_dict.without_payment_link.$input.click(() => {
 										d.hide();
 										me.make_approved(d.get_values());
 									});
-					
+
 									d.fields_dict.cancel.$input.click(() => {
 										d.hide();
 										// Do nothing on cancel
 									});
-					
+
 									d.show();
 								},
 								() => {
@@ -773,8 +773,8 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 							);
 						}, __('Action'));
 					}
-										
-					
+
+
 
 
 
@@ -806,22 +806,22 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 					// }
 
 
-                    // if (flt(doc.per_billed, 2) < 100 && doc.status === 'Pending' && doc.order_type === 'Rental') {
-                    //     this.frm.add_custom_button(__('Approved'), () => {
-                    //         frappe.confirm(
-                    //             __('Are you sure you want to approve. It will Reserve the Item?'),
-                    //             () => {
-                    //                 me.make_approved(); // Call the JavaScript method
-                    //             },
-                    //             () => {
-                    //                 // Do nothing on cancel
-                    //             }
-                    //         );
-                    //     }, __('Action'));
-                    // }
+					// if (flt(doc.per_billed, 2) < 100 && doc.status === 'Pending' && doc.order_type === 'Rental') {
+					//     this.frm.add_custom_button(__('Approved'), () => {
+					//         frappe.confirm(
+					//             __('Are you sure you want to approve. It will Reserve the Item?'),
+					//             () => {
+					//                 me.make_approved(); // Call the JavaScript method
+					//             },
+					//             () => {
+					//                 // Do nothing on cancel
+					//             }
+					//         );
+					//     }, __('Action'));
+					// }
 
 					if (flt(doc.per_billed, 2) < 100 && doc.status === 'Pending' && (doc.order_type === 'Sales' || doc.order_type === 'Service')) {
-                        this.frm.add_custom_button(__('Approved'), () => {
+						this.frm.add_custom_button(__('Approved'), () => {
 							frappe.confirm(
 								__('Are you sure you want to approve? It will Reserve the Item.'),
 								() => {
@@ -860,7 +860,7 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 												on_change: (value) => {
 													// Remove any non-numeric characters
 													const numericValue = value.replace(/\D/g, '');
-											
+
 													// Check if the value has exactly 10 digits
 													if (numericValue.length !== 10) {
 														frappe.msgprint({
@@ -868,21 +868,21 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 															message: __('Please enter a valid 10-digit mobile number. Only numbers are allowed.'),
 															indicator: 'red'
 														});
-											
+
 														// Optionally, clear the field or reset the value to numeric characters only
-													} 
+													}
 												}
 											},
-											
+
 											{
 												label: __('Message'),
 												fieldname: 'message',
 												fieldtype: 'Small Text',
-// 												default: `
-// Hello ${frm.doc.customer_name},
-// Your order ID ${frm.doc.name} has been successfully approved. 
-// For any query, call/WhatsApp on 8884880013.
-// ${frm.doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${frm.doc.custom_razorpay_payment_url}` : ''}`,
+												// 												default: `
+												// Hello ${frm.doc.customer_name},
+												// Your order ID ${frm.doc.name} has been successfully approved. 
+												// For any query, call/WhatsApp on 8884880013.
+												// ${frm.doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${frm.doc.custom_razorpay_payment_url}` : ''}`,
 												default: `
 Hello ${doc.customer_name},
 Your order ID ${doc.name} has been successfully approved.
@@ -917,23 +917,23 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 											}
 										]
 									});
-					
+
 									d.fields_dict.share_payment_link.$input.click(() => {
 										d.hide();
 										// me.make_approved_with_payment_link();
 										me.make_sales_approved_with_payment_link(d.get_values());
 									});
-					
+
 									d.fields_dict.without_payment_link.$input.click(() => {
 										d.hide();
 										me.make_sales_approved(d.get_values());
 									});
-					
+
 									d.fields_dict.cancel.$input.click(() => {
 										d.hide();
 										// Do nothing on cancel
 									});
-					
+
 									d.show();
 								},
 								() => {
@@ -962,17 +962,17 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 							// 		// Do nothing on cancel
 							// 	}
 							// );
-                            // frappe.confirm(
-                            //     __('Are you sure you want to approve?'),
-                            //     () => {
-                            //         me.make_sales_approved(); // Call the JavaScript method
-                            //     },
-                            //     () => {
-                            //         // Do nothing on cancel
-                            //     }
-                            // );
-                        }, __('Action'));
-                    }
+							// frappe.confirm(
+							//     __('Are you sure you want to approve?'),
+							//     () => {
+							//         me.make_sales_approved(); // Call the JavaScript method
+							//     },
+							//     () => {
+							//         // Do nothing on cancel
+							//     }
+							// );
+						}, __('Action'));
+					}
 
 					// const doc = this.frm.doc;
 
@@ -982,7 +982,7 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 							this.frm.add_custom_button(__('Assign Technician'), () => {
 								this.assign_technician_prompt();
 							}, __('Action'));
-						} 
+						}
 						// Stage 2: Mark Technician Work Done
 						else if (doc.status === 'Technician Assigned') {
 							this.frm.add_custom_button(__('Installation Done'), () => {
@@ -992,14 +992,14 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 					}
 
 
-					if (flt(doc.per_billed, 2) < 100 && (doc.status === 'Order' || doc.status === 'Technician Work Done'|| doc.status === 'Technician Assigned') && (doc.order_type === 'Sales')) {
+					if (flt(doc.per_billed, 2) < 100 && (doc.status === 'Order' || doc.status === 'Technician Work Done' || doc.status === 'Technician Assigned') && (doc.order_type === 'Sales')) {
 						this.frm.add_custom_button(__('Create Sales Invoice & Delivery Note'), () => {
 							frappe.confirm(
 								__('Are you sure you want to Create Sales Invoice & Delivery Note?'),
 								() => {
 									// Check the payment status before proceeding
 									// if (doc.payment_status === 'Paid') {
-										me.make_sales_invoice_delivery_note(); // Call the JavaScript method
+									me.make_sales_invoice_delivery_note(); // Call the JavaScript method
 									// } else {
 									// 	frappe.msgprint(__('Payment is not done. Please complete the payment before proceeding.'));
 									// }
@@ -1010,108 +1010,108 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 							);
 						}, __('Action'));
 					}
-					
-
-                    // if (flt(doc.per_billed, 2) < 100 && doc.status === 'Approved' && doc.order_type === 'Rental') {
-                    //     this.frm.add_custom_button(__('Rental Device Assigned'), () => {
-                    //         frappe.confirm(
-                    //             __('Are you sure you want to Assign the Rental Device?'),
-                    //             () => {
-                    //                 me.make_rental_device_assign(); // Call the JavaScript method
-                    //             },
-                    //             () => {
-                    //                 // Do nothing on cancel
-                    //             }
-                    //         );
-                    //     }, __('Create'));
-                    // }
-
-                    if (flt(doc.per_billed, 2) < 100 && doc.status === 'Approved' && doc.order_type === 'Rental') {
-                        this.frm.add_custom_button(__('Ready for Delivery'), () => {
-                            frappe.confirm(
-                                __('Are you sure you want make the status as Ready For Delivery?'),
-                                () => {
-                                    me.make_ready_for_delivery(); // Call the JavaScript method
-                                },
-                                () => {
-                                    // Do nothing on cancel
-                                }
-                            );
-                        }, __('Action'));
-                    }
 
 
-                    if (flt(doc.per_billed, 2) < 100 && doc.status === 'Ready for Delivery' && doc.order_type === 'Rental') {
-                        this.frm.add_custom_button(__('DISPATCHED'), () => {
-                            frappe.confirm(
-                                __('Are you sure you want make the status as DISPATCHED?'),
-                                () => {
-                                    me.make_dispatch(); // Call the JavaScript method
-                                },
-                                () => {
-                                    // Do nothing on cancel
-                                }
-                            );
-                        }, __('Action'));
-                    }
+					// if (flt(doc.per_billed, 2) < 100 && doc.status === 'Approved' && doc.order_type === 'Rental') {
+					//     this.frm.add_custom_button(__('Rental Device Assigned'), () => {
+					//         frappe.confirm(
+					//             __('Are you sure you want to Assign the Rental Device?'),
+					//             () => {
+					//                 me.make_rental_device_assign(); // Call the JavaScript method
+					//             },
+					//             () => {
+					//                 // Do nothing on cancel
+					//             }
+					//         );
+					//     }, __('Create'));
+					// }
+
+					if (flt(doc.per_billed, 2) < 100 && doc.status === 'Approved' && doc.order_type === 'Rental') {
+						this.frm.add_custom_button(__('Ready for Delivery'), () => {
+							frappe.confirm(
+								__('Are you sure you want make the status as Ready For Delivery?'),
+								() => {
+									me.make_ready_for_delivery(); // Call the JavaScript method
+								},
+								() => {
+									// Do nothing on cancel
+								}
+							);
+						}, __('Action'));
+					}
 
 
-                    if (flt(doc.per_billed, 2) < 100 && doc.status === 'DISPATCHED' && doc.order_type === 'Rental') {
-                        this.frm.add_custom_button(__('DELIVERED'), () => {
-                            frappe.confirm(
-                                __('Are you sure you want make the status as DELIVERED?'),
-                                () => {
-                                    me.make_delivered(); // Call the JavaScript method
-                                },
-                                () => {
-                                    // Do nothing on cancel
-                                }
-                            );
-                        }, __('Action'));
-                    }
+					if (flt(doc.per_billed, 2) < 100 && doc.status === 'Ready for Delivery' && doc.order_type === 'Rental') {
+						this.frm.add_custom_button(__('DISPATCHED'), () => {
+							frappe.confirm(
+								__('Are you sure you want make the status as DISPATCHED?'),
+								() => {
+									me.make_dispatch(); // Call the JavaScript method
+								},
+								() => {
+									// Do nothing on cancel
+								}
+							);
+						}, __('Action'));
+					}
 
-                    if (doc.status === 'Active' && doc.order_type === 'Rental') {
-                        this.frm.add_custom_button(__('Ready for Pickup'), () => {
-                            frappe.confirm(
-                                __('Are you sure you want make the status as Ready for Pickup?'),
-                                () => {
-                                    me.make_ready_for_pickup(); // Call the JavaScript method
-                                },
-                                () => {
-                                    // Do nothing on cancel
-                                }
-                            );
-                        }, __('Action'));
-                    }
+
+					if (flt(doc.per_billed, 2) < 100 && doc.status === 'DISPATCHED' && doc.order_type === 'Rental') {
+						this.frm.add_custom_button(__('DELIVERED'), () => {
+							frappe.confirm(
+								__('Are you sure you want make the status as DELIVERED?'),
+								() => {
+									me.make_delivered(); // Call the JavaScript method
+								},
+								() => {
+									// Do nothing on cancel
+								}
+							);
+						}, __('Action'));
+					}
+
+					if (doc.status === 'Active' && doc.order_type === 'Rental') {
+						this.frm.add_custom_button(__('Ready for Pickup'), () => {
+							frappe.confirm(
+								__('Are you sure you want make the status as Ready for Pickup?'),
+								() => {
+									me.make_ready_for_pickup(); // Call the JavaScript method
+								},
+								() => {
+									// Do nothing on cancel
+								}
+							);
+						}, __('Action'));
+					}
 					if (doc.status === 'Ready for Pickup' && doc.order_type === 'Rental') {
-                        this.frm.add_custom_button(__('Picked Up'), () => {
-                            frappe.confirm(
-                                __('Are you sure you want make the status as Ready for Pickup?'),
-                                () => {
-                                    me.make_pickedup(); // Call the JavaScript method
-                                },
-                                () => {
-                                    // Do nothing on cancel
-                                }
-                            );
-                        }, __('Action'));
-                    }
+						this.frm.add_custom_button(__('Picked Up'), () => {
+							frappe.confirm(
+								__('Are you sure you want make the status as Ready for Pickup?'),
+								() => {
+									me.make_pickedup(); // Call the JavaScript method
+								},
+								() => {
+									// Do nothing on cancel
+								}
+							);
+						}, __('Action'));
+					}
 					if (doc.status === 'Picked Up' && doc.order_type === 'Rental') {
-                        this.frm.add_custom_button(__('Submitted To Office'), () => {
-                            frappe.confirm(
-                                __('Are you sure you want make the status as Submitted To Office?'),
-                                () => {
-                                    me.make_submitted_to_office(); // Call the JavaScript method
-                                },
-                                () => {
-                                    // Do nothing on cancel
-                                }
-                            );
-                        }, __('Action'));
-                    }
+						this.frm.add_custom_button(__('Submitted To Office'), () => {
+							frappe.confirm(
+								__('Are you sure you want make the status as Submitted To Office?'),
+								() => {
+									me.make_submitted_to_office(); // Call the JavaScript method
+								},
+								() => {
+									// Do nothing on cancel
+								}
+							);
+						}, __('Action'));
+					}
 
 
-					if ((doc.status === 'Submitted to Office' || doc.status === 'RENEWED' || doc.status === 'Technician Work Done') && (doc.order_type === 'Rental' || doc.order_type === 'Service'  )) {
+					if ((doc.status === 'Submitted to Office' || doc.status === 'RENEWED' || doc.status === 'Technician Work Done') && (doc.order_type === 'Rental' || doc.order_type === 'Service')) {
 						this.frm.add_custom_button(__('Order Completed'), () => {
 							frappe.confirm(
 								__('Are you sure you want to make the status as Order Closed?'),
@@ -1129,13 +1129,13 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 					if (
 						flt(doc.per_delivered, 2) < 100 &&
 						(order_is_a_sale || order_is_a_custom_sale) &&
-						allow_delivery &&  doc.order_type === 'Service'
+						allow_delivery && doc.order_type === 'Service'
 					) {
 						if (doc.status === 'Order') {
 							this.frm.add_custom_button(__('Assign Technician'), () => {
 								this.assign_technician_prompt_service();
 							}, __('Action'));
-						} 
+						}
 						// Stage 2: Mark Technician Work Done
 						else if (doc.status === 'Technician Assigned') {
 							this.frm.add_custom_button(__('Service Done'), () => {
@@ -1153,7 +1153,7 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 					if (
 						flt(doc.per_delivered, 2) < 100 &&
 						(order_is_a_sale || order_is_a_custom_sale) &&
-						allow_delivery && doc.status === 'Order'&& doc.status === 'Technician Assigned' && doc.status === 'Technician Work Done' && doc.order_type === 'Service'
+						allow_delivery && doc.status === 'Order' && doc.status === 'Technician Assigned' && doc.status === 'Technician Work Done' && doc.order_type === 'Service'
 					) {
 						this.frm.add_custom_button(
 							__("Delivery Note"),
@@ -1175,24 +1175,24 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 					// 		__("Action")
 					// 	);
 					// }
-					 // Check the status of the sales order
-					 if (this.frm.doc.status === "Rental SO Completed") {
+					// Check the status of the sales order
+					if (this.frm.doc.status === "Rental SO Completed") {
 						// Lock all fields by making them read-only
 						Object.keys(this.frm.fields_dict).forEach(fieldname => {
-							if (!this.frm.fields_dict[fieldname].df.hidden && 
+							if (!this.frm.fields_dict[fieldname].df.hidden &&
 								this.frm.fields_dict[fieldname].df.fieldtype !== 'Button') {
 								this.frm.set_df_property(fieldname, 'read_only', 1);
 							}
 						});
-				
+
 						// Hide primary action button if it exists
 						if (this.frm.page.btn_primary) {
 							this.frm.page.btn_primary.hide();
 						}
-				
+
 						// Clear the secondary button menu
 						this.frm.page.clear_menu(); // This clears all secondary buttons
-				
+
 						// Hide specific buttons using their class names or data-labels
 						const buttonsToHide = [
 							'Generate Payment Link',
@@ -1203,7 +1203,7 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 							'Update Current SD',
 							'Order Option'
 						];
-				
+
 						buttonsToHide.forEach(label => {
 							// Hide button by data-label attribute
 							const button = document.querySelector(`[data-label="${encodeURIComponent(label)}"]`);
@@ -1211,7 +1211,7 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 								button.style.display = 'none'; // Hide the button
 							}
 						});
-				
+
 						// If you want to hide the dropdown items in the menu
 						const dropdownItems = document.querySelectorAll('.dropdown-menu a.dropdown-item');
 						dropdownItems.forEach(item => {
@@ -1222,13 +1222,13 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 						});
 					} else {
 						// If the status is not "Rental SO Completed", unlock fields and show buttons if needed
-						
-				
+
+
 						// Show primary action button again if needed
 						this.frm.page.set_primary_action(__('Save'), () => {
 							// Define what happens when the primary action is clicked
 						});
-				
+
 						// Optionally re-add secondary buttons or custom buttons if needed
 					}
 					// material request
@@ -1572,10 +1572,10 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 							frappe.msgprint(
 								__("Material Request {0} submitted.", [
 									'<a href="/app/material-request/' +
-										r.message.name +
-										'">' +
-										r.message.name +
-										"</a>",
+									r.message.name +
+									'">' +
+									r.message.name +
+									"</a>",
 								])
 							);
 						}
@@ -1612,8 +1612,8 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 						</div>
 					</div>
 					${delivery_dates
-						.map(
-							(date) => `
+					.map(
+						(date) => `
 						<div class="list-item">
 							<div class="list-item__content list-item__content--flex-2">
 								<label>
@@ -1627,8 +1627,8 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 							</div>
 						</div>
 					`
-						)
-						.join("")}
+					)
+					.join("")}
 				</div>
 			`);
 
@@ -1683,7 +1683,7 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 	// 		});
 	// 		return;
 	// 	}
-	
+
 	// 	// Prompt to show the payment link and get customer_email_id
 	// 	frappe.prompt([
 	// 		{
@@ -1705,7 +1705,7 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 	// 		// Values will contain the user's input from the prompt
 	// 		if (values.show_payment_link) {
 	// 			// console.log('Showing payment link:', paymentUrl);
-				
+
 	// 			// Call make_approved and send email on success
 	// 			this.make_approved(() => {
 	// 				// Send approval email
@@ -1729,7 +1729,7 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 			});
 			return;
 		}
-	
+
 		// Prompt to show the payment link and get customer_email_id
 		frappe.prompt([
 			{
@@ -1754,17 +1754,17 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 				this.make_approved(values, () => {
 					// Send approval email
 					this.send_approval_email(this.frm.doc.name, promptValues.customer_email_id, promptValues.show_payment_link);
-					
+
 				});
 			} else {
 				console.log('User declined to show the payment link.');
 			}
 		}, __('Payment Link Confirmation'));
 	}
-	
-	
-	
-	
+
+
+
+
 	make_approved(values, callback) {
 		if (values.notify_through_whatsapp) {
 			// Validate mobile number
@@ -1788,7 +1788,7 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 			callback: (response) => {
 				if (response.message === true) {
 					// console.log(response.message);
-	
+
 					frappe.msgprint({
 						title: __('Success'),
 						message: __('Rental Sales Order Approved successfully.'),
@@ -1812,7 +1812,7 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 					setTimeout(() => {
 						window.location.reload();
 					}, 1000);
-	
+
 					// Call the callback function if approval is successful
 					if (callback) callback();
 				} else {
@@ -1826,27 +1826,27 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 			}
 		});
 	}
-	
+
 
 	make_sales_approved(values, callback) {
 		// console.log("make_sales_approved called with values:", values);
-        frappe.call({
-            method: 'erpnext.selling.doctype.sales_order.sales_order.make_sales_approved',
-            args: {
-                docname: this.frm.doc.name,
-            },
-            callback: (response) => {
-                // Handle the response
-                if (response.message) {
-                    // Log the result to the console
-                    // console.log(response.message);
-    
-                    // Display a success message
-                    frappe.msgprint({
-                        title: __('Success'),
-                        message: __('Sales Order Approved successfully.'),
-                        indicator: 'green'
-                    });
+		frappe.call({
+			method: 'erpnext.selling.doctype.sales_order.sales_order.make_sales_approved',
+			args: {
+				docname: this.frm.doc.name,
+			},
+			callback: (response) => {
+				// Handle the response
+				if (response.message) {
+					// Log the result to the console
+					// console.log(response.message);
+
+					// Display a success message
+					frappe.msgprint({
+						title: __('Success'),
+						message: __('Sales Order Approved successfully.'),
+						indicator: 'green'
+					});
 					if (values.notify_through_whatsapp) {
 						// Validate mobile number
 						const mobile_no = values.mobile_no.replace(/\D/g, '');
@@ -1862,38 +1862,38 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 						this.send_whatsapp_message(values.mobile_no, values.message);
 					}
 					// Send Email if checked
-                if (values.send_mail) {
-                    frappe.call({
-                        method: "erpnext.selling.doctype.sales_order.sales_order.send_sales_order_email",  // Custom Python method
-                        args: {
-                            sales_order: this.frm.doc.name,
-                            customer_email: values.customer_email
-                        },
-                        callback: (r) => {
-                            if(r.message) {
-                                frappe.msgprint({
-                                    title: __('Email Sent'),
-                                    message: __('Order confirmation email has been sent.'),
-                                    indicator: 'green'
-                                });
-                            }
-                        }
-                    });
-                }
+					if (values.send_mail) {
+						frappe.call({
+							method: "erpnext.selling.doctype.sales_order.sales_order.send_sales_order_email",  // Custom Python method
+							args: {
+								sales_order: this.frm.doc.name,
+								customer_email: values.customer_email
+							},
+							callback: (r) => {
+								if (r.message) {
+									frappe.msgprint({
+										title: __('Email Sent'),
+										message: __('Order confirmation email has been sent.'),
+										indicator: 'green'
+									});
+								}
+							}
+						});
+					}
 
-					
-                    //Reload the entire page after a short delay (adjust as needed)
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 1000); // 1000 milliseconds = 1 second
+
+					//Reload the entire page after a short delay (adjust as needed)
+					setTimeout(() => {
+						window.location.reload();
+					}, 1000); // 1000 milliseconds = 1 second
 					if (callback) callback();
-                } else {
-                    // Handle the case where the response does not contain a message
-                    console.error('Unexpected response:', response);
-                }
-            }
-        });
-    }
+				} else {
+					// Handle the case where the response does not contain a message
+					console.error('Unexpected response:', response);
+				}
+			}
+		});
+	}
 
 
 	make_sales_approved_with_payment_link(values) {
@@ -1908,7 +1908,7 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 			});
 			return;
 		}
-	
+
 		// Prompt to show the payment link and get customer_email_id
 		frappe.prompt([
 			{
@@ -1930,9 +1930,9 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 			// Values will contain the user's input from the prompt
 			if (promptValues.show_payment_link) {
 				// console.log('Showing payment link:', paymentUrl);
-	
+
 				// Call make_approved and send email on success
-				this.make_sales_approved(values,() => {
+				this.make_sales_approved(values, () => {
 					// Send approval email
 					this.send_approval_email(this.frm.doc.name, promptValues.customer_email_id, promptValues.show_payment_link);
 				});
@@ -1966,8 +1966,8 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 			}
 		});
 	}
-	
-	
+
+
 	send_whatsapp_message(mobile_no, message) {
 		frappe.call({
 			method: 'webtoolex_whatsapp.webtoolex_whatsapp.doctype.whatsapp_instance.whatsapp_instance.send_custom_whatsapp_message',
@@ -1993,21 +1993,21 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 			}
 		});
 	}
-	
-	
-	
 
 
-	
+
+
+
+
 
 
 	close_rental_sales_order() {
-        frappe.call({
-            method: 'erpnext.selling.doctype.sales_order.sales_order.close_rental_order',
-            args: {
-                docname: this.frm.doc.name,
-            },
-            callback: function (response) {
+		frappe.call({
+			method: 'erpnext.selling.doctype.sales_order.sales_order.close_rental_order',
+			args: {
+				docname: this.frm.doc.name,
+			},
+			callback: function (response) {
 				// Handle the response
 				if (response.message) {
 					// Display an alert directly in the Frappe UI
@@ -2025,12 +2025,12 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 					console.error('Unexpected response:', response);
 				}
 			}
-        });
-    }
+		});
+	}
 
-    hold_rental_sales_order() {
+	hold_rental_sales_order() {
 		var me = this;
-	
+
 		var d = new frappe.ui.Dialog({
 			title: __('Reason for Hold'),
 			fields: [
@@ -2055,10 +2055,10 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 						if (!r.exc) {
 							// Comment added successfully, now proceed with holding the document
 							// me.update_status('Hold', 'On Hold');
-	
+
 							// Hide the dialog
 							d.hide();
-	
+
 							// Call the on_hold method
 							frappe.call({
 								method: 'erpnext.selling.doctype.sales_order.sales_order.on_hold',
@@ -2073,7 +2073,7 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 											message: __('Document Hold successfully.'),
 											indicator: 'green'
 										});
-	
+
 										// Reload the entire page after a short delay (adjust as needed)
 										setTimeout(() => {
 											window.location.reload();
@@ -2089,15 +2089,15 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 				});
 			}
 		});
-	
+
 		d.show();
 	}
-	
-    
+
+
 
 	make_rental_device_assign() {
 		const itemGroups = cur_frm.doc.items.map(item => item.item_group).filter(Boolean).filter((value, index, self) => self.indexOf(value) === index);
-	
+
 		frappe.prompt([
 			{
 				label: 'Item Group',
@@ -2135,53 +2135,53 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 		], (values) => {
 			// values will contain the entered data
 			// console.log(values);
-	
+
 			// Update Sales Order with the entered values
 			this.frm.doc.item_group = values.item_group;
 			this.frm.doc.item_code1 = values.item_code1;
-	
+
 			// Optionally, refresh the form to reflect the changes
 			this.frm.refresh();
-	
+
 			// Now call the server-side method only after the user submits the device details
 			this.callServerMethod(values);
 		}, __('Rental Device Details'));
 	}
-	
-	
-
-	
-    
-    callServerMethod(values) {
-        frappe.call({
-            method: 'erpnext.selling.doctype.sales_order.sales_order.make_rental_device_assign',
-            args: {
-                docname: this.frm.doc.name,
-                item_group: values.item_group,
-                item_code1: values.item_code1
-            },
-            callback: (response) => {
-                // Handle the response from the server
-                if (response.message) {
-                    // Display a success message
-                    frappe.msgprint({
-                        title: __('Success'),
-                        message: __('Rental Device Assigned successfully.'),
-                        indicator: 'green'
-                    });
-                    // this.frm.save();
-                    // Reload the entire page after a short delay (adjust as needed)
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 1000); 
-                }
-            }
-        });
-    }
 
 
 
-    make_ready_for_delivery() {
+
+
+	callServerMethod(values) {
+		frappe.call({
+			method: 'erpnext.selling.doctype.sales_order.sales_order.make_rental_device_assign',
+			args: {
+				docname: this.frm.doc.name,
+				item_group: values.item_group,
+				item_code1: values.item_code1
+			},
+			callback: (response) => {
+				// Handle the response from the server
+				if (response.message) {
+					// Display a success message
+					frappe.msgprint({
+						title: __('Success'),
+						message: __('Rental Device Assigned successfully.'),
+						indicator: 'green'
+					});
+					// this.frm.save();
+					// Reload the entire page after a short delay (adjust as needed)
+					setTimeout(() => {
+						window.location.reload();
+					}, 1000);
+				}
+			}
+		});
+	}
+
+
+
+	make_ready_for_delivery() {
 		const me = this; // Preserve reference to 'this' object
 		// var role_profile = [
 		// 	{ role_profile: "NHK Technician" }, // Example data, replace with actual data
@@ -2197,14 +2197,14 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 				// get_query: function() {
 				// 	// Fetch NHK Technicians based on their role profile
 				// 	var role_profiles = [];
-		
+
 				// 	// Iterate over the role profiles and extract the role_profile value for NHK Technicians
 				// 	for (var i = 0; i < role_profile.length; i++) {
 				// 		if (role_profile[i].role_profile === 'NHK Technician') {
 				// 			role_profiles.push(role_profile[i].role_profile);
 				// 		}
 				// 	}
-		
+
 				// 	// Return filters to load NHK Users who are NHK Technicians
 				// 	return {
 				// 		filters: {
@@ -2212,7 +2212,7 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 				// 		}
 				// 	};
 				// },
-				onchange: function() {
+				onchange: function () {
 					// Function to dynamically update technician mobile based on selected technician
 					var technicianName = this.value;
 					if (technicianName) {
@@ -2221,9 +2221,9 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 							args: {
 								doctype: 'Technician Details',
 								filters: { 'name': technicianName },
-								fieldname: ['mobile_number','name','name1']
+								fieldname: ['mobile_number', 'name', 'name1']
 							},
-							callback: function(response) {
+							callback: function (response) {
 								// console.log(response)
 								if (response.message && response.message.mobile_number && response.message.name) {
 									// Set the value of technician mobile
@@ -2259,16 +2259,16 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 				fieldname: 'technician_id',
 				fieldtype: 'Data',
 				label: 'Technician Id',
-				hidden:1,
+				hidden: 1,
 				// reqd: 1
 			}
 
-		], function(values) {
+		], function (values) {
 			var technicianName = values.technician_name;
 			var technicianid = values.technician_name;
 			var technicianMobile = values.technician_mobile;
 			var technicianCategory = values.technician_category;
-	
+
 			// Call the Python function passing the technician details
 			frappe.call({
 				method: 'erpnext.selling.doctype.sales_order.sales_order.make_ready_for_delivery', // Change to your actual module, doctype, and file name
@@ -2280,12 +2280,12 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 					technician_category: technicianCategory,
 
 				},
-				callback: function(response) {
+				callback: function (response) {
 					// Handle the response
 					if (response.message) {
 						// Log the result to the console
 						// console.log(response.message);
-		
+
 						// Display a success message
 						frappe.msgprint({
 							title: __('Success'),
@@ -2315,7 +2315,7 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 				options: 'Technician Details',
 				label: 'Technician',
 				reqd: 1,
-				onchange: function() {
+				onchange: function () {
 					var technicianName = this.value;
 					if (technicianName) {
 						frappe.call({
@@ -2325,7 +2325,7 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 								filters: { 'name': technicianName },
 								fieldname: ['mobile_number', 'name', 'name1']
 							},
-							callback: function(response) {
+							callback: function (response) {
 								if (response.message) {
 									cur_dialog.fields_dict.technician_mobile.set_input(response.message.mobile_number || '');
 									cur_dialog.fields_dict.technician_id.set_input(response.message.name || '');
@@ -2361,7 +2361,7 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 				label: 'Technician Id',
 				hidden: 1
 			}
-		], function(values) {
+		], function (values) {
 			frappe.call({
 				method: 'erpnext.selling.doctype.sales_order.sales_order.assign_technician_service',
 				args: {
@@ -2371,7 +2371,7 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 					technician_category: values.technician_category,
 					technician_id: values.technician_id
 				},
-				callback: function(response) {
+				callback: function (response) {
 					if (response.message) {
 						frappe.msgprint({
 							title: __('Success'),
@@ -2396,7 +2396,7 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 					args: {
 						docname: me.frm.doc.name
 					},
-					callback: function(response) {
+					callback: function (response) {
 						if (response.message) {
 							frappe.msgprint({
 								title: __('Success'),
@@ -2420,7 +2420,7 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 				options: 'Technician Details',
 				label: 'Technician',
 				reqd: 1,
-				onchange: function() {
+				onchange: function () {
 					var technicianName = this.value;
 					if (technicianName) {
 						frappe.call({
@@ -2430,7 +2430,7 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 								filters: { 'name': technicianName },
 								fieldname: ['mobile_number', 'name', 'name1']
 							},
-							callback: function(response) {
+							callback: function (response) {
 								if (response.message) {
 									cur_dialog.fields_dict.technician_mobile.set_input(response.message.mobile_number || '');
 									cur_dialog.fields_dict.technician_id.set_input(response.message.name || '');
@@ -2466,7 +2466,7 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 				label: 'Technician Id',
 				hidden: 1
 			}
-		], function(values) {
+		], function (values) {
 			frappe.call({
 				method: 'erpnext.selling.doctype.sales_order.sales_order.assign_technician',
 				args: {
@@ -2476,7 +2476,7 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 					technician_category: values.technician_category,
 					technician_id: values.technician_id
 				},
-				callback: function(response) {
+				callback: function (response) {
 					if (response.message) {
 						frappe.msgprint({
 							title: __('Success'),
@@ -2501,7 +2501,7 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 					args: {
 						docname: me.frm.doc.name
 					},
-					callback: function(response) {
+					callback: function (response) {
 						if (response.message) {
 							frappe.msgprint({
 								title: __('Success'),
@@ -2517,14 +2517,14 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 	}
 	make_sales_invoice_delivery_note() {
 		const me = this; // Preserve reference to 'this' object
-	
+
 		// Call the Python function to create Sales Invoice and Delivery Note
 		frappe.call({
 			method: 'erpnext.selling.doctype.sales_order.sales_order.create_sales_invoice_and_delivery_note',
 			args: {
 				docname: me.frm.doc.name, // Use me.frm.doc.name instead of this.frm.doc.name
 			},
-			callback: function(response) {
+			callback: function (response) {
 				// Handle the response
 				if (response.message) {
 					if (typeof response.message === 'string') {
@@ -2536,59 +2536,59 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 						});
 					} else if (response.message.sales_invoice && response.message.delivery_note) {
 						const delivery_note_name = response.message.delivery_note;
-	
+
 						// Confirm if the user wants to select serial numbers
 						// frappe.confirm(
 						// 	__('Do you want to select serial numbers for the items in the Delivery Note?'),
 						// 	function() {
-								// If the user confirms, redirect to the Delivery Note
-								frappe.set_route("Form", "Delivery Note", delivery_note_name);
-							// },
-							// function() {
-							// 	// If the user declines, refresh and submit the Delivery Note automatically
-							// 	frappe.call({
-							// 		method: 'frappe.client.get',
-							// 		args: {
-							// 			doctype: 'Delivery Note',
-							// 			name: delivery_note_name
-							// 		},
-							// 		callback: function(r) {
-							// 			if (r.message) {
-							// 				frappe.call({
-							// 					method: 'erpnext.selling.doctype.sales_order.sales_order.submit_delivery_note',
-							// 					args: {
-							// 						docname: delivery_note_name
-							// 					},
-							// 					callback: function(r) {
-							// 						if (!r.exc) {
-							// 							frappe.msgprint({
-							// 								title: __('Success'),
-							// 								message: __('Delivery Note has been submitted successfully.'),
-							// 								indicator: 'green'
-							// 							});
-	
-							// 							// Fetch and update serial numbers in Sales Order
-							// 							update_sales_order_serial_numbers(me.frm.doc.name, delivery_note_name);
-	
-							// 						} else {
-							// 							frappe.msgprint({
-							// 								title: __('Error'),
-							// 								message: __('Failed to submit the Delivery Note.'),
-							// 								indicator: 'red'
-							// 							});
-							// 						}
-							// 					}
-							// 				});
-							// 			} else {
-							// 				frappe.msgprint({
-							// 					title: __('Error'),
-							// 					message: __('Failed to refresh the Delivery Note.'),
-							// 					indicator: 'red'
-							// 				});
-							// 			}
-							// 		}
-							// 	});
-							// }
+						// If the user confirms, redirect to the Delivery Note
+						frappe.set_route("Form", "Delivery Note", delivery_note_name);
+						// },
+						// function() {
+						// 	// If the user declines, refresh and submit the Delivery Note automatically
+						// 	frappe.call({
+						// 		method: 'frappe.client.get',
+						// 		args: {
+						// 			doctype: 'Delivery Note',
+						// 			name: delivery_note_name
+						// 		},
+						// 		callback: function(r) {
+						// 			if (r.message) {
+						// 				frappe.call({
+						// 					method: 'erpnext.selling.doctype.sales_order.sales_order.submit_delivery_note',
+						// 					args: {
+						// 						docname: delivery_note_name
+						// 					},
+						// 					callback: function(r) {
+						// 						if (!r.exc) {
+						// 							frappe.msgprint({
+						// 								title: __('Success'),
+						// 								message: __('Delivery Note has been submitted successfully.'),
+						// 								indicator: 'green'
+						// 							});
+
+						// 							// Fetch and update serial numbers in Sales Order
+						// 							update_sales_order_serial_numbers(me.frm.doc.name, delivery_note_name);
+
+						// 						} else {
+						// 							frappe.msgprint({
+						// 								title: __('Error'),
+						// 								message: __('Failed to submit the Delivery Note.'),
+						// 								indicator: 'red'
+						// 							});
+						// 						}
+						// 					}
+						// 				});
+						// 			} else {
+						// 				frappe.msgprint({
+						// 					title: __('Error'),
+						// 					message: __('Failed to refresh the Delivery Note.'),
+						// 					indicator: 'red'
+						// 				});
+						// 			}
+						// 		}
+						// 	});
+						// }
 						// );
 					} else {
 						// Handle other object structures or errors
@@ -2609,14 +2609,14 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 			}
 		});
 	}
-	
-	
-	
-	
-	
-	
-    
-    
+
+
+
+
+
+
+
+
 
 	make_dispatch() {
 		frappe.prompt([
@@ -2624,7 +2624,7 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 				label: 'Dispatch Date',
 				fieldname: 'dispatch_date',
 				fieldtype: 'Date',
-				default:'Today',
+				default: 'Today',
 				reqd: 1
 			}
 		], (values) => {
@@ -2636,11 +2636,11 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 
 			// Save the document before calling the server-side method
 			// this.frm.save(() => {
-				// Optionally, refresh the form to reflect the changes
-				this.frm.refresh();
+			// Optionally, refresh the form to reflect the changes
+			this.frm.refresh();
 
-				// Now call the server-side method only after the user submits the dispatch date
-				this.callServerMethodForDispatch(values);
+			// Now call the server-side method only after the user submits the dispatch date
+			this.callServerMethodForDispatch(values);
 			// });
 		}, __('DISPATCHED'));
 	}
@@ -2671,7 +2671,7 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 	}
 
 
-		
+
 
 	make_delivered() {
 		let frm = this.frm;
@@ -2696,7 +2696,7 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 				on_change: (value) => {
 					// Remove any non-numeric characters
 					const numericValue = value.replace(/\D/g, '');
-			
+
 					// Check if the value has exactly 10 digits
 					if (numericValue.length !== 10) {
 						frappe.msgprint({
@@ -2704,25 +2704,25 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 							message: __('Please enter a valid 10-digit mobile number. Only numbers are allowed.'),
 							indicator: 'red'
 						});
-			
+
 						// Optionally, clear the field or reset the value to numeric characters only
 					}
 				}
 			},
-			
+
 			{
 				label: __('Message'),
 				fieldname: 'message',
 				fieldtype: 'Small Text',
 				default: `Hello ${frm.doc.customer_name},
-Your order has been delivered successfully. We have received your payment of ${ (frm.doc.paid_security_deposit_amount || 0) + (frm.doc.received_amount || 0) } rs successfully.` + 
-((frm.doc.outstanding_security_deposit_amount || 0) + (frm.doc.balance_amount || 0) > 0 ? 
-` You have an outstanding amount of ${ (frm.doc.outstanding_security_deposit_amount || 0) + (frm.doc.balance_amount || 0) } rs.` : ``) + 
-			`                                                                                              
+Your order has been delivered successfully. We have received your payment of ${(frm.doc.paid_security_deposit_amount || 0) + (frm.doc.received_amount || 0)} rs successfully.` +
+					((frm.doc.outstanding_security_deposit_amount || 0) + (frm.doc.balance_amount || 0) > 0 ?
+						` You have an outstanding amount of ${(frm.doc.outstanding_security_deposit_amount || 0) + (frm.doc.balance_amount || 0)} rs.` : ``) +
+					`                                                                                              
 For any query call/WhatsApp on 8884880013.`,
 				depends_on: 'eval:doc.notify_through_whatsapp'
 			},
-			
+
 			{
 				fieldtype: 'Section Break'
 			},
@@ -2757,7 +2757,7 @@ For any query call/WhatsApp on 8884880013.`,
 				default: frm.doc.received_amount,
 				read_only: 1
 			},
-			
+
 			{
 				fieldtype: 'Column Break'
 			},
@@ -2820,28 +2820,28 @@ For any query call/WhatsApp on 8884880013.`,
 			this.frm.doc.delivered_date = values.delivered_date;
 			this.frm.doc.payment_pending_reason = values.payment_pending_reason;
 			this.frm.doc.notes = values.notes;
-			
+
 
 			// Save the document before calling the server-side method
 			// this.frm.save(() => {
-				// Optionally, refresh the form to reflect the changes
-				this.frm.refresh();
-				if (values.notify_through_whatsapp) {
-					// Validate mobile number
-					const mobile_no = values.mobile_no.replace(/\D/g, '');
+			// Optionally, refresh the form to reflect the changes
+			this.frm.refresh();
+			if (values.notify_through_whatsapp) {
+				// Validate mobile number
+				const mobile_no = values.mobile_no.replace(/\D/g, '');
 
-					if (mobile_no.length !== 10) {
-						frappe.msgprint({
-							title: __('Invalid Mobile Number'),
-							message: __('Please enter a valid 10-digit mobile number.'),
-							indicator: 'red'
-						});
-						return;  // Stop execution if mobile number is invalid
-					}
-					// this.send_whatsapp_message(values.mobile_no, values.message);
+				if (mobile_no.length !== 10) {
+					frappe.msgprint({
+						title: __('Invalid Mobile Number'),
+						message: __('Please enter a valid 10-digit mobile number.'),
+						indicator: 'red'
+					});
+					return;  // Stop execution if mobile number is invalid
 				}
-				// Now call the server-side method only after the user submits the dispatch date
-				this.callServerMethodForDelivered(values);
+				// this.send_whatsapp_message(values.mobile_no, values.message);
+			}
+			// Now call the server-side method only after the user submits the dispatch date
+			this.callServerMethodForDelivered(values);
 			// });
 		}, __('DELIVERED'));
 	}
@@ -2853,12 +2853,12 @@ For any query call/WhatsApp on 8884880013.`,
 				// item_code1: this.frm.doc.item_code1,
 				docname: this.frm.doc.name,
 				customer_name: this.frm.doc.customer,
-				delivered_date: values.delivered_date , // Pass dispatch_date to the server
+				delivered_date: values.delivered_date, // Pass dispatch_date to the server
 				payment_pending_reasons: values.payment_pending_reason,
 				rental_order_agreement_attachment: values.rental_order_agreement_attachment,
-            	aadhar_card_attachment: values.aadhar_card_attachment,
+				aadhar_card_attachment: values.aadhar_card_attachment,
 				notes: values.notes,
-				
+
 			},
 			callback: (response) => {
 				// Handle the response from the server
@@ -2907,14 +2907,14 @@ For any query call/WhatsApp on 8884880013.`,
 				// get_query: function() {
 				// 	// Fetch NHK Technicians based on their role profile
 				// 	var role_profiles = [];
-		
+
 				// 	// Iterate over the role profiles and extract the role_profile value for NHK Technicians
 				// 	for (var i = 0; i < role_profile.length; i++) {
 				// 		if (role_profile[i].role_profile === 'NHK Technician') {
 				// 			role_profiles.push(role_profile[i].role_profile);
 				// 		}
 				// 	}
-		
+
 				// 	// Return filters to load NHK Users who are NHK Technicians
 				// 	return {
 				// 		filters: {
@@ -2922,7 +2922,7 @@ For any query call/WhatsApp on 8884880013.`,
 				// 		}
 				// 	};
 				// },
-				onchange: function() {
+				onchange: function () {
 					// Function to dynamically update technician mobile based on selected technician
 					var technicianName = this.value;
 					if (technicianName) {
@@ -2931,9 +2931,9 @@ For any query call/WhatsApp on 8884880013.`,
 							args: {
 								doctype: 'Technician Details',
 								filters: { 'name': technicianName },
-								fieldname: ['mobile_number','name','name1']
+								fieldname: ['mobile_number', 'name', 'name1']
 							},
-							callback: function(response) {
+							callback: function (response) {
 								// console.log(response)
 								if (response.message && response.message.mobile_number && response.message.name) {
 									// Set the value of technician mobile
@@ -2962,7 +2962,7 @@ For any query call/WhatsApp on 8884880013.`,
 				fieldname: 'technician_id',
 				fieldtype: 'Data',
 				label: 'Technician Id',
-				hidden:1,
+				hidden: 1,
 				// reqd: 1
 			},
 			{
@@ -2970,7 +2970,7 @@ For any query call/WhatsApp on 8884880013.`,
 				fieldtype: 'Link',
 				options: 'Technician Category',
 				label: 'Technician Category',
-			
+
 				reqd: 1
 			},
 			{
@@ -2990,7 +2990,7 @@ For any query call/WhatsApp on 8884880013.`,
 				on_change: (value) => {
 					// Remove any non-numeric characters
 					const numericValue = value.replace(/\D/g, '');
-			
+
 					// Check if the value has exactly 10 digits
 					if (numericValue.length !== 10) {
 						frappe.msgprint({
@@ -2998,12 +2998,12 @@ For any query call/WhatsApp on 8884880013.`,
 							message: __('Please enter a valid 10-digit mobile number. Only numbers are allowed.'),
 							indicator: 'red'
 						});
-			
+
 						// Optionally, clear the field or reset the value to numeric characters only
-					} 
+					}
 				}
 			},
-			
+
 			{
 				label: __('Message'),
 				fieldname: 'message',
@@ -3017,12 +3017,12 @@ We have initiated pickup of the above equipment.
 For any query call/WhatsApp on 8884880013.`,
 				depends_on: 'eval:doc.notify_through_whatsapp'
 			},
-			
+
 			{
 				label: 'Pickup Date',
 				fieldname: 'pickup_date',
 				fieldtype: 'Datetime',
-				default:'Now',
+				default: 'Now',
 				reqd: 1
 			},
 			{
@@ -3050,24 +3050,24 @@ For any query call/WhatsApp on 8884880013.`,
 
 			// Save the document before calling the server-side method
 			// this.frm.save(() => {
-				// Optionally, refresh the form to reflect the changes
-				this.frm.refresh();
-				if (values.notify_through_whatsapp) {
-					// Validate mobile number
-					const mobile_no = values.mobile_no.replace(/\D/g, '');
+			// Optionally, refresh the form to reflect the changes
+			this.frm.refresh();
+			if (values.notify_through_whatsapp) {
+				// Validate mobile number
+				const mobile_no = values.mobile_no.replace(/\D/g, '');
 
-					if (mobile_no.length !== 10) {
-						frappe.msgprint({
-							title: __('Invalid Mobile Number'),
-							message: __('Please enter a valid 10-digit mobile number.'),
-							indicator: 'red'
-						});
-						return;  // Stop execution if mobile number is invalid
-					}
-					// this.callServerMethodForReadyForPickup(values);
+				if (mobile_no.length !== 10) {
+					frappe.msgprint({
+						title: __('Invalid Mobile Number'),
+						message: __('Please enter a valid 10-digit mobile number.'),
+						indicator: 'red'
+					});
+					return;  // Stop execution if mobile number is invalid
 				}
-				// Now call the server-side method only after the user submits the pickup date
-				this.callServerMethodForReadyForPickup(values);
+				// this.callServerMethodForReadyForPickup(values);
+			}
+			// Now call the server-side method only after the user submits the pickup date
+			this.callServerMethodForReadyForPickup(values);
 			// });
 		}, __('Ready for Pickup'));
 	}
@@ -3157,7 +3157,7 @@ For any query call/WhatsApp on 8884880013.`,
 				label: 'Pick Up Date and Time',
 				fieldname: 'pickup_date',
 				fieldtype: 'Datetime',
-				default:'Now',
+				default: 'Now',
 				reqd: 1
 			},
 			{
@@ -3177,7 +3177,7 @@ For any query call/WhatsApp on 8884880013.`,
 				on_change: (value) => {
 					// Remove any non-numeric characters
 					const numericValue = value.replace(/\D/g, '');
-			
+
 					// Check if the value has exactly 10 digits
 					if (numericValue.length !== 10) {
 						frappe.msgprint({
@@ -3185,12 +3185,12 @@ For any query call/WhatsApp on 8884880013.`,
 							message: __('Please enter a valid 10-digit mobile number. Only numbers are allowed.'),
 							indicator: 'red'
 						});
-			
+
 						// Optionally, clear the field or reset the value to numeric characters only
-					} 
+					}
 				}
 			},
-			
+
 			{
 				label: __('Message'),
 				fieldname: 'message',
@@ -3274,47 +3274,47 @@ If you have any questions, feel free to call/what's app us on 8884880013.`,
 		});
 	}
 	make_submitted_to_office(doc) {
-	frappe.prompt([
-		{
-			label: 'Submitted Date',
-			fieldname: 'submitted_date',
-			fieldtype: 'Datetime',
-			default: 'Now',
-			reqd: 1
-		},
-		{
-			label: 'Send Email',
-			fieldname: 'send_email',
-			fieldtype: 'Check',
-			default: 0
-		},
-		{
-			label: 'Email ID',
-			fieldname: 'customer_email',
-			fieldtype: 'Data',
-			default: this.frm.doc.customer_email_id,
-			depends_on: 'eval:doc.send_email'
-		}
-	], (values) => {
-		// show loading indicator
-		frappe.dom.freeze(__('Submitting... Please wait'));
+		frappe.prompt([
+			{
+				label: 'Submitted Date',
+				fieldname: 'submitted_date',
+				fieldtype: 'Datetime',
+				default: 'Now',
+				reqd: 1
+			},
+			{
+				label: 'Send Email',
+				fieldname: 'send_email',
+				fieldtype: 'Check',
+				default: 0
+			},
+			{
+				label: 'Email ID',
+				fieldname: 'customer_email',
+				fieldtype: 'Data',
+				default: this.frm.doc.customer_email_id,
+				depends_on: 'eval:doc.send_email'
+			}
+		], (values) => {
+			// show loading indicator
+			frappe.dom.freeze(__('Submitting... Please wait'));
 
-		// update doc fields
-		this.frm.doc.submitted_date = values.submitted_date;
-		this.frm.refresh();
+			// update doc fields
+			this.frm.doc.submitted_date = values.submitted_date;
+			this.frm.refresh();
 
-		// call server-side method
-		this.callServerMethodForSubmittedToOffice(values)
-			.then(() => {
-				frappe.dom.unfreeze();
-				frappe.show_alert({message: __('Submitted successfully!'), indicator: 'green'});
-			})
-			.catch(() => {
-				frappe.dom.unfreeze();
-				frappe.show_alert({message: __('Something went wrong'), indicator: 'red'});
-			});
-	}, __('Rental Device Details'));
-}
+			// call server-side method
+			this.callServerMethodForSubmittedToOffice(values)
+				.then(() => {
+					frappe.dom.unfreeze();
+					frappe.show_alert({ message: __('Submitted successfully!'), indicator: 'green' });
+				})
+				.catch(() => {
+					frappe.dom.unfreeze();
+					frappe.show_alert({ message: __('Something went wrong'), indicator: 'red' });
+				});
+		}, __('Rental Device Details'));
+	}
 
 
 	callServerMethodForSubmittedToOffice(values) {
@@ -3327,7 +3327,7 @@ If you have any questions, feel free to call/what's app us on 8884880013.`,
 				item_code: itemCodes,  // Pass the array of item codes
 				submitted_date: values.submitted_date,
 				send_email: values.send_email,
-            	customer_email: values.customer_email
+				customer_email: values.customer_email
 				// device_id: values.device_id
 			},
 			callback: (response) => {
@@ -3349,58 +3349,58 @@ If you have any questions, feel free to call/what's app us on 8884880013.`,
 		});
 	}
 	make_order_completed() {
-	let is_rental = (this.frm.doc.order_type === 'Rental');
-	let is_ready_to_complete = false;
+		let is_rental = (this.frm.doc.order_type === 'Rental');
+		let is_ready_to_complete = false;
 
-	// Determine readiness based strictly on Order Type
-	if (is_rental) {
-		is_ready_to_complete = (this.frm.doc.security_deposit_status === 'Paid' && 
-		                        this.frm.doc.payment_status === 'Paid' && 
-		                        this.frm.doc.refundable_security_deposit === 0);
-	} else {
-		// Non-Rental orders only require Payment Status to be paid
-		is_ready_to_complete = (this.frm.doc.payment_status === 'Paid');
-	}
-
-	if (is_ready_to_complete) {
-		// PATH 1: Order is fully paid and correct (No issues listed)
-		frappe.confirm(__('Are you sure you want to complete this order? This action will lock the entire sales order, and you won’t be able to make any further transactions on it.'), () => {
-			this.createSalesInvoiceWithAdvance();
-		}, () => {
-			frappe.msgprint(__('Order completion cancelled.'));
-		});
-	} else {
-		// PATH 2: There are missing requirements, so compile the specific issues
-		let issues = [];
-
+		// Determine readiness based strictly on Order Type
 		if (is_rental) {
-			if (this.frm.doc.security_deposit_status !== 'Paid') {
-				issues.push(__('Security Deposit is not paid.'));
-			}
-			if (this.frm.doc.payment_status !== 'Paid') {
-				issues.push(__('Rental Payment is not paid.'));
-			}
-			if (this.frm.doc.refundable_security_deposit > 0) {
-				issues.push(__('Refundable Security Deposit must be zero.'));
-			}
+			is_ready_to_complete = (this.frm.doc.security_deposit_status === 'Paid' &&
+				this.frm.doc.payment_status === 'Paid' &&
+				this.frm.doc.refundable_security_deposit === 0);
 		} else {
-			if (this.frm.doc.payment_status !== 'Paid') {
-				issues.push(__('Payment is not paid.'));
-			}
+			// Non-Rental orders only require Payment Status to be paid
+			is_ready_to_complete = (this.frm.doc.payment_status === 'Paid');
 		}
 
-		// Only add the "Issues: " label if there are actual issues compiled
-		let issueMessage = issues.length > 0 
-			? ` Issues: <span style="color: #000000; text-decoration: underline; font-weight: bold; font-style: italic;">${issues.join(' ')}</span>` 
-			: '';
+		if (is_ready_to_complete) {
+			// PATH 1: Order is fully paid and correct (No issues listed)
+			frappe.confirm(__('Are you sure you want to complete this order? This action will lock the entire sales order, and you won’t be able to make any further transactions on it.'), () => {
+				this.createSalesInvoiceWithAdvance();
+			}, () => {
+				frappe.msgprint(__('Order completion cancelled.'));
+			});
+		} else {
+			// PATH 2: There are missing requirements, so compile the specific issues
+			let issues = [];
 
-		frappe.confirm(__('Are you sure you want to complete this order? This action will lock the entire sales order, and you won’t be able to make any further transactions on it.' + issueMessage), () => {
-			this.createSalesInvoiceWithAdvance();
-		}, () => {
-			frappe.msgprint(__('Order completion cancelled.'));
-		});
+			if (is_rental) {
+				if (this.frm.doc.security_deposit_status !== 'Paid') {
+					issues.push(__('Security Deposit is not paid.'));
+				}
+				if (this.frm.doc.payment_status !== 'Paid') {
+					issues.push(__('Rental Payment is not paid.'));
+				}
+				if (this.frm.doc.refundable_security_deposit > 0) {
+					issues.push(__('Refundable Security Deposit must be zero.'));
+				}
+			} else {
+				if (this.frm.doc.payment_status !== 'Paid') {
+					issues.push(__('Payment is not paid.'));
+				}
+			}
+
+			// Only add the "Issues: " label if there are actual issues compiled
+			let issueMessage = issues.length > 0
+				? ` Issues: <span style="color: #000000; text-decoration: underline; font-weight: bold; font-style: italic;">${issues.join(' ')}</span>`
+				: '';
+
+			frappe.confirm(__('Are you sure you want to complete this order? This action will lock the entire sales order, and you won’t be able to make any further transactions on it.' + issueMessage), () => {
+				this.createSalesInvoiceWithAdvance();
+			}, () => {
+				frappe.msgprint(__('Order completion cancelled.'));
+			});
+		}
 	}
-}
 	// make_order_completed() {
 	// 	// Check security deposit and payment status before proceeding
 	// 	if (this.frm.doc.security_deposit_status === 'Paid' && this.frm.doc.payment_status === 'Paid' && this.frm.doc.refundable_security_deposit === 0) {
@@ -3415,7 +3415,7 @@ If you have any questions, feel free to call/what's app us on 8884880013.`,
 	// 	} else {
 	// 		// Prepare an error message summarizing the issues
 	// 		let issues = [];
-	
+
 	// 		// Check if the order type is 'Rental'
 	// 		if (this.frm.doc.order_type === 'Rental') {
 	// 			// For 'Rental' order type, check for all three conditions
@@ -3434,10 +3434,10 @@ If you have any questions, feel free to call/what's app us on 8884880013.`,
 	// 				issues.push(__('Rental Payment is not paid.'));
 	// 			}
 	// 		}
-	
+
 	// 		// Join the issues into a single message
 	// 		let issueMessage = issues.length > 0 ? `<span style="color: #000000;text-decoration: underline;font-weight: bold;font-style: italic;">${issues.join(' ')}</span>` : ''; // Using mild orange color
-	
+
 	// 		// Show confirmation dialog with the issue message
 	// 		frappe.confirm(__('Are you sure you want to complete this order? This action will lock the entire sales order, and you won’t be able to make any further transactions on it. Issues: ' + issueMessage), () => {
 	// 			// User confirmed, proceed with creating the Sales Invoice first
@@ -3448,16 +3448,16 @@ If you have any questions, feel free to call/what's app us on 8884880013.`,
 	// 		});
 	// 	}
 	// }
-	
-	
-	
+
+
+
 	createSalesInvoiceWithAdvance() {
 		// Prepare arguments for creating the Sales Invoice
 		const args = {
 			allocate_advances_automatically: 1,
 			source_name: this.frm.doc.name  // Pass the Sales Order name
 		};
-	
+
 		// Call the server-side method directly to create the Sales Invoice
 		frappe.call({
 			method: "erpnext.selling.doctype.sales_order.sales_order.make_sales_invoice",
@@ -3467,11 +3467,11 @@ If you have any questions, feel free to call/what's app us on 8884880013.`,
 				if (response && response.message) {
 					// Lock the Sales Order
 					// this.lockSalesOrder();
-					
+
 					// Redirect to the Sales Order form
 					const salesOrderName = this.frm.doc.name; // Get the current Sales Order name
 					frappe.set_route('Form', 'Sales Order', salesOrderName);
-	
+
 					// After the page loads, execute the completion method
 					frappe.after_ajax(() => {
 						this.callServerMethodForOrderCompleted();
@@ -3482,10 +3482,10 @@ If you have any questions, feel free to call/what's app us on 8884880013.`,
 			}
 		});
 	}
-	
+
 	callServerMethodForOrderCompleted() {
 		const itemCodes = this.frm.doc.items.map(item => item.item_code);
-	
+
 		frappe.call({
 			method: 'erpnext.selling.doctype.sales_order.sales_order.make_order_completed',
 			args: {
@@ -3504,7 +3504,7 @@ If you have any questions, feel free to call/what's app us on 8884880013.`,
 			}
 		});
 	}
-	
+
 	// lockSalesOrder() {
 	// 	// Lock all fields by making them read-only
 	// 	Object.keys(this.frm.fields_dict).forEach(fieldname => {
@@ -3514,23 +3514,23 @@ If you have any questions, feel free to call/what's app us on 8884880013.`,
 	// 			this.frm.set_df_property(fieldname, 'read_only', 1);
 	// 		}
 	// 	});
-	
+
 	// 	// Hide all buttons on the form
 	// 	this.frm.page.set_primary_action(__(''), null); // Remove the primary action button
 	// 	this.frm.page.clear_menu(); // Clears the menu where additional actions are located
-	
+
 	// 	// Optionally hide custom buttons if they are defined
 	// 	if (this.frm.page.btn_primary) {
 	// 		this.frm.page.btn_primary.hide(); // Hides primary action button
 	// 	}
-		
+
 	// 	if (this.frm.page.btn_secondary) {
 	// 		this.frm.page.btn_secondary.hide(); // Hides secondary buttons
 	// 	}
 	// }
-	
-	
-	
+
+
+
 	// make_order_completed() {
 	// 	// Check security deposit and payment status before proceeding
 	// 	if (this.frm.doc.security_deposit_status === 'Paid' && this.frm.doc.payment_status === 'Paid') {
@@ -3541,14 +3541,14 @@ If you have any questions, feel free to call/what's app us on 8884880013.`,
 	// 		frappe.throw(__('Cannot complete order. Ensure both Security Deposit and Rental Payment are fully paid.'));
 	// 	}
 	// }
-	
+
 	// createSalesInvoiceWithAdvance() {
 	// 	// Prepare arguments for creating the Sales Invoice
 	// 	const args = {
 	// 		allocate_advances_automatically: 1,
 	// 		source_name: this.frm.doc.name  // Pass the Sales Order name
 	// 	};
-	
+
 	// 	// Call the server-side method directly to create the Sales Invoice
 	// 	frappe.call({
 	// 		method: "erpnext.selling.doctype.sales_order.sales_order.make_sales_invoice",
@@ -3559,7 +3559,7 @@ If you have any questions, feel free to call/what's app us on 8884880013.`,
 	// 				// Redirect to the Sales Order form
 	// 				const salesOrderName = this.frm.doc.name; // Get the current Sales Order name
 	// 				frappe.set_route('Form', 'Sales Order', salesOrderName);
-					
+
 	// 				// After the page loads, execute the completion method
 	// 				frappe.after_ajax(() => {
 	// 					this.callServerMethodForOrderCompleted();
@@ -3570,10 +3570,10 @@ If you have any questions, feel free to call/what's app us on 8884880013.`,
 	// 		}
 	// 	});
 	// }
-	
+
 	// callServerMethodForOrderCompleted() {
 	// 	const itemCodes = this.frm.doc.items.map(item => item.item_code);
-	
+
 	// 	frappe.call({
 	// 		method: 'erpnext.selling.doctype.sales_order.sales_order.make_order_completed',
 	// 		args: {
@@ -3592,11 +3592,11 @@ If you have any questions, feel free to call/what's app us on 8884880013.`,
 	// 		}
 	// 	});
 	// }
-	
-	
-	
-	
-	
+
+
+
+
+
 
 	make_maintenance_schedule() {
 		frappe.model.open_mapped_doc({
@@ -3844,33 +3844,33 @@ If you have any questions, feel free to call/what's app us on 8884880013.`,
 
 extend_cscript(cur_frm.cscript, new erpnext.selling.SalesOrderController({ frm: cur_frm }));
 function getSerialNumbers(itemCode) {
-    // Define a variable to hold the options
-    let options = [];
+	// Define a variable to hold the options
+	let options = [];
 
-    // Call Python function to get serial numbers
-    frappe.call({
-        method: 'erpnext.selling.doctype.sales_order.sales_order.get_serial_numbers',
-        args: {
-            item_code: itemCode
-        },
-        async: false, // Ensure synchronous execution
-        callback: function(response) {
-            if (response.message) {
-                // Map the serial numbers to the required format
-                options = response.message.map(serialNumber => {
-                    return {
-                        label: serialNumber,
-                        value: serialNumber
-                    };
-                });
-            } else {
-                console.error('Failed to fetch serial numbers');
-            }
-        }
-    });
+	// Call Python function to get serial numbers
+	frappe.call({
+		method: 'erpnext.selling.doctype.sales_order.sales_order.get_serial_numbers',
+		args: {
+			item_code: itemCode
+		},
+		async: false, // Ensure synchronous execution
+		callback: function (response) {
+			if (response.message) {
+				// Map the serial numbers to the required format
+				options = response.message.map(serialNumber => {
+					return {
+						label: serialNumber,
+						value: serialNumber
+					};
+				});
+			} else {
+				console.error('Failed to fetch serial numbers');
+			}
+		}
+	});
 
-    // Return the options
-    return options;
+	// Return the options
+	return options;
 }
 function update_sales_order_serial_numbers(sales_order_name, delivery_note_name) {
 	frappe.call({
@@ -3879,7 +3879,7 @@ function update_sales_order_serial_numbers(sales_order_name, delivery_note_name)
 			sales_order_name: sales_order_name,
 			delivery_note_name: delivery_note_name
 		},
-		callback: function(response) {
+		callback: function (response) {
 			if (response.message) {
 				frappe.msgprint({
 					title: __('Serial Numbers Updated'),
