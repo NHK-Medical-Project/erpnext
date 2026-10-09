@@ -1026,22 +1026,23 @@ ${doc.custom_razorpay_payment_url ? `\n🔗 Payment Link: ${doc.custom_razorpay_
 					//     }, __('Create'));
 					// }
 
-					if (flt(doc.per_billed, 2) < 100 && doc.status === 'Approved' && doc.order_type === 'Rental') {
-						this.frm.add_custom_button(__('Ready for Delivery'), () => {
-							frappe.confirm(
-								__('Are you sure you want make the status as Ready For Delivery?'),
-								() => {
-									me.make_ready_for_delivery(); // Call the JavaScript method
-								},
-								() => {
-									// Do nothing on cancel
-								}
-							);
-						}, __('Action'));
-					}
+					// if (flt(doc.per_billed, 2) < 100 && doc.status === 'Approved' && doc.order_type === 'Rental') {
+					// 	this.frm.add_custom_button(__('Ready for Delivery'), () => {
+					// 		frappe.confirm(
+					// 			__('Are you sure you want make the status as Ready For Delivery?'),
+					// 			() => {
+					// 				me.make_ready_for_delivery(); // Call the JavaScript method
+					// 			},
+					// 			() => {
+					// 				// Do nothing on cancel
+					// 			}
+					// 		);
+					// 	}, __('Action'));
+					// }
 
 
-					if (flt(doc.per_billed, 2) < 100 && doc.status === 'Ready for Delivery' && doc.order_type === 'Rental') {
+					// Approved orders are dispatched directly; 'Ready for Delivery' is kept for orders already in it.
+					if (flt(doc.per_billed, 2) < 100 && ['Approved', 'Ready for Delivery'].includes(doc.status) && doc.order_type === 'Rental') {
 						this.frm.add_custom_button(__('DISPATCHED'), () => {
 							frappe.confirm(
 								__('Are you sure you want make the status as DISPATCHED?'),

@@ -2949,6 +2949,11 @@ def apply_item_filter(doc, method):
 
 @frappe.whitelist()
 def make_dispatch(docname, dispatch_date):
+    # Rental orders go Approved -> DISPATCHED; "Ready for Delivery" is no longer a step,
+    # but orders already in it can still be dispatched.
+    status = frappe.db.get_value('Sales Order', docname, 'status')
+    if status not in ("Approved", "Ready for Delivery"):
+        frappe.throw(f"Sales Order {docname} can be dispatched only when it is Approved (current status: {status}).")
     try:
         # Get the 'Sales Order' document
         rental_sales_order = frappe.get_doc('Sales Order', docname)
@@ -3083,6 +3088,9 @@ def make_delivered(docname,customer_name, delivered_date, rental_order_agreement
 
 @frappe.whitelist()
 def make_ready_for_pickup(docname, pickup_date, pickup_reason,pickup_remark,technician_name=None,technician_mobile=None,technician_id=None,technician_category=None ):
+    status = frappe.db.get_value('Sales Order', docname, 'status')
+    if status != 'Active':
+        frappe.throw(f"Sales Order {docname} can be made Ready for Pickup only when it is Active (current status: {status}).")
     try:
         # Get the 'Sales Order' document
         doc = frappe.get_doc('Sales Order', docname)
