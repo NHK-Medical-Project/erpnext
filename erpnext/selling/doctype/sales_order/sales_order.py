@@ -3884,6 +3884,7 @@ def create_renewal_order(sales_order_name):
 
 
 
+    # Replace items with the filtered items
     new_sales_order.items = filtered_items
 
     for item in new_sales_order.items:
@@ -3891,10 +3892,20 @@ def create_renewal_order(sales_order_name):
         current_tax_rate = frappe.get_value("Item", item.item_code, "tax_rate") or 0
         item.tax_rate = current_tax_rate
         item.gst_treatment = "Non-GST"
-        
-        # CLEAR TAX TEMPLATES AND TAX DETAILS TO PREVENT INDIA COMPLIANCE ERRORS
         item.item_tax_template = None
         item.item_tax_rate = None
+
+    # --- ADD THESE LINES TO CLEAR DOCUMENT-LEVEL TAXES & GST OVERRIDES ---
+    new_sales_order.taxes = []  # Clear main taxes table
+    new_sales_order.taxes_and_charges = None
+    
+    # If India Compliance adds custom fields for GST exemption/treatment at the doc level:
+    if hasattr(new_sales_order, "gst_category"):
+        new_sales_order.gst_category = "Unregistered" # or "Consumer" depending on your setup, or clear it if allowed
+    
+    if hasattr(new_sales_order, "is_export"):
+        new_sales_order.is_export = 0
+    # -------------------------------------------------------------------
 
 
 
