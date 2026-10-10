@@ -3874,6 +3874,16 @@ def create_renewal_order(sales_order_name):
     new_sales_order.refundable_security_deposit = 0
 
     # Replace items with the filtered items
+    # new_sales_order.items = filtered_items
+
+    # for item in new_sales_order.items:
+    #     item.read_only = 1
+    #     current_tax_rate = frappe.get_value("Item", item.item_code, "tax_rate") or 0
+    #     item.tax_rate = current_tax_rate
+    #     item.gst_treatment = "Non-GST"
+
+
+
     new_sales_order.items = filtered_items
 
     for item in new_sales_order.items:
@@ -3881,6 +3891,12 @@ def create_renewal_order(sales_order_name):
         current_tax_rate = frappe.get_value("Item", item.item_code, "tax_rate") or 0
         item.tax_rate = current_tax_rate
         item.gst_treatment = "Non-GST"
+        
+        # CLEAR TAX TEMPLATES AND TAX DETAILS TO PREVENT INDIA COMPLIANCE ERRORS
+        item.item_tax_template = None
+        item.item_tax_rate = None
+
+
 
     # Increment the renewal_order_count of the new sales order
     renewal_count = getattr(original_sales_order, "renewal_order_count", 0)
