@@ -3841,8 +3841,68 @@ def mark_overdue_sales_orders():
     # publish_realtime('list_update', "Sales Order")
 
 
+# import frappe
+# from frappe.utils import add_days
+# @frappe.whitelist()
+# def create_renewal_order(sales_order_name):
+#     # Get original sales order
+#     existing_renewal_orders = frappe.get_all("Sales Order", filters={"previous_order_id": sales_order_name, "docstatus": ["!=", 2]})
+
+#     if existing_renewal_orders:
+#         existing_order_id = existing_renewal_orders[0].name
+#         order_link = frappe.utils.get_url_to_form("Sales Order", existing_order_id)
+#         frappe.throw(_("A renewal order already exists for this sales order in Draft. <a href='{0}'>{1}</a>").format(order_link, existing_order_id))
+
+#     original_sales_order = frappe.get_doc("Sales Order", sales_order_name)
+
+#     # Filter out items where child_status is 'Submitted to Office'
+#     filtered_items = [item for item in original_sales_order.items if item.child_status != 'Submitted to Office']
+
+#     # Create a new sales order based on the original one
+#     new_sales_order = frappe.copy_doc(original_sales_order)
+#     new_sales_order.previous_order_id = original_sales_order.name  # Pass original order ID to renewal_order_id
+#     new_sales_order.advance_paid = 0
+#     new_sales_order.is_renewed = 1
+#     new_sales_order.security_deposit = 0
+#     new_sales_order.received_amount = 0
+#     new_sales_order.payment_status = 'UnPaid'
+#     new_sales_order.outstanding_security_deposit_amount = 0
+#     new_sales_order.custom_razorpay_payment_url = ''
+#     new_sales_order.custom_razorpay_payment_link_log_id = ''
+#     new_sales_order.status = 'Active'
+#     new_sales_order.paid_security_deposite_amount = 0
+#     new_sales_order.refundable_security_deposit = 0
+
+#     # Replace items with the filtered items
+#     new_sales_order.items = filtered_items
+
+#     for item in new_sales_order.items:
+#         item.read_only = 1
+#         current_tax_rate = frappe.get_value("Item", item.item_code, "tax_rate") or 0
+#         item.tax_rate = current_tax_rate
+#         item.gst_treatment = "Non-GST"
+
+#     # Increment the renewal_order_count of the new sales order
+#     renewal_count = getattr(original_sales_order, "renewal_order_count", 0)
+#     new_sales_order.renewal_order_count = renewal_count + 1 if renewal_count > 0 else 1
+    
+#     # Set the new order's start date to the original order's end date + 1 day
+#     if original_sales_order.end_date:
+#         new_start_date = add_days(original_sales_order.end_date, 1)
+#         new_sales_order.start_date = new_start_date
+#         new_sales_order.end_date = ""
+#         new_sales_order.total_no_of_dates = ""
+
+#     new_sales_order.insert()
+#     return new_sales_order.name
+
+
+
+
 import frappe
 from frappe.utils import add_days
+from frappe import _
+
 @frappe.whitelist()
 def create_renewal_order(sales_order_name):
     # Get original sales order
@@ -3881,6 +3941,16 @@ def create_renewal_order(sales_order_name):
         current_tax_rate = frappe.get_value("Item", item.item_code, "tax_rate") or 0
         item.tax_rate = current_tax_rate
         item.gst_treatment = "Non-GST"
+        
+        # Set the Item Tax Template to your Non-GST template name
+        # Replace 'Non-GST' with your actual Item Tax Template name if it's different
+        item.item_tax_template = "Non-GST" 
+        item.item_tax_rate = None
+
+    # Optional: Clear main document-level tax table if it tries to pull old GST rates, 
+    # or you can let ERPNext recalculate it based on the new item tax template.
+    new_sales_order.taxes = []
+    new_sales_order.taxes_and_charges = None
 
     # Increment the renewal_order_count of the new sales order
     renewal_count = getattr(original_sales_order, "renewal_order_count", 0)
@@ -3895,6 +3965,13 @@ def create_renewal_order(sales_order_name):
 
     new_sales_order.insert()
     return new_sales_order.name
+
+
+
+
+
+
+
 # @frappe.whitelist()
 # def create_renewal_order(sales_order_name):
 #     # Get original sales order
