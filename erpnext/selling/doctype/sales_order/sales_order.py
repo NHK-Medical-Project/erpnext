@@ -3880,7 +3880,7 @@ def mark_overdue_sales_orders():
 #         item.read_only = 1
 #         current_tax_rate = frappe.get_value("Item", item.item_code, "tax_rate") or 0
 #         item.tax_rate = current_tax_rate
-#         item.gst_treatment = "Non-GST"
+#         item.gst_treatment = "Non-GST - INR"
 
 #     # Increment the renewal_order_count of the new sales order
 #     renewal_count = getattr(original_sales_order, "renewal_order_count", 0)
@@ -3940,11 +3940,11 @@ def create_renewal_order(sales_order_name):
         item.read_only = 1
         current_tax_rate = frappe.get_value("Item", item.item_code, "tax_rate") or 0
         item.tax_rate = current_tax_rate
-        item.gst_treatment = "Non-GST"
+        item.gst_treatment = "Non-GST - INR"
         
-        # Set the Item Tax Template to your Non-GST template name
-        # Replace 'Non-GST' with your actual Item Tax Template name if it's different
-        item.item_tax_template = "Non-GST" 
+        # Set the Item Tax Template to your Non-GST - INR template name
+        # Replace 'Non-GST - INR' with your actual Item Tax Template name if it's different
+        item.item_tax_template = "Non-GST - INR" 
         item.item_tax_rate = None
 
     # Optional: Clear main document-level tax table if it tries to pull old GST rates, 
